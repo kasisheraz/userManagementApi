@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: user-management-api
+  datasource:
+    url: jdbc:mariadb://localhost:3306/fincore_db
+    username: root
+    password: password
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 900000
+
+security:
+  session-timeout: 900
+  max-login-attempts: 5
+  account-lock-duration: 1800
