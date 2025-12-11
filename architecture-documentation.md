@@ -55,7 +55,7 @@ FinCore (Financial Core platform) is a serverless, cloud-native financial platfo
 ### 3.1 Presentation Layer
 
 #### Client Portal
-- **Technology**: React 17+ hosted on AWS Amplify
+- **Technology**: React 17+ hosted on GCP VM
 - **Features**:
   - Beneficiary management
   - Cash collection requests
