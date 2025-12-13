@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+*.iml
+*.class
+*.jar
+*.log
+
+# Build artifacts
+target/
+build/
+dist/
+*.o
+*.so
+*.pyc
+*.pyo
+
+# Test files
+src/test
+test-*.xml
+*Test.java
+
+# Documentation
+*.md
+docs/
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+.project
+.classpath
+.settings/
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+npm-debug.log
+
+# Maven
+.m2/
+*.jar.original
