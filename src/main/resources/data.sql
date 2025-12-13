@@ -6,6 +6,7 @@ INSERT INTO permissions (name, description, module) VALUES ('CUSTOMER_WRITE', 'C
 
 -- Insert default roles
 INSERT INTO roles (name, description) VALUES ('SYSTEM_ADMINISTRATOR', 'Full system access');
+INSERT INTO roles (name, description) VALUES ('ADMIN', 'Administrator with user management capabilities');
 INSERT INTO roles (name, description) VALUES ('COMPLIANCE_OFFICER', 'Compliance and AML access');
 INSERT INTO roles (name, description) VALUES ('OPERATIONAL_STAFF', 'Operational access');
 
@@ -21,7 +22,7 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES (3, 3);
 
 -- Insert default admin user (password: Admin@123456)
 INSERT INTO users (username, password, full_name, email, phone_number, employee_id, department, job_title, status, role_id, failed_login_attempts, created_at, updated_at) 
-VALUES ('admin', '$2a$10$nZhPCqOb6NsCCXmFPjscGeaH83R4HOBY0o8FMJvfxAkyfF22PDC12', 'System Administrator', 'admin@fincore.com', '+1234567890', 'EMP001', 'IT', 'System Admin', 'ACTIVE', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+VALUES ('admin', '$2a$10$nZhPCqOb6NsCCXmFPjscGeaH83R4HOBY0o8FMJvfxAkyfF22PDC12', 'System Administrator', 'admin@fincore.com', '+1234567890', 'EMP001', 'IT', 'System Admin', 'ACTIVE', 2, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert compliance officer user (password: Compliance@123)
 INSERT INTO users (username, password, full_name, email, phone_number, employee_id, department, job_title, status, role_id, failed_login_attempts, created_at, updated_at) 

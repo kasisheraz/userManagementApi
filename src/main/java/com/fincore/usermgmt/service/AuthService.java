@@ -5,11 +5,8 @@ import com.fincore.usermgmt.dto.LoginResponse;
 import com.fincore.usermgmt.entity.User;
 import com.fincore.usermgmt.entity.UserStatus;
 import com.fincore.usermgmt.repository.UserRepository;
-import com.fincore.usermgmt.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +18,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
 
     @Value("${security.max-login-attempts}")
     private int maxLoginAttempts;
@@ -32,25 +28,25 @@ public class AuthService {
     @Transactional
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
         if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new LockedException("Account is not active");
+            throw new RuntimeException("Account is not active");
         }
 
         if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
-            throw new LockedException("Account is locked");
+            throw new RuntimeException("Account is locked");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             handleFailedLogin(user);
-            throw new BadCredentialsException("Invalid credentials");
+            throw new RuntimeException("Invalid credentials");
         }
 
         resetFailedAttempts(user);
-        String token = jwtUtil.generateToken(user.getUsername());
+        String simpleToken = "api-key-" + user.getId() + "-" + System.currentTimeMillis();
 
-        return new LoginResponse(token, user.getUsername(), user.getFullName(), user.getRole().getName());
+        return new LoginResponse(simpleToken, user.getUsername(), user.getFullName(), user.getRole().getName());
     }
 
     private void handleFailedLogin(User user) {

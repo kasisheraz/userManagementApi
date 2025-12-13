@@ -10,8 +10,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -31,12 +29,6 @@ class AuthControllerTest {
 
     @MockBean
     private AuthService authService;
-    
-    @MockBean
-    private com.fincore.usermgmt.security.JwtUtil jwtUtil;
-    
-    @MockBean
-    private com.fincore.usermgmt.security.JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Test
     void login_WithValidCredentials_ShouldReturn200() throws Exception {
@@ -45,7 +37,7 @@ class AuthControllerTest {
         request.setPassword("Admin@123456");
 
         LoginResponse response = new LoginResponse(
-            "mock-jwt-token",
+            "mock-api-key",
             "admin",
             "System Administrator",
             "SYSTEM_ADMINISTRATOR"
@@ -57,7 +49,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("mock-jwt-token"))
+                .andExpect(jsonPath("$.token").value("mock-api-key"))
                 .andExpect(jsonPath("$.username").value("admin"))
                 .andExpect(jsonPath("$.fullName").value("System Administrator"))
                 .andExpect(jsonPath("$.role").value("SYSTEM_ADMINISTRATOR"));
@@ -70,7 +62,7 @@ class AuthControllerTest {
         request.setPassword("wrongpassword");
 
         when(authService.login(any(LoginRequest.class)))
-            .thenThrow(new BadCredentialsException("Invalid credentials"));
+            .thenThrow(new RuntimeException("Invalid credentials"));
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +77,7 @@ class AuthControllerTest {
         request.setPassword("Admin@123456");
 
         when(authService.login(any(LoginRequest.class)))
-            .thenThrow(new LockedException("Account is locked"));
+            .thenThrow(new RuntimeException("Account is locked"));
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -115,5 +107,4 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
-    }
-}
+    }}

@@ -1,0 +1,63 @@
+package com.fincore.usermgmt.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fincore.usermgmt.dto.UserCreateDTO;
+import com.fincore.usermgmt.dto.UserDTO;
+import com.fincore.usermgmt.service.UserService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
+public class UserControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private UserService userService;
+
+    @MockBean
+    private com.fincore.usermgmt.security.JwtUtil jwtUtil;
+
+    @MockBean
+    private com.fincore.usermgmt.security.JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Test
+    void testCreateUser() throws Exception {
+        UserCreateDTO createDTO = new UserCreateDTO();
+        createDTO.setUsername("testuser");
+        createDTO.setPassword("password");
+        createDTO.setFullName("Test User");
+        createDTO.setEmail("test@example.com");
+        createDTO.setRole("USER");
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername("testuser");
+        userDTO.setFullName("Test User");
+        userDTO.setEmail("test@example.com");
+        userDTO.setRole("USER");
+
+        when(userService.createUser(any(UserCreateDTO.class))).thenReturn(userDTO);
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username").value("testuser"));
+    }
+}

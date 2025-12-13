@@ -1,4 +1,4 @@
-{
+﻿{
 	"info": {
 		"name": "FinCore User Management API",
 		"description": "API collection for testing user authentication and management. Use X-API-Key header: fincore-api-key-2024",
@@ -394,3 +394,4 @@
 		}
 	]
 }
+
