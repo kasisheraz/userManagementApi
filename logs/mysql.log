@@ -1,0 +1,1168 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2025-12-13T18:12:48.525Z  INFO 12508 --- [user-management-api] [           main] c.f.usermgmt.UserManagementApplication   : Starting UserManagementApplication v1.0.0 using Java 21.0.8 with PID 12508 (C:\Development\git\userManagementApi\target\user-management-api-1.0.0.jar started by shera in C:\Development\git\userManagementApi)
+2025-12-13T18:12:48.529Z  INFO 12508 --- [user-management-api] [           main] c.f.usermgmt.UserManagementApplication   : The following 1 profile is active: "mysql"
+2025-12-13T18:12:51.179Z  INFO 12508 --- [user-management-api] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-13T18:12:51.368Z  INFO 12508 --- [user-management-api] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 152 ms. Found 2 JPA repository interfaces.
+2025-12-13T18:12:53.479Z  INFO 12508 --- [user-management-api] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-12-13T18:12:53.513Z  INFO 12508 --- [user-management-api] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-13T18:12:53.513Z  INFO 12508 --- [user-management-api] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-13T18:12:53.646Z  INFO 12508 --- [user-management-api] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-13T18:12:53.646Z  INFO 12508 --- [user-management-api] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4884 ms
+2025-12-13T18:12:54.055Z  INFO 12508 --- [user-management-api] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-13T18:12:55.128Z  INFO 12508 --- [user-management-api] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@29090809
+2025-12-13T18:12:55.129Z  INFO 12508 --- [user-management-api] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-13T18:12:55.162Z  INFO 12508 --- [user-management-api] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:mysql://localhost:3306/my_auth_db'
+2025-12-13T18:12:55.745Z  INFO 12508 --- [user-management-api] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-13T18:12:55.933Z  INFO 12508 --- [user-management-api] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-12-13T18:12:56.029Z  INFO 12508 --- [user-management-api] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-12-13T18:12:56.745Z  INFO 12508 --- [user-management-api] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-13T18:12:58.677Z  INFO 12508 --- [user-management-api] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table permissions (
+        id bigint not null auto_increment,
+        description varchar(255),
+        module varchar(255),
+        name varchar(255) not null,
+        primary key (id)
+    ) engine=InnoDB
+Hibernate: 
+    create table role_permissions (
+        role_id bigint not null,
+        permission_id bigint not null,
+        primary key (role_id, permission_id)
+    ) engine=InnoDB
+Hibernate: 
+    create table roles (
+        id bigint not null auto_increment,
+        description varchar(255),
+        name varchar(255) not null,
+        primary key (id)
+    ) engine=InnoDB
+Hibernate: 
+    create table users (
+        id bigint not null auto_increment,
+        created_at datetime(6),
+        department varchar(255),
+        email varchar(255) not null,
+        employee_id varchar(255),
+        failed_login_attempts integer,
+        full_name varchar(255) not null,
+        job_title varchar(255),
+        last_login_at datetime(6),
+        locked_until datetime(6),
+        password varchar(255) not null,
+        phone_number varchar(255),
+        status enum ('ACTIVE','INACTIVE','LOCKED'),
+        updated_at datetime(6),
+        username varchar(255) not null,
+        role_id bigint,
+        primary key (id)
+    ) engine=InnoDB
+Hibernate: 
+    alter table permissions 
+       drop index UK_pnvtwliis6p05pn6i3ndjrqt2
+Hibernate: 
+    alter table permissions 
+       add constraint UK_pnvtwliis6p05pn6i3ndjrqt2 unique (name)
+Hibernate: 
+    alter table roles 
+       drop index UK_ofx66keruapi6vyqpv6f2or37
+Hibernate: 
+    alter table roles 
+       add constraint UK_ofx66keruapi6vyqpv6f2or37 unique (name)
+Hibernate: 
+    alter table users 
+       drop index UK_6dotkott2kjsp8vw4d0m25fb7
+Hibernate: 
+    alter table users 
+       add constraint UK_6dotkott2kjsp8vw4d0m25fb7 unique (email)
+Hibernate: 
+    alter table users 
+       drop index UK_r43af9ap4edm43mmtq01oddj6
+Hibernate: 
+    alter table users 
+       add constraint UK_r43af9ap4edm43mmtq01oddj6 unique (username)
+Hibernate: 
+    alter table role_permissions 
+       add constraint FKegdk29eiy7mdtefy5c7eirr6e 
+       foreign key (permission_id) 
+       references permissions (id)
+Hibernate: 
+    alter table role_permissions 
+       add constraint FKn5fotdgk8d1xvo8nav9uv3muc 
+       foreign key (role_id) 
+       references roles (id)
+Hibernate: 
+    alter table users 
+       add constraint FKp56c1712k691lhsyewcssf40f 
+       foreign key (role_id) 
+       references roles (id)
+2025-12-13T18:12:59.426Z  INFO 12508 --- [user-management-api] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-13T18:13:00.781Z  WARN 12508 --- [user-management-api] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-13T18:13:02.636Z  INFO 12508 --- [user-management-api] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoint(s) beneath base path '/actuator'
+2025-12-13T18:13:02.871Z  INFO 12508 --- [user-management-api] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-12-13T18:13:02.905Z  INFO 12508 --- [user-management-api] [           main] c.f.usermgmt.UserManagementApplication   : Started UserManagementApplication in 15.614 seconds (process running for 16.829)
+2025-12-13T18:13:11.400Z  INFO 12508 --- [user-management-api] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-13T18:13:11.400Z  INFO 12508 --- [user-management-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-13T18:13:11.400Z  INFO 12508 --- [user-management-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        u1_0.role_id,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    update
+        users 
+    set
+        created_at=?,
+        department=?,
+        email=?,
+        employee_id=?,
+        failed_login_attempts=?,
+        full_name=?,
+        job_title=?,
+        last_login_at=?,
+        locked_until=?,
+        password=?,
+        phone_number=?,
+        role_id=?,
+        status=?,
+        updated_at=?,
+        username=? 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        u1_0.role_id,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    update
+        users 
+    set
+        created_at=?,
+        department=?,
+        email=?,
+        employee_id=?,
+        failed_login_attempts=?,
+        full_name=?,
+        job_title=?,
+        last_login_at=?,
+        locked_until=?,
+        password=?,
+        phone_number=?,
+        role_id=?,
+        status=?,
+        updated_at=?,
+        username=? 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        u1_0.role_id,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    update
+        users 
+    set
+        created_at=?,
+        department=?,
+        email=?,
+        employee_id=?,
+        failed_login_attempts=?,
+        full_name=?,
+        job_title=?,
+        last_login_at=?,
+        locked_until=?,
+        password=?,
+        phone_number=?,
+        role_id=?,
+        status=?,
+        updated_at=?,
+        username=? 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        u1_0.role_id,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        u1_0.role_id,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        u1_0.role_id,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        roles r1_0 
+            on r1_0.id=u1_0.role_id 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        u1_0.id=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name 
+    from
+        roles r1_0 
+    where
+        r1_0.name=?
+Hibernate: 
+    select
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id 
+    where
+        p1_0.role_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (created_at, department, email, employee_id, failed_login_attempts, full_name, job_title, last_login_at, locked_until, password, phone_number, role_id, status, updated_at, username) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        roles r1_0 
+            on r1_0.id=u1_0.role_id 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        u1_0.id=?
+Hibernate: 
+    update
+        users 
+    set
+        created_at=?,
+        department=?,
+        email=?,
+        employee_id=?,
+        failed_login_attempts=?,
+        full_name=?,
+        job_title=?,
+        last_login_at=?,
+        locked_until=?,
+        password=?,
+        phone_number=?,
+        role_id=?,
+        status=?,
+        updated_at=?,
+        username=? 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        roles r1_0 
+            on r1_0.id=u1_0.role_id 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        u1_0.id=?
+Hibernate: 
+    delete 
+    from
+        users 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        u1_0.role_id,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name 
+    from
+        roles r1_0 
+    where
+        r1_0.name=?
+Hibernate: 
+    select
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id 
+    where
+        p1_0.role_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (created_at, department, email, employee_id, failed_login_attempts, full_name, job_title, last_login_at, locked_until, password, phone_number, role_id, status, updated_at, username) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name 
+    from
+        roles r1_0 
+    where
+        r1_0.name=?
+Hibernate: 
+    select
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id 
+    where
+        p1_0.role_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (created_at, department, email, employee_id, failed_login_attempts, full_name, job_title, last_login_at, locked_until, password, phone_number, role_id, status, updated_at, username) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-13T18:14:29.616Z  WARN 12508 --- [user-management-api] [nio-8080-exec-1] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1062, SQLState: 23000
+2025-12-13T18:14:29.616Z ERROR 12508 --- [user-management-api] [nio-8080-exec-1] o.h.engine.jdbc.spi.SqlExceptionHelper   : Duplicate entry '3newuser@example.com' for key 'users.UK_6dotkott2kjsp8vw4d0m25fb7'
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name 
+    from
+        roles r1_0 
+    where
+        r1_0.name=?
+Hibernate: 
+    select
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id 
+    where
+        p1_0.role_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (created_at, department, email, employee_id, failed_login_attempts, full_name, job_title, last_login_at, locked_until, password, phone_number, role_id, status, updated_at, username) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-13T18:16:26.325Z  WARN 12508 --- [user-management-api] [nio-8080-exec-4] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1062, SQLState: 23000
+2025-12-13T18:16:26.325Z ERROR 12508 --- [user-management-api] [nio-8080-exec-4] o.h.engine.jdbc.spi.SqlExceptionHelper   : Duplicate entry '3newuser@example.com' for key 'users.UK_6dotkott2kjsp8vw4d0m25fb7'
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        roles r1_0 
+            on r1_0.id=u1_0.role_id 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        u1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        roles r1_0 
+            on r1_0.id=u1_0.role_id 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        u1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        roles r1_0 
+            on r1_0.id=u1_0.role_id 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        u1_0.id=?
+2025-12-13T18:17:36.157Z  WARN 12508 --- [user-management-api] [nio-8080-exec-8] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<java.lang.Object> com.fincore.usermgmt.controller.UserController.createUser(com.fincore.usermgmt.dto.UserCreateDTO): [Field error in object 'userCreateDTO' on field 'username': rejected value [6]; codes [Size.userCreateDTO.username,Size.username,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [userCreateDTO.username,username]; arguments []; default message [username],50,3]; default message [size must be between 3 and 50]] ]
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name 
+    from
+        roles r1_0 
+    where
+        r1_0.name=?
+Hibernate: 
+    select
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id 
+    where
+        p1_0.role_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (created_at, department, email, employee_id, failed_login_attempts, full_name, job_title, last_login_at, locked_until, password, phone_number, role_id, status, updated_at, username) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name 
+    from
+        roles r1_0 
+    where
+        r1_0.name=?
+Hibernate: 
+    select
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id 
+    where
+        p1_0.role_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (created_at, department, email, employee_id, failed_login_attempts, full_name, job_title, last_login_at, locked_until, password, phone_number, role_id, status, updated_at, username) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-13T18:17:50.721Z  WARN 12508 --- [user-management-api] [nio-8080-exec-1] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1062, SQLState: 23000
+2025-12-13T18:17:50.721Z ERROR 12508 --- [user-management-api] [nio-8080-exec-1] o.h.engine.jdbc.spi.SqlExceptionHelper   : Duplicate entry 'newuser5@example.com' for key 'users.UK_6dotkott2kjsp8vw4d0m25fb7'
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name 
+    from
+        roles r1_0 
+    where
+        r1_0.name=?
+Hibernate: 
+    select
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id 
+    where
+        p1_0.role_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (created_at, department, email, employee_id, failed_login_attempts, full_name, job_title, last_login_at, locked_until, password, phone_number, role_id, status, updated_at, username) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-13T18:17:59.063Z  WARN 12508 --- [user-management-api] [nio-8080-exec-2] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1062, SQLState: 23000
+2025-12-13T18:17:59.071Z ERROR 12508 --- [user-management-api] [nio-8080-exec-2] o.h.engine.jdbc.spi.SqlExceptionHelper   : Duplicate entry '6skasi' for key 'users.UK_r43af9ap4edm43mmtq01oddj6'
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name 
+    from
+        roles r1_0 
+    where
+        r1_0.name=?
+Hibernate: 
+    select
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id 
+    where
+        p1_0.role_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (created_at, department, email, employee_id, failed_login_attempts, full_name, job_title, last_login_at, locked_until, password, phone_number, role_id, status, updated_at, username) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        u1_0.role_id,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name 
+    from
+        roles r1_0 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        roles r1_0 
+            on r1_0.id=u1_0.role_id 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        u1_0.id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.department,
+        u1_0.email,
+        u1_0.employee_id,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.job_title,
+        u1_0.last_login_at,
+        u1_0.locked_until,
+        u1_0.password,
+        u1_0.phone_number,
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        p1_0.role_id,
+        p1_1.id,
+        p1_1.description,
+        p1_1.module,
+        p1_1.name,
+        u1_0.status,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        roles r1_0 
+            on r1_0.id=u1_0.role_id 
+    left join
+        (role_permissions p1_0 
+    join
+        permissions p1_1 
+            on p1_1.id=p1_0.permission_id) 
+        on r1_0.id=p1_0.role_id 
+    where
+        u1_0.id=?
