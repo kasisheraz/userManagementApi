@@ -18,8 +18,10 @@ FROM eclipse-temurin:21-jre-alpine
 # Set working directory
 WORKDIR /app
 
-# Install curl for health checks (optional)
-RUN apk add --no-cache curl
+# Install curl and cloud-sql-proxy
+RUN apk add --no-cache curl wget && \
+    wget -q https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /cloud_sql_proxy && \
+    chmod +x /cloud_sql_proxy
 
 # Copy JAR from builder
 COPY --from=builder /app/target/user-management-api-*.jar app.jar
@@ -28,6 +30,10 @@ COPY --from=builder /app/target/user-management-api-*.jar app.jar
 RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser && \
     chown -R appuser:appuser /app
+
+# Copy the startup script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 USER appuser
 
@@ -39,9 +45,5 @@ ENV PORT=8080 \
     SPRING_PROFILES_ACTIVE=mysql \
     LOG_LEVEL=INFO
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Use the startup script as entrypoint
+ENTRYPOINT ["/app/start.sh"]

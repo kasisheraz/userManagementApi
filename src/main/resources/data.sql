@@ -21,13 +21,13 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES (3, 1);
 INSERT INTO role_permissions (role_id, permission_id) VALUES (3, 3);
 
 -- Insert default admin user (password: Admin@123456)
-INSERT INTO users (username, password, full_name, email, phone_number, employee_id, department, job_title, status, role_id, failed_login_attempts, created_at, updated_at) 
+INSERT INTO users (username, password, fullName, email, phoneNumber, employeeId, department, jobTitle, status, role_id, failedLoginAttempts, createdAt, updatedAt) 
 VALUES ('admin', '$2a$10$nZhPCqOb6NsCCXmFPjscGeaH83R4HOBY0o8FMJvfxAkyfF22PDC12', 'System Administrator', 'admin@fincore.com', '+1234567890', 'EMP001', 'IT', 'System Admin', 'ACTIVE', 2, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert compliance officer user (password: Compliance@123)
-INSERT INTO users (username, password, full_name, email, phone_number, employee_id, department, job_title, status, role_id, failed_login_attempts, created_at, updated_at) 
+INSERT INTO users (username, password, fullName, email, phoneNumber, employeeId, department, jobTitle, status, role_id, failedLoginAttempts, createdAt, updatedAt) 
 VALUES ('compliance', '$2a$10$1My2JRg0A4A0PGwzalpd2efAY3Evz87X3CQSQ9SrvExqQSj6.E7O.', 'Compliance Officer', 'compliance@fincore.com', '+1234567891', 'EMP002', 'Compliance', 'Compliance Officer', 'ACTIVE', 2, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert operational staff user (password: Staff@123456)
-INSERT INTO users (username, password, full_name, email, phone_number, employee_id, department, job_title, status, role_id, failed_login_attempts, created_at, updated_at) 
+INSERT INTO users (username, password, fullName, email, phoneNumber, employeeId, department, jobTitle, status, role_id, failedLoginAttempts, createdAt, updatedAt) 
 VALUES ('staff', '$2a$10$OHPlw5KVcthAjlsaDwzRmueQMvzxEVfnPt2KcT52cmYciyW6KijdC', 'Operational Staff', 'staff@fincore.com', '+1234567892', 'EMP003', 'Operations', 'Staff Member', 'ACTIVE', 3, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

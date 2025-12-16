@@ -2,9 +2,10 @@ spring:
   application:
     name: user-management-api
   datasource:
-    # Cloud SQL Proxy for MySQL - runs on localhost:3306
+    # Cloud Run Cloud SQL Auth Proxy: automatically handles connection via service account
+    # Cloud Run will intercept localhost:3306 and route to Cloud SQL instance
     url: jdbc:mysql://127.0.0.1:3306/${DB_NAME:my_auth_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&autoReconnect=true
-    username: ${DB_USER:root}
+    username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
@@ -17,10 +18,11 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false  # Disable in production for performance
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
       hibernate:
         format_sql: false
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
     defer-datasource-initialization: true
   sql:
     init:

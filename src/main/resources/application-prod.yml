@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: user-management-api
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+  jpa:
+    defer-datasource-initialization: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
+  h2:
+    console:
+      enabled: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:900000}
+
+security:
+  session-timeout: ${SESSION_TIMEOUT:900}
+  max-login-attempts: ${MAX_LOGIN_ATTEMPTS:5}
+  account-lock-duration: ${ACCOUNT_LOCK_DURATION:1800}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
