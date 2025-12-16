@@ -30,3 +30,11 @@ build/
 
 ### VS Code ###
 .vscode/
+### GitHub Actions ###
+github-actions-key.json
+gcp-*.json
+
+### Environment Files ###
+.env
+.env.local
+*.env.secret
