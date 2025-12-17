@@ -117,12 +117,13 @@ jobs:
             --region=${{ env.REGION }} \
             --platform=managed \
             --allow-unauthenticated \
-            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }} \
-            --memory=512Mi \
+            --memory=1Gi \
             --cpu=1 \
-            --vpc-connector=${{ env.VPC_CONNECTOR }} \
-            --set-env-vars="SPRING_PROFILES_ACTIVE=h2" \
-            --set-secrets="JWT_SECRET=jwt-secret:latest" \
+            --timeout=10m \
+            --max-instances=2 \
+            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DB_NAME=my_auth_db,DB_USER=fincore_app,DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
+            --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
+            --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
             --project=${{ env.PROJECT_ID }} \
             --quiet
             
@@ -172,7 +173,7 @@ jobs:
           echo "Testing login endpoint..."
           LOGIN_RESPONSE=$(curl -s -X POST $SERVICE_URL/api/auth/login \
             -H "Content-Type: application/json" \
-            -d '{"username":"admin","password":"password123"}')
+            -d '{"username":"admin","password":"Admin@123456"}')
           
           if echo $LOGIN_RESPONSE | jq -e '.token' > /dev/null 2>&1; then
             echo "✅ Login endpoint working"
