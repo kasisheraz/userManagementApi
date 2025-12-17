@@ -16,7 +16,7 @@ spring:
       max-lifetime: 1800000
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false  # Disable in production for performance
     database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
