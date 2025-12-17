@@ -136,7 +136,7 @@ jobs:
             --no-cpu-throttling \
             --cpu-boost \
             --vpc-connector=npe-connector \
-            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DB_NAME=my_auth_db,DB_USER=fincore_app,DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DB_NAME=my_auth_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
             --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
             --port=8080 \
             --no-traffic \
