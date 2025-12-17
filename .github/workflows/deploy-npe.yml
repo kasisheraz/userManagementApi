@@ -131,6 +131,8 @@ jobs:
             --cpu=1 \
             --timeout=10m \
             --max-instances=2 \
+            --min-instances=0 \
+            --no-cpu-throttling \
             --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DB_NAME=my_auth_db,DB_USER=fincore_app,DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
             --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
             --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \

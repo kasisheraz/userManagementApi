@@ -18,8 +18,8 @@ FROM eclipse-temurin:21-jre-alpine
 # Set working directory
 WORKDIR /app
 
-# Install curl and cloud-sql-proxy
-RUN apk add --no-cache curl wget && \
+# Install curl, netcat and cloud-sql-proxy
+RUN apk add --no-cache curl wget netcat-openbsd && \
     wget -q https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /cloud_sql_proxy && \
     chmod +x /cloud_sql_proxy
 
