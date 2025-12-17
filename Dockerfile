@@ -18,10 +18,8 @@ FROM eclipse-temurin:21-jre-alpine
 # Set working directory
 WORKDIR /app
 
-# Install curl, netcat, and cloud-sql-proxy
-RUN apk add --no-cache curl wget netcat-openbsd && \
-    wget https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.13.0/cloud-sql-proxy.linux.amd64 -O /usr/local/bin/cloud-sql-proxy && \
-    chmod +x /usr/local/bin/cloud-sql-proxy
+# Install curl only
+RUN apk add --no-cache curl
 
 # Copy JAR from builder
 COPY --from=builder /app/target/user-management-api-*.jar app.jar

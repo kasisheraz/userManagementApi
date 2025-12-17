@@ -2,11 +2,11 @@ spring:
   application:
     name: user-management-api
   main:
-    lazy-initialization: true
+    lazy-initialization: false
     banner-mode: off
   datasource:
-    # Cloud SQL Auth Proxy running in sidecar mode on port 5432
-    url: jdbc:mysql://localhost:5432/${DB_NAME:my_auth_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    # Cloud Run provides Unix socket connection automatically
+    url: jdbc:mysql:///${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUDSQL_INSTANCE}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&user=${DB_USER:fincore_app}&password=${DB_PASSWORD}
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
