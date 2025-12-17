@@ -1,0 +1,40 @@
+runtime: java21
+instance_class: F2
+
+env_variables:
+  SPRING_PROFILES_ACTIVE: "gcp"
+  DB_NAME: "my_auth_db"
+  DB_USER: "fincore_app"
+
+# Cloud SQL connection
+vpc_access_connector:
+  name: projects/project-07a61357-b791-4255-a9e/locations/europe-west2/connectors/npe-connector
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 2
+  target_cpu_utilization: 0.65
+  target_throughput_utilization: 0.65
+
+health_check:
+  enable_health_check: true
+  check_interval_sec: 300
+  timeout_sec: 4
+  unhealthy_threshold: 2
+  healthy_threshold: 2
+
+readiness_check:
+  path: "/actuator/health/readiness"
+  check_interval_sec: 5
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 1
+  app_start_timeout_sec: 300
+
+liveness_check:
+  path: "/actuator/health/liveness"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 1
+  initial_delay_sec: 30

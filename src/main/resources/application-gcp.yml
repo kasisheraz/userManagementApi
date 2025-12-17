@@ -5,8 +5,8 @@ spring:
     lazy-initialization: false
     banner-mode: off
   datasource:
-    # Cloud Run provides Unix socket connection automatically
-    url: jdbc:mysql:///${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUDSQL_INSTANCE}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&user=${DB_USER:fincore_app}&password=${DB_PASSWORD}
+    # Direct public IP connection to Cloud SQL
+    url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME:my_auth_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
