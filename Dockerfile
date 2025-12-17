@@ -18,10 +18,8 @@ FROM eclipse-temurin:21-jre-alpine
 # Set working directory
 WORKDIR /app
 
-# Install curl, netcat and cloud-sql-proxy
-RUN apk add --no-cache curl wget netcat-openbsd && \
-    wget -q https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /cloud_sql_proxy && \
-    chmod +x /cloud_sql_proxy
+# Install curl for debugging
+RUN apk add --no-cache curl
 
 # Copy JAR from builder
 COPY --from=builder /app/target/user-management-api-*.jar app.jar
@@ -30,10 +28,6 @@ COPY --from=builder /app/target/user-management-api-*.jar app.jar
 RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser && \
     chown -R appuser:appuser /app
-
-# Copy the startup script
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
 
 USER appuser
 
@@ -45,5 +39,5 @@ ENV PORT=8080 \
     SPRING_PROFILES_ACTIVE=mysql \
     LOG_LEVEL=INFO
 
-# Use the startup script as entrypoint
-ENTRYPOINT ["/app/start.sh"]
+# Run the application directly
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

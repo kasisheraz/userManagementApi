@@ -3,8 +3,8 @@ spring:
     name: user-management-api
   datasource:
     # Cloud Run Cloud SQL Auth Proxy: automatically handles connection via service account
-    # Cloud Run will intercept localhost:3306 and route to Cloud SQL instance
-    url: jdbc:mysql://127.0.0.1:3306/${DB_NAME:my_auth_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&autoReconnect=true
+    # Using Unix socket via Google Cloud SQL Socket Factory
+    url: jdbc:mysql:///${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUDSQL_INSTANCE}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false&serverTimezone=UTC
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
