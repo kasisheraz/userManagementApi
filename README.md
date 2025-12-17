@@ -3,6 +3,11 @@
 ## Overview
 Spring Boot 3.2 REST API for user authentication and management with JWT-based security.
 
+## 🚀 Deployment Status
+- **Production (NPE)**: https://fincore-npe-api-994490239798.europe-west2.run.app
+- **Database**: MySQL 8.0 on Google Cloud SQL
+- **CI/CD**: GitHub Actions (Automated Deployment)
+
 ## Features
 - JWT-based authentication
 - Role-Based Access Control (RBAC)
@@ -10,7 +15,7 @@ Spring Boot 3.2 REST API for user authentication and management with JWT-based s
 - Account locking after 5 failed login attempts
 - Password encryption with BCrypt
 - Session timeout (15 minutes)
-- H2 in-memory database
+- MySQL Cloud SQL (Production) / H2 in-memory (Development)
 
 ## Requirements
 - Java 21
