@@ -33,12 +33,12 @@ spec:
           valueFrom:
             secretKeyRef:
               name: DB_PASSWORD
-              key: latest
+              key: '2'
         - name: CLOUDSQL_INSTANCE
           valueFrom:
             secretKeyRef:
               name: CLOUDSQL_INSTANCE
-              key: latest
+              key: '2'
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
