@@ -21,8 +21,8 @@ spring:
       validation-timeout: 3000
   jpa:
     hibernate:
-      ddl-auto: update  # Let Hibernate create/update tables
-    show-sql: true  # Enable to debug connection issues
+      ddl-auto: none  # Tables already exist, no DDL needed
+    show-sql: true  # Enable to debug issues
     database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
       hibernate:
