@@ -119,24 +119,10 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           
-      - name: Update secrets in Secret Manager
+      - name: Prepare service.yaml with secrets
         run: |
-          # Update DB_PASSWORD secret
-          echo -n "${{ secrets.DB_PASSWORD }}" | gcloud secrets versions add DB_PASSWORD --data-file=- --project=${{ env.PROJECT_ID }}
-          
-          # Update CLOUDSQL_INSTANCE secret
-          echo -n "${{ secrets.CLOUDSQL_INSTANCE }}" | gcloud secrets versions add CLOUDSQL_INSTANCE --data-file=- --project=${{ env.PROJECT_ID }}
-          
-          # Grant Cloud Run service account access to secrets
-          gcloud secrets add-iam-policy-binding DB_PASSWORD \
-            --member="serviceAccount:${{ secrets.GCP_SERVICE_ACCOUNT }}" \
-            --role="roles/secretmanager.secretAccessor" \
-            --project=${{ env.PROJECT_ID }}
-            
-          gcloud secrets add-iam-policy-binding CLOUDSQL_INSTANCE \
-            --member="serviceAccount:${{ secrets.GCP_SERVICE_ACCOUNT }}" \
-            --role="roles/secretmanager.secretAccessor" \
-            --project=${{ env.PROJECT_ID }}
+          sed -i 's|PLACEHOLDER_DB_PASSWORD|${{ secrets.DB_PASSWORD }}|g' service.yaml
+          sed -i 's|PLACEHOLDER_CLOUDSQL_INSTANCE|${{ secrets.CLOUDSQL_INSTANCE }}|g' service.yaml
           
       - name: Deploy to Cloud Run
         id: deploy

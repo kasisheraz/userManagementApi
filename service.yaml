@@ -30,15 +30,9 @@ spec:
         - name: DB_USER
           value: fincore_app
         - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: DB_PASSWORD
-              key: '2'
+          value: PLACEHOLDER_DB_PASSWORD
         - name: CLOUDSQL_INSTANCE
-          valueFrom:
-            secretKeyRef:
-              name: CLOUDSQL_INSTANCE
-              key: '2'
+          value: PLACEHOLDER_CLOUDSQL_INSTANCE
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
