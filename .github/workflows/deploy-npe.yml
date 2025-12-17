@@ -119,31 +119,6 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           
-      - name: Update service.yaml with secrets
-        run: |
-          # Create secrets if they don't exist
-          gcloud secrets describe DB_PASSWORD --project=${{ env.PROJECT_ID }} || \
-            echo -n "${{ secrets.DB_PASSWORD }}" | gcloud secrets create DB_PASSWORD --data-file=- --project=${{ env.PROJECT_ID }}
-          
-          gcloud secrets describe CLOUDSQL_INSTANCE --project=${{ env.PROJECT_ID }} || \
-            echo -n "${{ secrets.CLOUDSQL_INSTANCE }}" | gcloud secrets create CLOUDSQL_INSTANCE --data-file=- --project=${{ env.PROJECT_ID }}
-          
-          # Grant service account access to secrets
-          gcloud secrets add-iam-policy-binding DB_PASSWORD \
-            --member="serviceAccount:${{ secrets.GCP_SERVICE_ACCOUNT }}" \
-            --role="roles/secretmanager.secretAccessor" \
-            --project=${{ env.PROJECT_ID }} || true
-            
-          gcloud secrets add-iam-policy-binding CLOUDSQL_INSTANCE \
-            --member="serviceAccount:${{ secrets.GCP_SERVICE_ACCOUNT }}" \
-            --role="roles/secretmanager.secretAccessor" \
-            --project=${{ env.PROJECT_ID }} || true
-            
-          gcloud secrets add-iam-policy-binding fincore-npe-jwt-secret \
-            --member="serviceAccount:${{ secrets.GCP_SERVICE_ACCOUNT }}" \
-            --role="roles/secretmanager.secretAccessor" \
-            --project=${{ env.PROJECT_ID }} || true
-          
       - name: Deploy to Cloud Run
         id: deploy
         run: |
