@@ -5,9 +5,9 @@ spring:
     lazy-initialization: true
     banner-mode: off
   datasource:
-    # Cloud Run Cloud SQL Auth Proxy: automatically handles connection via service account
-    # Using Unix socket via Google Cloud SQL Socket Factory
-    url: jdbc:mysql:///${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUDSQL_INSTANCE}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false&serverTimezone=UTC
+    # Cloud Run Cloud SQL connection using Google Cloud SQL Socket Factory
+    # Format: jdbc:mysql:///<database>?cloudSqlInstance=<project:region:instance>&socketFactory=...
+    url: jdbc:mysql:///${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUDSQL_INSTANCE}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&enabledTLSProtocols=TLSv1.2
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
