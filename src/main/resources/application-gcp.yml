@@ -5,9 +5,8 @@ spring:
     lazy-initialization: true
     banner-mode: off
   datasource:
-    # Cloud Run will automatically proxy connections to Cloud SQL via localhost
-    # The --add-cloudsql-instances flag in deployment handles the connection
-    url: jdbc:mysql://localhost:3306/${DB_NAME:my_auth_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    # Cloud SQL Auth Proxy running in sidecar mode on port 5432
+    url: jdbc:mysql://localhost:5432/${DB_NAME:my_auth_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
