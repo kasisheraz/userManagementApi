@@ -119,22 +119,45 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           
-      - name: Prepare service.yaml with secrets
-        run: |
-          # Replace placeholders with actual secret values
-          cat service.yaml | \
-            sed "s|PLACEHOLDER_DB_PASSWORD|${{ secrets.DB_PASSWORD }}|g" | \
-            sed "s|PLACEHOLDER_CLOUDSQL_INSTANCE|${{ secrets.CLOUDSQL_INSTANCE }}|g" > service.yaml.tmp
-          mv service.yaml.tmp service.yaml
-          
-          # Debug: Show the prepared service.yaml (without sensitive data)
-          echo "=== Prepared service.yaml (startup probe section) ==="
-          grep -A 10 "startupProbe:" service.yaml || echo "No startupProbe found"
-          
       - name: Deploy to Cloud Run
         id: deploy
         run: |
-          gcloud run services replace service.yaml \
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image=gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }} \
+            --memory=1Gi \
+            --cpu=1 \
+            --timeout=600 \
+            --max-instances=2 \
+            --min-instances=0 \
+            --no-cpu-throttling \
+            --cpu-boost \
+            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DB_NAME=my_auth_db,DB_USER=fincore_app,DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
+            --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
+            --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
+            --port=8080 \
+            --no-traffic \
+            --project=${{ env.PROJECT_ID }}
+            
+      - name: Update traffic to new revision
+        run: |
+          # Wait a bit for the revision to be ready
+          sleep 30
+          
+          # Get the latest revision
+          LATEST_REVISION=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --format='value(status.latestCreatedRevisionName)')
+          
+          echo "Latest revision: $LATEST_REVISION"
+          
+          # Gradually shift traffic to new revision
+          gcloud run services update-traffic ${{ env.SERVICE_NAME }} \
+            --to-latest \
             --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }}
             
