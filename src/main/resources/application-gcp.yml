@@ -2,7 +2,7 @@ spring:
   application:
     name: user-management-api
   main:
-    lazy-initialization: false
+    lazy-initialization: true
     banner-mode: off
   datasource:
     # Cloud Run Cloud SQL Auth Proxy: automatically handles connection via service account
@@ -13,12 +13,13 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 5
-      minimum-idle: 1
+      minimum-idle: 0
       connection-timeout: 20000
       idle-timeout: 600000
       max-lifetime: 1800000
-      initialization-fail-timeout: 10000
+      initialization-fail-timeout: 1
       leak-detection-threshold: 60000
+      validation-timeout: 3000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -54,7 +55,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health
+      base-path: /actuator
   endpoint:
     health:
       show-details: when-authorized

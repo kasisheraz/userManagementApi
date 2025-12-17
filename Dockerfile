@@ -37,7 +37,8 @@ EXPOSE 8080
 # Set environment variables for Cloud Run
 ENV PORT=8080 \
     SPRING_PROFILES_ACTIVE=mysql \
-    LOG_LEVEL=INFO
+    LOG_LEVEL=INFO \
+    JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseStringDeduplication -Xss256k -XX:ReservedCodeCacheSize=64m"
 
-# Run the application directly
+# Run the application directly with optimized flags
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
