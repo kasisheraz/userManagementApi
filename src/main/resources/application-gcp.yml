@@ -1,6 +1,9 @@
 spring:
   application:
     name: user-management-api
+  main:
+    lazy-initialization: false
+    banner-mode: off
   datasource:
     # Cloud Run Cloud SQL Auth Proxy: automatically handles connection via service account
     # Using Unix socket via Google Cloud SQL Socket Factory
@@ -11,9 +14,11 @@ spring:
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
-      connection-timeout: 30000
-      idle-timeout: 900000
+      connection-timeout: 20000
+      idle-timeout: 600000
       max-lifetime: 1800000
+      initialization-fail-timeout: 10000
+      leak-detection-threshold: 60000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -23,7 +28,10 @@ spring:
       hibernate:
         format_sql: false
         dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: UTC
     defer-datasource-initialization: true
+    open-in-view: false
   sql:
     init:
       mode: never  # Data already exists in Cloud SQL, no need to re-initialize
@@ -68,7 +76,9 @@ security:
 logging:
   level:
     root: ${LOG_LEVEL:INFO}
-    com.fincore.usermgmt: DEBUG
+    com.fincore.usermgmt: INFO
+    com.google.cloud.sql: INFO
+    org.hibernate.SQL: WARN
   pattern:
     console: "%d{ISO8601} - %msg%n"
     file: "%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n"

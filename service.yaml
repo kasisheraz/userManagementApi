@@ -44,18 +44,26 @@ spec:
             memory: 1Gi
         startupProbe:
           httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 120
-          timeoutSeconds: 10
-          periodSeconds: 15
-          successThreshold: 1
-          failureThreshold: 40
-        livenessProbe:
-          httpGet:
-            path: /actuator/health
+            path: /actuator/health/liveness
             port: 8080
           initialDelaySeconds: 30
           timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 18
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 0
+          timeoutSeconds: 5
           periodSeconds: 30
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 0
+          timeoutSeconds: 5
+          periodSeconds: 10
           failureThreshold: 3
