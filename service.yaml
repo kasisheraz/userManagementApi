@@ -1,0 +1,66 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: fincore-npe-api
+  labels:
+    cloud.googleapis.com/location: europe-west2
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '2'
+        autoscaling.knative.dev/minScale: '0'
+        run.googleapis.com/cpu-throttling: 'false'
+        run.googleapis.com/startup-cpu-boost: 'true'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 600
+      serviceAccountName: fincore-npe-cloudrun@project-07a61357-b791-4255-a9e.iam.gserviceaccount.com
+      containers:
+      - image: gcr.io/project-07a61357-b791-4255-a9e/fincore-api:latest
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: gcp
+        - name: DB_NAME
+          value: my_auth_db
+        - name: DB_USER
+          value: fincore_app
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: DB_PASSWORD
+              key: latest
+        - name: CLOUDSQL_INSTANCE
+          valueFrom:
+            secretKeyRef:
+              name: CLOUDSQL_INSTANCE
+              key: latest
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: fincore-npe-jwt-secret
+              key: 1
+        resources:
+          limits:
+            cpu: '1'
+            memory: 1Gi
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 0
+          timeoutSeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 30
+          failureThreshold: 3

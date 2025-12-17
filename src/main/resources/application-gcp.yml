@@ -26,7 +26,7 @@ spring:
     defer-datasource-initialization: true
   sql:
     init:
-      mode: always
+      mode: never  # Data already exists in Cloud SQL, no need to re-initialize
       data-locations: classpath:data.sql
 
 server:
