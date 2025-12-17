@@ -12,6 +12,7 @@ spec:
         autoscaling.knative.dev/minScale: '0'
         run.googleapis.com/cpu-throttling: 'false'
         run.googleapis.com/startup-cpu-boost: 'true'
+        run.googleapis.com/cloudsql-instances: project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db
     spec:
       containerConcurrency: 80
       timeoutSeconds: 600
@@ -42,7 +43,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: fincore-npe-jwt-secret
-              key: 1
+              key: '1'
         resources:
           limits:
             cpu: '1'
