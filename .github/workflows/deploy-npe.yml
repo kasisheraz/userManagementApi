@@ -2,9 +2,9 @@ name: Build & Deploy to NPE
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, public-ip-connection ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, public-ip-connection ]
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -135,7 +135,6 @@ jobs:
             --min-instances=0 \
             --no-cpu-throttling \
             --cpu-boost \
-            --vpc-connector=npe-connector \
             --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DB_NAME=my_auth_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
             --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
             --port=8080 \

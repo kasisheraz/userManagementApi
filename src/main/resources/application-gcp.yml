@@ -5,8 +5,8 @@ spring:
     lazy-initialization: false
     banner-mode: off
   datasource:
-    # Private IP connection via VPC connector
-    url: jdbc:mysql://10.140.0.3:3306/${DB_NAME:my_auth_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000
+    # Direct public IP connection to Cloud SQL
+    url: jdbc:mysql://34.147.230.142:3306/${DB_NAME:my_auth_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
