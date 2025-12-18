@@ -119,6 +119,17 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           
+      - name: Fix Cloud SQL Permissions for Built-in Integration
+        run: |
+          echo "Ensuring fincore_app user has proper permissions..."
+          # Reset password to ensure user exists
+          gcloud sql users set-password fincore_app \
+            --instance=fincore-npe-db \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --password=${{ secrets.DB_PASSWORD }} \
+            --quiet
+          echo "✅ User password reset completed"
+          
       - name: Deploy to Cloud Run
         id: deploy
         run: |
@@ -135,7 +146,7 @@ jobs:
             --min-instances=0 \
             --no-cpu-throttling \
             --cpu-boost \
-            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DB_NAME=my_auth_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp-builtin,DB_NAME=my_auth_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUD_SQL_INSTANCE }}" \
             --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
             --port=8080 \
             --no-traffic \

@@ -24,7 +24,7 @@ spring:
     defer-datasource-initialization: true
   sql:
     init:
-      mode: always
+      mode: never  # Data already exists in database
       data-locations: classpath:data.sql
 
 jwt:
