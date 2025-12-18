@@ -119,17 +119,6 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           
-      - name: Fix Cloud SQL Permissions for Built-in Integration
-        run: |
-          echo "Ensuring fincore_app user has proper permissions..."
-          # Reset password to ensure user exists
-          gcloud sql users set-password fincore_app \
-            --instance=fincore-npe-db \
-            --project=${{ secrets.GCP_PROJECT_ID }} \
-            --password=${{ secrets.DB_PASSWORD }} \
-            --quiet
-          echo "✅ User password reset completed"
-          
       - name: Deploy to Cloud Run
         id: deploy
         run: |
