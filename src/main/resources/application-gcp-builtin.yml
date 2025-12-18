@@ -10,8 +10,8 @@ spring:
   datasource:
     # Built-in Cloud SQL Connector approach
     url: jdbc:mysql://google/${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000
-    username: ${DB_USER:fincore_app}
-    password: ${DB_PASSWORD:}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:TempRoot2024!}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 5
