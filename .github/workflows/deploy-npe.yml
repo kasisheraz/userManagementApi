@@ -139,10 +139,6 @@ jobs:
             --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
             --port=8080 \
             --no-traffic \
-            --startup-probe-initial-delay=120 \
-            --startup-probe-timeout=30 \
-            --startup-probe-failure-threshold=20 \
-            --startup-probe-period=60 \
             --project=${{ env.PROJECT_ID }}
             
       - name: Update traffic to new revision
