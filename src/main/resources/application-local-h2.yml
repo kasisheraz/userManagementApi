@@ -1,0 +1,72 @@
+# Local Development Configuration with H2 Database
+# Used for: Local development and testing
+
+spring:
+  application:
+    name: user-management-api
+  datasource:
+    url: jdbc:h2:mem:fincore_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Recreate schema on startup
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# JWT Configuration - Development
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 3600000  # 1 hour for development
+
+# Security Configuration - Development
+security:
+  session-timeout: 3600  # 1 hour
+  max-login-attempts: 10
+  account-lock-duration: 300  # 5 minutes
+
+# Monitoring Configuration - Development
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,beans,env,configprops
+  endpoint:
+    health:
+      show-details: always
+
+# Logging Configuration - Development
+logging:
+  level:
+    root: INFO
+    com.fincore.usermgmt: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -135,7 +135,7 @@ jobs:
             --min-instances=0 \
             --no-cpu-throttling \
             --cpu-boost \
-            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp-builtin,DB_NAME=my_auth_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
+            --set-env-vars="SPRING_PROFILES_ACTIVE=npe,DB_NAME=my_auth_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
             --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
             --port=8080 \
             --no-traffic \

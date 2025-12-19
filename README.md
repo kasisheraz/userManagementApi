@@ -1,12 +1,20 @@
-# User Management API - FinCore Platform
+# User Management API
 
-## Overview
-Spring Boot 3.2 REST API for user authentication and management with JWT-based security.
+A Spring Boot REST API for user management with role-based authentication and authorization.
+
+## 🏗️ Architecture
+
+- **Backend**: Spring Boot 3.2.0 with Java 21
+- **Database**: Cloud SQL MySQL 8.0 (GCP) / H2 (Local Development)  
+- **Authentication**: JWT-based with role-based access control
+- **Deployment**: Cloud Run (GCP) with built-in Cloud SQL connector
+- **Infrastructure**: Managed via [fincore_Iasc](https://github.com/kasisheraz/fincore_Iasc) Terraform repository
 
 ## 🚀 Deployment Status
-- **Production (NPE)**: https://fincore-npe-api-994490239798.europe-west2.run.app
-- **Database**: MySQL 8.0 on Google Cloud SQL
+- **NPE Environment**: https://fincore-npe-api-lfd6ooarra-nw.a.run.app
+- **Database**: Cloud SQL MySQL 8.0 via built-in connector  
 - **CI/CD**: GitHub Actions (Automated Deployment)
+- **Profile**: `npe`
 
 ## Features
 - JWT-based authentication

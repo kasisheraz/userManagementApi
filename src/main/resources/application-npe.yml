@@ -1,0 +1,80 @@
+# NPE Environment Configuration
+# Used for: Non-Production Environment on GCP with built-in Cloud SQL connector
+# Service: https://fincore-npe-api-lfd6ooarra-nw.a.run.app
+
+spring:
+  application:
+    name: user-management-api
+  datasource:
+    # Built-in Cloud SQL Connector - Direct connection via Socket Factory
+    url: jdbc:mysql://google/${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000
+    username: ${DB_USER:fincore_app}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      initialization-fail-timeout: 1
+      leak-detection-threshold: 60000
+      validation-timeout: 5000
+  jpa:
+    hibernate:
+      ddl-auto: none  # Tables already exist
+    show-sql: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: UTC
+    defer-datasource-initialization: true
+    open-in-view: false
+  sql:
+    init:
+      mode: never  # No data initialization in NPE
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    min-response-size: 1024
+  tomcat:
+    max-connections: 200
+    threads:
+      max: 10
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:}
+  expiration: 900000  # 15 minutes
+
+# Security Configuration
+security:
+  session-timeout: 900
+  max-login-attempts: 5
+  account-lock-duration: 1800
+
+# Monitoring Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.fincore.usermgmt: INFO
+    com.google.cloud.sql: DEBUG  # Enable for Cloud SQL connector debugging
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,0 +1,97 @@
+# Production Environment Configuration
+# Used for: Production environment on GCP with built-in Cloud SQL connector
+# High availability, security, and performance optimized
+
+spring:
+  application:
+    name: user-management-api
+  datasource:
+    # Built-in Cloud SQL Connector for Production
+    url: jdbc:mysql://google/${DB_NAME}?cloudSqlInstance=${CLOUD_SQL_INSTANCE}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=true&requireSSL=true&serverTimezone=UTC&connectTimeout=10000&autoReconnect=true
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      initialization-fail-timeout: 1
+      leak-detection-threshold: 60000
+      validation-timeout: 5000
+      pool-name: UserMgmtPool-Prod
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Only validate schema in production
+    show-sql: false  # Never show SQL in production
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: UTC
+          batch_size: 20
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+        enable_lazy_load_no_trans: false
+    defer-datasource-initialization: false
+    open-in-view: false
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    min-response-size: 1024
+  tomcat:
+    max-connections: 500
+    threads:
+      max: 50
+      min-spare: 10
+    accept-count: 100
+    max-http-header-size: 8192
+
+# JWT Configuration - Production values
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 1800000  # 30 minutes for production
+
+# Security Configuration - Production hardened
+security:
+  session-timeout: 1800  # 30 minutes
+  max-login-attempts: 3
+  account-lock-duration: 3600  # 1 hour
+
+# Monitoring Configuration - Production
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never  # Hide details in production
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging Configuration - Production
+logging:
+  level:
+    root: WARN
+    com.fincore.usermgmt: INFO
+    com.google.cloud.sql: WARN  # Reduce Cloud SQL logging in production
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
+  file:
+    name: /var/log/app/user-management-api.log
+    max-size: 10MB
+    max-history: 30
