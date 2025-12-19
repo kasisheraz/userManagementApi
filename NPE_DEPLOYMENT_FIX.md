@@ -13,10 +13,11 @@ Local testing confirms:
 - Only difference between local and NPE is the GitHub secret value
 
 ## Deployment Status
-**ISSUE**: Deployment still showing `root` user in logs after GitHub secret update
-- Logs show: `Access denied for user 'root'@'cloudsqlproxy'`
-- **Action Required**: Verify GitHub secret `DB_USER` is properly set to `fincore_app`
-- **Force Deployment**: Trigger new deployment to ensure updated secrets are used
+**LATEST UPDATE**: GitHub secret updated to `fincore_admin` user
+- **Previous**: Logs showed `Access denied for user 'fincore_app'` (permissions issue)
+- **Current**: Updated secret to `fincore_admin` (admin user with full permissions)
+- **Issue**: Deployment revision 00005-r6f still shows `fincore_app` in logs
+- **Action Required**: Force new deployment to pick up `fincore_admin` secret
 
 ## Deployment Instructions
 1. **VERIFY**: GitHub secret `DB_USER` = `fincore_app` (not `root`)
