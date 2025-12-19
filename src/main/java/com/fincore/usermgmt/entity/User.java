@@ -18,15 +18,21 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(name = "full_name", nullable = false)
     private String fullName;
 
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(name = "phone_number")
     private String phoneNumber;
+    
+    @Column(name = "employee_id")
     private String employeeId;
+    
     private String department;
+    
+    @Column(name = "job_title")
     private String jobTitle;
 
     @Enumerated(EnumType.STRING)
@@ -36,10 +42,19 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
+    @Column(name = "failed_login_attempts")
     private Integer failedLoginAttempts = 0;
+    
+    @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
+    
+    @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
+    
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+    
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist

@@ -22,7 +22,10 @@ spring:
       validation-timeout: 5000
   jpa:
     hibernate:
-      ddl-auto: none  # Tables already exist
+      ddl-auto: validate  # Validate schema exists, don't create/modify
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
     show-sql: false
     database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
@@ -35,7 +38,7 @@ spring:
     open-in-view: false
   sql:
     init:
-      mode: never  # No data initialization in NPE
+      mode: never  # No data initialization in NPE - tables should already exist
 
 server:
   port: ${PORT:8080}
