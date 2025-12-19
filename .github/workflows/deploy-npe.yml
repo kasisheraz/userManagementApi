@@ -130,11 +130,10 @@ jobs:
             --service-account=${{ secrets.GCP_SERVICE_ACCOUNT }} \
             --memory=1Gi \
             --cpu=1 \
-            --timeout=600 \
-            --max-instances=2 \
+            --timeout=900 \
+            --cpu-throttling \
+            --max-instances=3 \
             --min-instances=0 \
-            --no-cpu-throttling \
-            --cpu-boost \
             --set-env-vars="SPRING_PROFILES_ACTIVE=npe,DB_NAME=my_auth_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
             --set-secrets="JWT_SECRET=fincore-npe-jwt-secret:1" \
             --port=8080 \

@@ -7,22 +7,22 @@ spring:
     name: user-management-api
   datasource:
     # Built-in Cloud SQL Connector - Direct connection via Socket Factory
-    url: jdbc:mysql://google/${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000
+    url: jdbc:mysql://google/${DB_NAME:my_auth_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=30000&socketTimeout=60000
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 5
+      maximum-pool-size: 3
       minimum-idle: 1
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      initialization-fail-timeout: 1
+      connection-timeout: 60000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      initialization-fail-timeout: -1
       leak-detection-threshold: 60000
-      validation-timeout: 5000
+      validation-timeout: 10000
   jpa:
     hibernate:
-      ddl-auto: validate  # Validate schema exists, don't create/modify
+      ddl-auto: update  # Create/update schema as needed
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
@@ -38,7 +38,9 @@ spring:
     open-in-view: false
   sql:
     init:
-      mode: never  # No data initialization in NPE - tables should already exist
+      mode: always  # Initialize data if tables are created
+      data-locations: classpath:data.sql
+      continue-on-error: true
 
 server:
   port: ${PORT:8080}
