@@ -134,6 +134,7 @@ jobs:
             --cpu-throttling \
             --max-instances=3 \
             --min-instances=0 \
+            --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
             --set-env-vars="SPRING_PROFILES_ACTIVE=npe,DB_NAME=my_auth_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
             --port=8080 \
             --project=${{ env.PROJECT_ID }}
