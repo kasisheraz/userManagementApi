@@ -1,363 +1,532 @@
-# Money Exchange Payment Tracker (MEPT) System - Architecture Documentation
+# FinCore User Management API - Architecture Documentation
 
 ## 1. Executive Summary
 
-FinCore (Financial Core platform) is a serverless, cloud-native financial platform designed to provide secure payment processing, compliance management, and administrative oversight. Built on AWS serverless technologies, the system delivers high availability, automatic scaling, and cost efficiency while maintaining regulatory compliance and security standards.
+The FinCore User Management API is a cloud-native microservice built on Google Cloud Platform (GCP), providing secure user authentication, role-based access control, and user management capabilities. The system leverages modern containerization, managed database services, and automated CI/CD pipelines to deliver high availability, scalability, and security.
 
 ## 2. System Architecture Overview
 
 ### 2.1 Architecture Principles
-- **Serverless-First**: Zero infrastructure management using AWS managed services
-- **Event-Driven**: Asynchronous processing with EventBridge and Step Functions
-- **Microservices**: Modular, independently deployable services
-- **Security by Design**: End-to-end encryption, RBAC, and audit trails
-- **Compliance-Ready**: Built-in AML/KYC integration and regulatory reporting
+- **Cloud-Native**: Built for GCP using Cloud Run and Cloud SQL
+- **Containerized**: Docker-based deployment for consistency and portability
+- **Security-First**: JWT authentication, RBAC, encrypted connections
+- **Infrastructure as Code**: Terraform-managed infrastructure via separate IaC repository
+- **Automated CI/CD**: GitHub Actions for continuous deployment
 
 ### 2.2 High-Level Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐
-│   Client Portal │    │   Admin Portal  │
-│   (React/Next)  │    │   (React/Next)  │
-└─────────┬───────┘    └─────────┬───────┘
-          │                      │
-          └──────────┬───────────┘
-                     │
-┌────────────────────▼────────────────────┐
-│           API Gateway + Cognito         │
-└────────────────────┬────────────────────┘
-                     │
-┌────────────────────▼────────────────────┐
-│         Lambda Functions Layer          │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
-│  │ Client  │ │  Admin  │ │ Support │   │
-│  │Services │ │Services │ │Services │   │
-│  └─────────┘ └─────────┘ └─────────┘   │
-└────────────────────┬────────────────────┘
-                     │
-┌────────────────────▼────────────────────┐
-│           Event Processing              │
-│  ┌─────────────┐ ┌─────────────────┐   │
-│  │ EventBridge │ │ Step Functions  │   │
-│  └─────────────┘ └─────────────────┘   │
-└────────────────────┬────────────────────┘
-                     │
-┌────────────────────▼────────────────────┐
-│            Data Layer                   │
-│  ┌─────────┐ ┌─────┐ ┌──────────────┐  │
-│  │MariaDB  │ │ S3  │ │ External APIs│  │
-│  └─────────┘ └─────┘ └──────────────┘  │
+┌─────────────────────────────────────────┐
+│         Client Applications             │
+│  (Web, Mobile, API Consumers)           │
+└─────────────────┬───────────────────────┘
+                  │ HTTPS
+                  │
+┌─────────────────▼───────────────────────┐
+│         Cloud Run Service               │
+│    (fincore-npe-api)                    │
+│  ┌────────────────────────────────┐     │
+│  │  Spring Boot 3.2 + Java 21     │     │
+│  │  - JWT Authentication          │     │
+│  │  - RBAC Authorization          │     │
+│  │  - User Management APIs        │     │
+│  │  - Health Checks               │     │
+│  └────────────────────────────────┘     │
+└─────────────────┬───────────────────────┘
+                  │ Built-in Socket Factory
+                  │
+┌─────────────────▼───────────────────────┐
+│        Cloud SQL MySQL 8.0              │
+│    (fincore-npe-db)                     │
+│  ┌────────────────────────────────┐     │
+│  │  Database: my_auth_db          │     │
+│  │  User: fincore_app             │     │
+│  │  - users table                 │     │
+│  │  - roles table                 │     │
+│  │  - permissions table           │     │
+│  │  - role_permissions table      │     │
+│  └────────────────────────────────┘     │
+└─────────────────────────────────────────┘
+
+┌─────────────────────────────────────────┐
+│          CI/CD Pipeline                 │
+│        (GitHub Actions)                 │
+│  ┌────────────────────────────────┐     │
+│  │  1. Build & Test               │     │
+│  │  2. Build Docker Image         │     │
+│  │  3. Push to GCR                │     │
+│  │  4. Deploy to Cloud Run        │     │
+│  │  5. Health Check & Smoke Tests │     │
+│  └────────────────────────────────┘     │
 └─────────────────────────────────────────┘
 ```
 
 ## 3. Core Components
 
-### 3.1 Presentation Layer
+### 3.1 Application Layer (Cloud Run)
 
-#### Client Portal
-- **Technology**: React 17+ hosted on GCP VM
-- **Features**:
-  - Beneficiary management
-  - Cash collection requests
-  - Currency exchange
-  - Over-the-counter services
-  - Transaction history
-- **Authentication**: AWS Cognito with MFA
+#### Service Configuration
+- **Service Name**: `fincore-npe-api`
+- **Region**: `europe-west2`
+- **Platform**: Cloud Run (fully managed)
+- **Container**: Docker image hosted in Google Container Registry (GCR)
+- **Resources**:
+  - Memory: 1Gi
+  - CPU: 1 vCPU
+  - Timeout: 900s (15 minutes)
+  - CPU Throttling: Enabled
+  - Autoscaling: 0-3 instances
 
-#### Admin Portal
-- **Technology**: React 17+ hosted on AWS Amplify
-- **Features**:
-  - Transaction monitoring and management
-  - Customer account oversight
-  - Compliance dashboard
-  - Reporting and analytics
-  - System administration
-- **Authentication**: AWS Cognito with RBAC
+#### Application Stack
+- **Framework**: Spring Boot 3.2.0
+- **Java Version**: 21 (Temurin distribution)
+- **Build Tool**: Maven 3.9+
+- **Container Base**: Eclipse Temurin JRE 21-alpine
 
-### 3.2 API Layer
+#### Key Features
+- JWT-based authentication with configurable expiration
+- Role-Based Access Control (RBAC) with 4 predefined roles
+- Account lockout after 5 failed login attempts
+- BCrypt password encryption
+- Session timeout management
+- RESTful API design
+- Health check endpoints for monitoring
 
-#### API Gateway Configuration
+### 3.2 Database Layer (Cloud SQL)
+
+#### Database Configuration
 ```yaml
-API Gateway:
-  - REST APIs for synchronous operations
-  - WebSocket APIs for real-time updates
-  - Request validation and throttling
-  - CORS configuration
-  - API key management
-  - Custom authorizers with Cognito
+Cloud SQL Instance:
+  Name: fincore-npe-db
+  Type: MySQL 8.0
+  Region: europe-west2
+  Connection: Built-in Cloud SQL Connector (Socket Factory)
+  Private Network: fincore-npe-vpc
+  Public IP: Enabled (with authorized networks)
+  
+Database:
+  Name: my_auth_db
+  User: fincore_app
+  Connection Method: Built-in Socket Factory
+  SSL: Enabled
+  
+Connection String:
+  jdbc:mysql://google/my_auth_db?cloudSqlInstance=<INSTANCE>&socketFactory=com.google.cloud.sql.mysql.SocketFactory
 ```
 
-### 3.3 Business Logic Layer
-
-#### Lambda Functions Architecture
-
-**Client Services**
-- `beneficiary-service`: Manage beneficiary CRUD operations (Micronaut)
-- `collection-service`: Handle cash collection requests (Micronaut)
-- `exchange-service`: Process currency exchange transactions (Micronaut)
-- `otc-service`: Over-the-counter transaction processing (Micronaut)
-
-**Admin Services**
-- `transaction-monitor`: Real-time transaction oversight (Micronaut)
-- `account-management`: Customer account administration (Micronaut)
-- `compliance-service`: AML/KYC processing and reporting (Micronaut)
-- `reporting-service`: Generate business reports (Micronaut)
-
-**Support Services**
-- `notification-service`: Email/SMS notifications (Micronaut)
-- `audit-service`: Comprehensive audit logging (Micronaut)
-- `integration-service`: External system connectivity (Micronaut)
-
-### 3.4 Event Processing
-
-#### EventBridge Rules
-```yaml
-Event Rules:
-  - transaction-created: Trigger compliance checks
-  - payment-initiated: Start payment workflow
-  - kyc-required: Initiate customer verification
-  - compliance-alert: Notify administrators
-  - account-updated: Sync customer data
-```
-
-#### Step Functions Workflows
-- **Payment Processing Workflow**: Multi-step payment validation and execution
-- **Compliance Workflow**: Automated AML/KYC checks
-- **Reconciliation Workflow**: Daily transaction reconciliation
-- **Reporting Workflow**: Scheduled report generation
-
-### 3.5 Data Layer
-
-#### MariaDB 
+#### Database Schema
+#### Database Schema
 
 **Core Tables**
-```yaml
-Tables:
-  Customer:
-  Organisation:
+```sql
+users:
+  - id (BIGINT, PK, AUTO_INCREMENT)
+  - username (VARCHAR(255), UNIQUE)
+  - password (VARCHAR(255), BCrypt hashed)
+  - full_name (VARCHAR(255))
+  - email (VARCHAR(255), UNIQUE)
+  - phone_number (VARCHAR(255))
+  - employee_id (VARCHAR(255))
+  - department (VARCHAR(255))
+  - job_title (VARCHAR(255))
+  - status (ENUM: ACTIVE, INACTIVE, LOCKED)
+  - role_id (BIGINT, FK to roles)
+  - failed_login_attempts (INTEGER)
+  - locked_until (DATETIME)
+  - last_login_at (DATETIME)
+  - created_at (DATETIME)
+  - updated_at (DATETIME)
+
+roles:
+  - id (BIGINT, PK, AUTO_INCREMENT)
+  - name (VARCHAR(255), UNIQUE)
+  - description (VARCHAR(255))
   
+permissions:
+  - id (BIGINT, PK, AUTO_INCREMENT)
+  - name (VARCHAR(255), UNIQUE)
+  - description (VARCHAR(255))
+  - module (VARCHAR(255))
+
+role_permissions:
+  - role_id (BIGINT, PK, FK to roles)
+  - permission_id (BIGINT, PK, FK to permissions)
 ```
 
-#### S3 Storage Structure
-```
-fincore-platform-system/
-├── documents/
-│   ├── kyc-documents/
-│   ├── transaction-receipts/
-│   └── compliance-reports/
-├── logs/
-│   ├── application-logs/
-│   ├── audit-logs/
-│   └── access-logs/
-└── backups/
-    ├── dynamodb-backups/
-    └── configuration-backups/
-```
+**Predefined Roles**
+1. **SYSTEM_ADMINISTRATOR**: Full system access (all permissions)
+2. **ADMIN**: User management and read permissions
+3. **COMPLIANCE_OFFICER**: Compliance and read-only access
+4. **OPERATIONAL_STAFF**: Limited operational access
+
+**Default Permissions**
+- `USER_READ`: Read user information
+- `USER_WRITE`: Create and update users
+- `CUSTOMER_READ`: Read customer information
+- `CUSTOMER_WRITE`: Create and update customers
+
+### 3.3 Infrastructure Layer
+
+#### Cloud Infrastructure (Terraform Managed)
+- **Infrastructure Repository**: [fincore_Iasc](https://github.com/kasisheraz/fincore_Iasc)
+- **VPC**: Custom VPC with private subnet for Cloud SQL
+- **Service Account**: Dedicated service account for Cloud Run with minimal required permissions
+- **Secrets Management**: Cloud Secret Manager for JWT secrets
+- **Container Registry**: Google Container Registry (GCR) for Docker images
+
+#### Network Configuration
+- Cloud SQL: Private VPC network + Public IP with authorized networks
+- Cloud Run: Public endpoint (unauthenticated access for API)
+- Cloud SQL Connector: Built-in socket factory (no Cloud SQL Proxy needed)
 
 ## 4. Security Architecture
 
 ### 4.1 Authentication & Authorization
-- **AWS Cognito User Pools**: User authentication and management
-- **JWT Tokens**: Secure API access
-- **Role-Based Access Control (RBAC)**: Granular permissions
-- **Multi-Factor Authentication**: Enhanced security for admin users
 
-### 4.2 Data Protection
-- **Encryption at Rest**: MariaDB and S3 encryption
-- **Encryption in Transit**: TLS 1.3 for all communications
-- **Key Management**: AWS KMS for encryption key management
-- **Data Masking**: PII protection in logs and non-production environments
-
-### 4.3 Network Security
-- **VPC Configuration**: Isolated network environment
-- **Security Groups**: Restrictive inbound/outbound rules
-- **WAF**: Web Application Firewall for API protection
-- **CloudFront**: CDN with DDoS protection
-
-## 5. Compliance & Regulatory
-
-### 5.1 AML/KYC Integration
+#### JWT Authentication
 ```yaml
-Compliance Services:
-  - Customer Due Diligence (CDD)
-  - Enhanced Due Diligence (EDD)
-  - Sanctions screening
-  - PEP (Politically Exposed Person) checks
-  - Transaction monitoring
-  - Suspicious Activity Reporting (SAR)
+JWT Configuration:
+  Algorithm: HS256
+  Secret: Stored in Cloud Secret Manager
+  Token Expiration: Configurable (default: 24 hours)
+  Token Format: Bearer token in Authorization header
+  Claims:
+    - sub: username
+    - roles: user roles array
+    - iat: issued at timestamp
+    - exp: expiration timestamp
 ```
 
-### 5.2 Audit & Reporting
-- **Comprehensive Audit Trails**: All system activities logged
-- **Regulatory Reporting**: Automated compliance report generation
-- **Data Retention**: Configurable retention policies
-- **Immutable Logs**: Tamper-proof audit records in S3
-
-## 6. Integration Architecture
-
-### 6.1 External System Integrations
-
-**Banking Networks**
-- Secure API connections to correspondent banks
-- Real-time payment status updates
-- Automated reconciliation processes
-
-**Nostro Account Management**
-- Balance monitoring and alerts
-- Automated fund transfers
-- Multi-currency support
-
-**Third-Party Services**
-- KYC/AML service providers
-- Currency exchange rate feeds
-- SMS/Email notification services
-
-### 6.2 API Design Standards
+#### Role-Based Access Control
 ```yaml
-API Standards:
-  - RESTful design principles
-  - OpenAPI 3.0 specification
-  - Consistent error handling
-  - Rate limiting and throttling
-  - Versioning strategy
-  - Comprehensive documentation
+Access Control:
+  - Endpoint-level authorization using @PreAuthorize
+  - Method-level security with Spring Security
+  - Role hierarchy enforcement
+  - Permission-based granular access
+```
+
+### 4.2 Data Protection
+
+#### Encryption
+- **Database**: Cloud SQL encryption at rest (Google-managed keys)
+- **Transit**: TLS 1.2+ for all connections
+- **Passwords**: BCrypt with configurable strength (default: 10 rounds)
+- **JWT Secret**: Stored securely in Cloud Secret Manager
+
+#### Account Security
+- **Account Lockout**: Automatic after 5 failed login attempts
+- **Lockout Duration**: Configurable (default: 15 minutes)
+- **Password Requirements**: Enforced via validation
+- **Session Management**: JWT-based stateless sessions
+
+### 4.3 Network Security
+
+```yaml
+Security Layers:
+  Cloud Run:
+    - HTTPS only (automatic SSL/TLS)
+    - Ingress control (allow all for API)
+    - Service-to-service authentication
+    
+  Cloud SQL:
+    - Private IP for internal communication
+    - Public IP with authorized networks
+    - SSL/TLS enforcement
+    - Built-in DDoS protection
+```
+
+## 5. CI/CD Pipeline
+
+### 5.1 GitHub Actions Workflow
+
+#### Pipeline Stages
+```yaml
+Build & Test:
+  - Checkout source code
+  - Set up JDK 21
+  - Cache Maven dependencies
+  - Build with Maven (skip tests currently)
+  - Upload JAR artifact
+
+Docker Build & Push:
+  - Authenticate to GCP
+  - Configure Docker for GCR
+  - Build Docker image (multi-tag: latest, commit SHA)
+  - Push to Container Registry
+  
+Deploy to Cloud Run:
+  - Deploy latest image
+  - Configure environment variables
+  - Set Cloud SQL connection
+  - Update service configuration
+  - Wait for deployment completion
+  
+Health Check & Smoke Tests:
+  - Wait for service readiness
+  - Health endpoint check
+  - Login API smoke test
+  - Validate response format
+```
+
+#### Environment Variables
+```yaml
+Deployment Variables:
+  - SPRING_PROFILES_ACTIVE: npe
+  - DB_NAME: my_auth_db
+  - DB_USER: fincore_app (from GitHub secret)
+  - DB_PASSWORD: (from GitHub secret)
+  - CLOUD_SQL_INSTANCE: (from GitHub secret)
+```
+
+### 5.2 Deployment Configuration
+
+```yaml
+Cloud Run Deployment:
+  Image: gcr.io/PROJECT_ID/fincore-api:latest
+  Region: europe-west2
+  Platform: managed
+  Access: allow-unauthenticated
+  Service Account: fincore-github-actions
+  Resources:
+    Memory: 1Gi
+    CPU: 1
+    Timeout: 900s
+  Scaling:
+    Min instances: 0
+    Max instances: 3
+  Cloud SQL:
+    - Instance connection via --add-cloudsql-instances flag
+```
+
+## 6. API Design & Endpoints
+
+### 6.1 API Structure
+
+#### Base URL
+- **NPE Environment**: `https://fincore-npe-api-lfd6ooarra-nw.a.run.app`
+
+#### Endpoints
+
+**Authentication**
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+Request:
+{
+  "username": "string",
+  "password": "string"
+}
+
+Response (200 OK):
+{
+  "token": "api-key-{userId}-{timestamp}",
+  "username": "string",
+  "fullName": "string",
+  "role": "string"
+}
+```
+
+**User Management**
+```http
+GET    /api/users              # List all users (ADMIN)
+GET    /api/users/{id}         # Get user by ID (ADMIN)
+POST   /api/users              # Create user (requires auth)
+PUT    /api/users/{id}         # Update user (ADMIN)
+DELETE /api/users/{id}         # Delete user (ADMIN)
+```
+
+**Health & Monitoring**
+```http
+GET /actuator/health           # Service health status
+```
+
+### 6.2 Error Handling
+
+```json
+Standard Error Response:
+{
+  "message": "Error description",
+  "status": 400
+}
 ```
 
 ## 7. Monitoring & Observability
 
-### 7.1 Logging Strategy
-- **CloudWatch Logs**: Centralized log aggregation
-- **Structured Logging**: JSON format for easy parsing
-- **Log Levels**: DEBUG, INFO, WARN, ERROR, FATAL
-- **Correlation IDs**: Request tracing across services
+### 7.1 Health Checks
+- **Endpoint**: `/actuator/health`
+- **Checks**: Database connectivity, application status
+- **Frequency**: Continuous via Cloud Run health checks
+- **Format**: Spring Boot Actuator JSON format
 
-### 7.2 Monitoring & Alerting
+### 7.2 Logging
 ```yaml
-Monitoring:
-  CloudWatch Metrics:
-    - Lambda function performance
-    - API Gateway response times
-    - DynamoDB read/write capacity
-    - Error rates and success rates
-    
-  Alarms:
-    - High error rates
-    - Performance degradation
-    - Security incidents
-    - Compliance violations
+Logging Strategy:
+  - Cloud Logging (Stackdriver) integration
+  - Structured logging with Spring Boot
+  - Log levels: DEBUG, INFO, WARN, ERROR
+  - Request/response logging (configurable)
+  - Database query logging (disabled in production)
 ```
 
-### 7.3 Distributed Tracing
-- **AWS X-Ray**: End-to-end request tracing
-- **Performance Analysis**: Identify bottlenecks
-- **Error Analysis**: Root cause identification
+### 7.3 Metrics & Alerts
+- Cloud Run metrics (requests, latency, errors)
+- Cloud SQL metrics (connections, queries, storage)
+- Custom application metrics via Spring Boot Actuator
+- Cloud Monitoring for alerting
 
-## 8. Deployment Architecture
+## 8. Deployment Environments
 
 ### 8.1 Environment Strategy
+
 ```yaml
-Environments:
-  development:
-    - Feature development and testing
-    - Reduced capacity settings
-    - Mock external integrations
-    
-  staging:
-    - Pre-production testing
-    - Production-like configuration
-    - Limited external integrations
-    
-  production:
-    - Live system
-    - Full capacity and redundancy
-    - All integrations active
+NPE (Non-Production Environment):
+  Purpose: Testing and validation
+  URL: https://fincore-npe-api-lfd6ooarra-nw.a.run.app
+  Profile: npe
+  Database: Cloud SQL (fincore-npe-db)
+  Scaling: 0-3 instances
+  
+Production (Future):
+  Purpose: Live system
+  Profile: production
+  Database: Cloud SQL with HA
+  Scaling: 1-10 instances (minimum 1)
+  Backup: Automated daily backups
 ```
 
-### 8.2 CI/CD Pipeline
-- **Source Control**: Git-based workflow
-- **Build Process**: Automated testing and packaging
-- **Deployment**: Infrastructure as Code (CloudFormation/CDK)
-- **Rollback Strategy**: Blue-green deployments
+## 9. Infrastructure as Code
 
-## 9. Scalability & Performance
+### 9.1 Terraform Management
+- **Repository**: [fincore_Iasc](https://github.com/kasisheraz/fincore_Iasc)
+- **Resources Managed**:
+  - VPC and networking
+  - Cloud SQL instance
+  - Service accounts and IAM
+  - Cloud Run initial setup
+  - Secrets configuration
 
-### 9.1 Auto-Scaling Configuration
+### 9.2 Configuration Files
 ```yaml
-Scaling Policies:
-  Lambda:
-    - Concurrent execution limits
-    - Reserved concurrency for critical functions
-    
-  DynamoDB:
-    - On-demand billing mode
-    - Auto-scaling for provisioned capacity
-    
-  API Gateway:
-    - Throttling limits per client
-    - Burst capacity configuration
+Repository Structure:
+  - Dockerfile: Multi-stage build configuration
+  - pom.xml: Maven dependencies and build
+  - application-*.yml: Spring profiles
+  - cloud-sql-schema.sql: Database schema
+  - .github/workflows/: CI/CD pipelines
+  - postman_collection.json: API tests
 ```
 
-### 9.2 Performance Optimization
-- **Caching Strategy**: API Gateway caching, Lambda container reuse
-- **Database Optimization**: Efficient query patterns, proper indexing
-- **Content Delivery**: CloudFront for static assets
+## 10. Scalability & Performance
 
-## 10. Disaster Recovery & Business Continuity
+### 10.1 Auto-Scaling
+```yaml
+Cloud Run Scaling:
+  - Scales to zero when idle (cost optimization)
+  - Automatic scale-up based on traffic
+  - Concurrent requests per instance: 80 (default)
+  - Cold start optimization: Startup CPU boost enabled
+  
+Cloud SQL Scaling:
+  - Vertical scaling (machine type upgrade)
+  - Read replicas (future enhancement)
+  - Connection pooling (HikariCP)
+```
 
-### 10.1 Backup Strategy
-- **DynamoDB**: Point-in-time recovery and on-demand backups
-- **S3**: Cross-region replication for critical data
-- **Configuration**: Infrastructure as Code for rapid recovery
+### 10.2 Performance Optimization
+- **Connection Pooling**: HikariCP with optimized settings
+  - Maximum pool size: 3 (NPE), 20 (Production)
+  - Minimum idle: 1 (NPE), 5 (Production)
+  - Connection timeout: 60s (NPE), 30s (Production)
+- **JPA Optimization**: Lazy loading, batch operations
+- **Container Optimization**: Alpine base image, minimal layers
+- **Build Optimization**: Maven dependency caching in CI/CD
 
-### 10.2 Recovery Procedures
-- **RTO (Recovery Time Objective)**: 4 hours
-- **RPO (Recovery Point Objective)**: 1 hour
-- **Multi-Region Deployment**: Active-passive configuration
+## 11. Security Best Practices
 
-## 11. Cost Optimization
+### 11.1 Implemented Security Measures
+- ✅ JWT-based stateless authentication
+- ✅ BCrypt password hashing
+- ✅ Account lockout mechanism
+- ✅ Role-based access control
+- ✅ HTTPS-only communication
+- ✅ SQL injection prevention (JPA/Hibernate)
+- ✅ Secrets management (Cloud Secret Manager)
+- ✅ Dedicated service account with minimal permissions
+- ✅ Database user with limited privileges (fincore_app)
 
-### 11.1 Cost Management
-- **Serverless Benefits**: Pay-per-use pricing model
-- **Resource Optimization**: Right-sizing and efficient resource usage
-- **Cost Monitoring**: AWS Cost Explorer and budgets
-- **Reserved Capacity**: For predictable workloads
+### 11.2 Security Recommendations
+- [ ] Enable Cloud Armor for DDoS protection
+- [ ] Implement rate limiting at API level
+- [ ] Add API key authentication for external consumers
+- [ ] Enable Cloud SQL automatic backups
+- [ ] Implement audit logging for all user actions
+- [ ] Add password complexity requirements
+- [ ] Implement password rotation policy
+- [ ] Enable Cloud Run VPC ingress control
 
-## 12. Future Roadmap
+## 12. Cost Optimization
 
-### 12.1 Planned Enhancements
-- **Mobile Applications**: Native iOS/Android apps
-- **Advanced Analytics**: Machine learning for fraud detection
-- **Blockchain Integration**: Cryptocurrency support
-- **Open Banking**: PSD2 compliance and API marketplace
+### 12.1 Current Cost Structure
+```yaml
+Cloud Run:
+  - Pay-per-use pricing
+  - Scales to zero (no idle cost)
+  - $0.00002400 per vCPU-second
+  - $0.00000250 per GiB-second
+  
+Cloud SQL:
+  - MySQL instance cost (24/7)
+  - Storage cost (per GB)
+  - Network egress cost
+  
+Container Registry:
+  - Storage: $0.026 per GB/month
+  - Minimal cost for image storage
+```
 
-### 12.2 Scalability Considerations
-- **Multi-Region Expansion**: Global deployment strategy
-- **Microservices Evolution**: Further service decomposition
-- **Event Sourcing**: Enhanced audit capabilities
-- **CQRS Implementation**: Optimized read/write operations
+## 13. Future Enhancements
 
-## 13. Implementation Phases
+### 13.1 Planned Features
+- [ ] Production environment deployment
+- [ ] Read replicas for Cloud SQL
+- [ ] Redis caching layer
+- [ ] Enhanced audit logging
+- [ ] Email notification service
+- [ ] Password reset functionality
+- [ ] Two-factor authentication (2FA)
+- [ ] API rate limiting
+- [ ] Advanced monitoring dashboards
 
-### Phase 1: Core Platform (Months 1-3)
-- Basic authentication and user management
-- Core transaction processing
-- Essential compliance features
-
-### Phase 2: Enhanced Features (Months 4-6)
-- Advanced reporting and analytics
-- External system integrations
-- Mobile-responsive interfaces
-
-### Phase 3: Advanced Capabilities (Months 7-9)
-- Machine learning integration
-- Advanced compliance features
-- Performance optimization
-
-### Phase 4: Scale & Optimize (Months 10-12)
-- Multi-region deployment
-- Advanced monitoring and alerting
-- Continuous optimization
+### 13.2 Scalability Improvements
+- [ ] Multi-region deployment
+- [ ] Global load balancing
+- [ ] Cloud CDN integration
+- [ ] Database sharding strategy
+- [ ] Microservices decomposition
 
 ---
 
-*This architecture documentation serves as the foundation for the FinCore (Financial Core platform) implementation. Regular reviews and updates will ensure alignment with business requirements and technological evolution.*
+## Appendix: Quick Reference
+
+### Deployed Endpoints
+- **NPE API**: https://fincore-npe-api-lfd6ooarra-nw.a.run.app
+- **Health Check**: https://fincore-npe-api-lfd6ooarra-nw.a.run.app/actuator/health
+
+### Default Credentials (NPE)
+| Username | Password | Role |
+|----------|----------|------|
+| admin | Admin@123456 | SYSTEM_ADMINISTRATOR |
+| compliance | Compliance@123 | COMPLIANCE_OFFICER |
+| staff | Staff@123456 | OPERATIONAL_STAFF |
+
+### Key Resources
+- **Source Code**: Current repository
+- **Infrastructure**: [fincore_Iasc](https://github.com/kasisheraz/fincore_Iasc)
+- **CI/CD**: GitHub Actions (`.github/workflows/deploy-npe.yml`)
+
+---
+
+*Last Updated: December 20, 2025*  
+*This architecture documentation reflects the current deployed state of the FinCore User Management API on Google Cloud Platform.*
