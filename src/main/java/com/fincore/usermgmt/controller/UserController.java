@@ -40,11 +40,11 @@ public class UserController {
             UserDTO createdUser = userService.createUser(userCreateDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (DataIntegrityViolationException e) {
-            String errorMessage = "Email or username already exists";
+            String errorMessage = "Email or phone number already exists";
             if (e.getMessage() != null && e.getMessage().contains("EMAIL")) {
                 errorMessage = "Email already exists";
-            } else if (e.getMessage() != null && e.getMessage().contains("USERNAME")) {
-                errorMessage = "Username already exists";
+            } else if (e.getMessage() != null && e.getMessage().contains("PHONE")) {
+                errorMessage = "Phone number already exists";
             }
             return ResponseEntity.status(HttpStatus.CONFLICT).body(
                     new ErrorResponse(errorMessage, HttpStatus.CONFLICT.value())

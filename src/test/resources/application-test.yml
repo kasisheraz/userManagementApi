@@ -6,12 +6,13 @@ spring:
     password: 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     defer-datasource-initialization: true
     show-sql: false
   sql:
     init:
       mode: always
+      schema-locations: 
       data-locations: classpath:test-data.sql
 
 jwt:

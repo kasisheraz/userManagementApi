@@ -1,7 +1,7 @@
 {
 	"info": {
 		"name": "FinCore User Management API",
-		"description": "API collection for testing user authentication and management. Use X-API-Key header: fincore-api-key-2024",
+		"description": "API collection for testing OTP-based authentication and user management",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -9,7 +9,48 @@
 			"name": "Authentication",
 			"item": [
 				{
-					"name": "Login - Admin",
+					"name": "1. Request OTP - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log(\"OTP requested successfully. Check console logs for OTP code.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/request-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"request-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Verify OTP - Admin",
 					"event": [
 						{
 							"listen": "test",
@@ -17,9 +58,9 @@
 								"exec": [
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
-									"    pm.environment.set(\"jwt_token\", jsonData.token);",
+									"    pm.environment.set(\"jwt_token\", jsonData.accessToken);",
 									"    pm.environment.set(\"username\", jsonData.username);",
-									"    console.log(\"Token saved: \" + jsonData.token);",
+									"    console.log(\"JWT Token saved: \" + jsonData.accessToken);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -36,24 +77,52 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123456\"\n}"
+							"raw": "{\n  \"phoneNumber\": \"+1234567890\",\n  \"otp\": \"123456\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/auth/login",
+							"raw": "{{base_url}}/api/auth/verify-otp",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"auth",
-								"login"
+								"verify-otp"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Login - Compliance Officer",
+					"name": "3. Request OTP - Compliance",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"+1234567891\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/request-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"request-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Verify OTP - Compliance",
 					"event": [
 						{
 							"listen": "test",
@@ -61,8 +130,9 @@
 								"exec": [
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
-									"    pm.environment.set(\"jwt_token\", jsonData.token);",
-									"    console.log(\"Token saved: \" + jsonData.token);",
+									"    pm.environment.set(\"jwt_token\", jsonData.accessToken);",
+									"    pm.environment.set(\"username\", jsonData.username);",
+									"    console.log(\"JWT Token saved: \" + jsonData.accessToken);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -79,24 +149,52 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"compliance\",\n  \"password\": \"Compliance@123\"\n}"
+							"raw": "{\n  \"phoneNumber\": \"+1234567891\",\n  \"otp\": \"123456\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/auth/login",
+							"raw": "{{base_url}}/api/auth/verify-otp",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"auth",
-								"login"
+								"verify-otp"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Login - Operational Staff",
+					"name": "5. Request OTP - Staff",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"+1234567892\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/request-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"request-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Verify OTP - Staff",
 					"event": [
 						{
 							"listen": "test",
@@ -104,8 +202,9 @@
 								"exec": [
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
-									"    pm.environment.set(\"jwt_token\", jsonData.token);",
-									"    console.log(\"Token saved: \" + jsonData.token);",
+									"    pm.environment.set(\"jwt_token\", jsonData.accessToken);",
+									"    pm.environment.set(\"username\", jsonData.username);",
+									"    console.log(\"JWT Token saved: \" + jsonData.accessToken);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -122,101 +221,41 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"staff\",\n  \"password\": \"Staff@123456\"\n}"
+							"raw": "{\n  \"phoneNumber\": \"+1234567892\",\n  \"otp\": \"123456\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/auth/login",
+							"raw": "{{base_url}}/api/auth/verify-otp",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"auth",
-								"login"
+								"verify-otp"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Login - Invalid Credentials",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"wrongpassword\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Login - Test Account Lock (5 Failed Attempts)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"username\": \"staff\",\n  \"password\": \"wrongpassword\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Protected Endpoints",
-			"item": [
-				{
-					"name": "Test Protected Endpoint",
+					"name": "Get Current User",
 					"request": {
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-API-Key",
-								"value": "fincore-api-key-2024"
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/test",
+							"raw": "{{base_url}}/api/auth/me",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"test"
+								"auth",
+								"me"
 							]
 						}
 					},
@@ -224,6 +263,7 @@
 				}
 			]
 		},
+
 		{
 			"name": "Actuator",
 			"item": [
@@ -256,8 +296,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-API-Key",
-								"value": "fincore-api-key-2024"
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
 							}
 						],
 						"url": {
@@ -279,8 +319,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-API-Key",
-								"value": "fincore-api-key-2024"
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
 							}
 						],
 						"url": {
@@ -303,8 +343,8 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-API-Key",
-								"value": "fincore-api-key-2024"
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
 							},
 							{
 								"key": "Content-Type",
@@ -313,7 +353,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password\",\n  \"fullName\": \"New User\",\n  \"email\": \"newuser@example.com\",\n  \"role\": \"OPERATIONAL_STAFF\"\n}"
+							"raw": "{\n  \"phoneNumber\": \"+1111111111\",\n  \"email\": \"newuser@fincore.com\",\n  \"firstName\": \"New\",\n  \"middleName\": \"Test\",\n  \"lastName\": \"User\",\n  \"dateOfBirth\": \"1995-06-15\",\n  \"statusDescription\": \"ACTIVE\",\n  \"role\": \"OPERATIONAL_STAFF\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -334,8 +374,8 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-API-Key",
-								"value": "fincore-api-key-2024"
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
 							},
 							{
 								"key": "Content-Type",
@@ -344,17 +384,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"fullName\": \"Updated User Name\"\n}"
+							"raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User Name\",\n  \"email\": \"updated@fincore.com\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/users/4",
+							"raw": "{{base_url}}/api/users/1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"users",
-								"4"
+								"1"
 							]
 						}
 					},
@@ -366,19 +406,19 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-API-Key",
-								"value": "fincore-api-key-2024"
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/users/4",
+							"raw": "{{base_url}}/api/users/1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"users",
-								"4"
+								"1"
 							]
 						}
 					},

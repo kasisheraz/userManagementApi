@@ -84,11 +84,13 @@ The FinCore User Management API is a cloud-native microservice built on Google C
 - **Container Base**: Eclipse Temurin JRE 21-alpine
 
 #### Key Features
-- JWT-based authentication with configurable expiration
+- OAuth2 authentication with phone-based Multi-Factor Authentication (MFA)
+- Two-step verification: OTP generation and JWT token issuance
+- JWT-based stateless authentication with configurable expiration (24 hours default)
 - Role-Based Access Control (RBAC) with 4 predefined roles
-- Account lockout after 5 failed login attempts
-- BCrypt password encryption
-- Session timeout management
+- Time-limited OTP codes (6 digits, 5-minute expiration)
+- Automatic cleanup of expired OTP tokens (scheduled every 5 minutes)
+- Secure JWT token generation using HS256 algorithm
 - RESTful API design
 - Health check endpoints for monitoring
 
@@ -119,38 +121,49 @@ Connection String:
 
 **Core Tables**
 ```sql
-users:
-  - id (BIGINT, PK, AUTO_INCREMENT)
-  - username (VARCHAR(255), UNIQUE)
-  - password (VARCHAR(255), BCrypt hashed)
-  - full_name (VARCHAR(255))
-  - email (VARCHAR(255), UNIQUE)
-  - phone_number (VARCHAR(255))
-  - employee_id (VARCHAR(255))
-  - department (VARCHAR(255))
-  - job_title (VARCHAR(255))
-  - status (ENUM: ACTIVE, INACTIVE, LOCKED)
-  - role_id (BIGINT, FK to roles)
-  - failed_login_attempts (INTEGER)
-  - locked_until (DATETIME)
-  - last_login_at (DATETIME)
-  - created_at (DATETIME)
-  - updated_at (DATETIME)
+Users:
+  - User_Identifier (INT, PK, AUTO_INCREMENT)
+  - Phone_Number (VARCHAR(20), UNIQUE)
+  - Email (VARCHAR(50))
+  - Role_Identifier (INT, FK to Roles)
+  - First_Name (VARCHAR(100))
+  - Middle_Name (VARCHAR(100))
+  - Last_Name (VARCHAR(100))
+  - Date_Of_Birth (DATE)
+  - Residential_Address_Identifier (INT)
+  - Postal_Address_Identifier (INT)
+  - Status_Description (VARCHAR(20))
+  - Created_Datetime (TIMESTAMP)
+  - Last_Modified_Datetime (TIMESTAMP)
 
-roles:
-  - id (BIGINT, PK, AUTO_INCREMENT)
-  - name (VARCHAR(255), UNIQUE)
-  - description (VARCHAR(255))
+Roles:
+  - Role_Identifier (INT, PK, AUTO_INCREMENT)
+  - Role_Name (VARCHAR(30))
+  - Role_Description (VARCHAR(100))
+  - Created_Datetime (TIMESTAMP)
   
-permissions:
-  - id (BIGINT, PK, AUTO_INCREMENT)
-  - name (VARCHAR(255), UNIQUE)
-  - description (VARCHAR(255))
-  - module (VARCHAR(255))
+Permissions:
+  - Permission_Identifier (INT, PK, AUTO_INCREMENT)
+  - Permission_Name (VARCHAR(100), UNIQUE)
+  - Description (TEXT)
+  - Resource (VARCHAR(50))
+  - Action (VARCHAR(50))
+  - Created_at (TIMESTAMP)
 
-role_permissions:
-  - role_id (BIGINT, PK, FK to roles)
-  - permission_id (BIGINT, PK, FK to permissions)
+Role_Permissions:
+  - Role_Identifier (INT, PK, FK to Roles)
+  - Permission_Identifier (INT, PK, FK to Permissions)
+  - Granted_At (TIMESTAMP)
+
+Otp_Tokens:
+  - Token_Id (BIGINT, PK, AUTO_INCREMENT)
+  - Phone_Number (VARCHAR(20))
+  - Otp_Code (VARCHAR(6))
+  - Expires_At (TIMESTAMP)
+  - Verified (BOOLEAN, DEFAULT FALSE)
+  - Created_At (TIMESTAMP)
+  - INDEX idx_otp_phone_code (Phone_Number, Otp_Code)
+  - INDEX idx_otp_expires (Expires_At)
 ```
 
 **Predefined Roles**
@@ -183,18 +196,66 @@ role_permissions:
 
 ### 4.1 Authentication & Authorization
 
-#### JWT Authentication
+#### OAuth2 Authentication with Phone-Based MFA
+
+**Authentication Flow:**
 ```yaml
-JWT Configuration:
+Step 1 - Request OTP:
+  Endpoint: POST /api/auth/request-otp
+  Input: Phone number
+  Process:
+    - Validate user exists and is ACTIVE
+    - Generate 6-digit OTP using SecureRandom
+    - Store OTP in database with 5-minute expiration
+    - Send OTP to user (logged in dev, SMS in production)
+  Output: Confirmation message with masked phone number
+
+Step 2 - Verify OTP and Get JWT:
+  Endpoint: POST /api/auth/verify-otp
+  Input: Phone number + OTP code
+  Process:
+    - Validate OTP exists, not expired, not used
+    - Mark OTP as verified
+    - Generate JWT token with user claims
+  Output: JWT access token + user information
+```
+
+**JWT Configuration:**
+```yaml
+JWT Token:
   Algorithm: HS256
-  Secret: Stored in Cloud Secret Manager
-  Token Expiration: Configurable (default: 24 hours)
+  Secret: Configurable (application.yml)
+  Token Expiration: 86400000 ms (24 hours)
   Token Format: Bearer token in Authorization header
   Claims:
-    - sub: username
-    - roles: user roles array
+    - sub: phoneNumber (subject)
+    - userId: User_Identifier
+    - role: User role name
     - iat: issued at timestamp
     - exp: expiration timestamp
+
+OTP Configuration:
+  Length: 6 digits
+  Expiration: 300 seconds (5 minutes)
+  Cleanup: Scheduled task every 5 minutes
+  Single-use: Marked as verified after successful validation
+```
+
+**Security Filter Chain:**
+```yaml
+Spring Security:
+  Session Management: STATELESS
+  CSRF: Disabled (stateless API)
+  Public Endpoints:
+    - /api/auth/**
+    - /actuator/**
+    - /h2-console/**
+  Protected Endpoints:
+    - /api/users/** (requires valid JWT)
+  Authentication Filter: JwtAuthenticationFilter
+    - Extracts Bearer token from Authorization header
+    - Validates token signature and expiration
+    - Sets authentication in SecurityContext
 ```
 
 #### Role-Based Access Control

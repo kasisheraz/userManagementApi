@@ -13,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -33,36 +32,40 @@ public class UserServiceTest {
     @Mock
     private UserMapper userMapper;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @InjectMocks
     private UserService userService;
 
     @Test
     void testCreateUser() {
         UserCreateDTO createDTO = new UserCreateDTO();
-        createDTO.setUsername("testuser");
-        createDTO.setPassword("password");
-        createDTO.setRole("USER");
+        createDTO.setPhoneNumber("+1234567890");
+        createDTO.setEmail("test@example.com");
+        createDTO.setFirstName("Test");
+        createDTO.setLastName("User");
+        createDTO.setRole("SYSTEM_ADMINISTRATOR");
 
         User user = new User();
-        user.setUsername("testuser");
+        user.setPhoneNumber("+1234567890");
+        user.setFirstName("Test");
+        user.setLastName("User");
 
         Role role = new Role();
-        role.setName("USER");
+        role.setName("SYSTEM_ADMINISTRATOR");
 
         UserDTO userDTO = new UserDTO();
-        userDTO.setUsername("testuser");
+        userDTO.setPhoneNumber("+1234567890");
+        userDTO.setFirstName("Test");
+        userDTO.setLastName("User");
 
         when(userMapper.toUser(any(UserCreateDTO.class))).thenReturn(user);
-        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
-        when(roleRepository.findByName("USER")).thenReturn(Optional.of(role));
+        when(roleRepository.findByName("SYSTEM_ADMINISTRATOR")).thenReturn(Optional.of(role));
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(userMapper.toUserDTO(any(User.class))).thenReturn(userDTO);
 
         UserDTO result = userService.createUser(createDTO);
 
-        assertEquals("testuser", result.getUsername());
+        assertEquals("+1234567890", result.getPhoneNumber());
+        assertEquals("Test", result.getFirstName());
+        assertEquals("User", result.getLastName());
     }
 }

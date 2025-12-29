@@ -1,29 +1,35 @@
 package com.fincore.usermgmt.dto;
 
-import com.fincore.usermgmt.entity.UserStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class UserUpdateDTO {
-    @Size(min = 3, max = 50)
-    private String username;
-
-    @Size(min = 8, max = 100)
-    private String password;
-
-    @Size(max = 100)
-    private String fullName;
+    @Size(max = 20)
+    private String phoneNumber;
 
     @Email
-    @Size(max = 100)
+    @Size(max = 50)
     private String email;
 
-    private String phoneNumber;
-    private String employeeId;
-    private String department;
-    private String jobTitle;
-    private UserStatus status;
+    @Size(max = 100)
+    private String firstName;
+
+    @Size(max = 100)
+    private String middleName;
+
+    @Size(max = 100)
+    private String lastName;
+
+    private LocalDate dateOfBirth;
+    private Integer residentialAddressIdentifier;
+    private Integer postalAddressIdentifier;
+    
+    @Size(max = 20)
+    private String statusDescription;
+    
     private String role;
 }

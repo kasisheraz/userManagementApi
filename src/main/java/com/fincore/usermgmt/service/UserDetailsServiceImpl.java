@@ -5,6 +5,8 @@ import com.fincore.usermgmt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+// Disabled: Authentication not supported in current schema
+/*
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl {
@@ -16,3 +18,4 @@ public class UserDetailsServiceImpl {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
+*/

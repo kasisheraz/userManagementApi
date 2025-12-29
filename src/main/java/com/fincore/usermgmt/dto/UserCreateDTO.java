@@ -5,28 +5,35 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class UserCreateDTO {
     @NotBlank
-    @Size(min = 3, max = 50)
-    private String username;
+    @Size(max = 20)
+    private String phoneNumber;
 
-    @NotBlank
-    @Size(min = 8, max = 100)
-    private String password;
-
-    @NotBlank
-    @Size(max = 100)
-    private String fullName;
-
-    @NotBlank
     @Email
-    @Size(max = 100)
+    @Size(max = 50)
     private String email;
 
-    private String phoneNumber;
-    private String employeeId;
-    private String department;
-    private String jobTitle;
+    @NotBlank
+    @Size(max = 100)
+    private String firstName;
+
+    @Size(max = 100)
+    private String middleName;
+
+    @NotBlank
+    @Size(max = 100)
+    private String lastName;
+
+    private LocalDate dateOfBirth;
+    private Integer residentialAddressIdentifier;
+    private Integer postalAddressIdentifier;
+    
+    @Size(max = 20)
+    private String statusDescription;
+    
     private String role;
 }

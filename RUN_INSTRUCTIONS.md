@@ -27,34 +27,81 @@ mvn spring-boot:run -Dspring-boot.run.profiles=h2
 
 ## Test the API
 
-### Using cURL (Windows CMD)
+### OAuth2 Authentication Flow
+
+#### Step 1: Request OTP
+
+**Using cURL (Windows CMD)**
 ```bash
-curl -X POST http://localhost:8080/api/auth/login -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"Admin@123456\"}"
+curl -X POST http://localhost:8080/api/auth/request-otp -H "Content-Type: application/json" -d "{\"phoneNumber\":\"+1234567890\"}"
 ```
 
-### Using PowerShell
+**Using PowerShell**
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/auth/login" -Method POST -ContentType "application/json" -Body '{"username":"admin","password":"Admin@123456"}'
+Invoke-RestMethod -Uri "http://localhost:8080/api/auth/request-otp" -Method POST -ContentType "application/json" -Body '{"phoneNumber":"+1234567890"}'
 ```
 
-### Using Browser/Postman
-- URL: `POST http://localhost:8080/api/auth/login`
+**Using Browser/Postman**
+- URL: `POST http://localhost:8080/api/auth/request-otp`
 - Headers: `Content-Type: application/json`
 - Body:
 ```json
 {
-  "username": "admin",
-  "password": "Admin@123456"
+  "phoneNumber": "+1234567890"
 }
 ```
 
-## Test Credentials
+**Note:** Check the application console logs for the OTP code (in development mode, OTPs are logged).
 
-| Username   | Password        | Role                  |
-|------------|-----------------|----------------------|
-| admin      | Admin@123456    | SYSTEM_ADMINISTRATOR |
-| compliance | Compliance@123  | COMPLIANCE_OFFICER   |
-| staff      | Staff@123456    | OPERATIONAL_STAFF    |
+#### Step 2: Verify OTP and Get JWT Token
+
+**Using cURL (Windows CMD)**
+```bash
+curl -X POST http://localhost:8080/api/auth/verify-otp -H "Content-Type: application/json" -d "{\"phoneNumber\":\"+1234567890\",\"otp\":\"123456\"}"
+```
+
+**Using PowerShell**
+```powershell
+$response = Invoke-RestMethod -Uri "http://localhost:8080/api/auth/verify-otp" -Method POST -ContentType "application/json" -Body '{"phoneNumber":"+1234567890","otp":"123456"}'
+$token = $response.accessToken
+Write-Host "JWT Token: $token"
+```
+
+**Using Browser/Postman**
+- URL: `POST http://localhost:8080/api/auth/verify-otp`
+- Headers: `Content-Type: application/json`
+- Body:
+```json
+{
+  "phoneNumber": "+1234567890",
+  "otp": "123456"
+}
+```
+
+#### Step 3: Use JWT Token for Protected Endpoints
+
+**Using cURL with JWT Token**
+```bash
+curl -X GET http://localhost:8080/api/users -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+**Using PowerShell with JWT Token**
+```powershell
+$headers = @{Authorization = "Bearer $token"}
+Invoke-RestMethod -Uri "http://localhost:8080/api/users" -Method GET -Headers $headers
+```
+
+## Test Phone Numbers
+
+Use these phone numbers from the test data:
+
+| Phone Number | Email | Role | Name |
+|-------------|-------|------|------|
+| +1234567890 | admin@fincore.com | SYSTEM_ADMINISTRATOR | System Administrator |
+| +1234567891 | compliance@fincore.com | COMPLIANCE_OFFICER | Compliance Officer |
+| +1234567892 | staff@fincore.com | OPERATIONAL_STAFF | Operational Staff |
+
+**Note:** In development mode, OTP codes are logged to the console. In production, integrate with an SMS service (Twilio, AWS SNS, etc.) to send actual SMS messages.
 
 ## Access H2 Database Console
 - URL: http://localhost:8080/h2-console
@@ -66,4 +113,4 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/auth/login" -Method POST -Cont
 ```bash
 mvn test
 ```
-Expected: 30 tests passing
+Expected: 8 tests passing (UserRepositoryTest, UserServiceTest)

@@ -2,69 +2,63 @@ package com.fincore.usermgmt.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "Users")
 @Data
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "User_Identifier")
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String username;
+    @Column(name = "Phone_Number", unique = true, length = 20)
+    private String phoneNumber;
 
-    @Column(nullable = false)
-    private String password;
-
-    @Column(name = "full_name", nullable = false)
-    private String fullName;
-
-    @Column(unique = true, nullable = false)
+    @Column(name = "Email", length = 50)
     private String email;
 
-    @Column(name = "phone_number")
-    private String phoneNumber;
-    
-    @Column(name = "employee_id")
-    private String employeeId;
-    
-    private String department;
-    
-    @Column(name = "job_title")
-    private String jobTitle;
-
-    @Enumerated(EnumType.STRING)
-    private UserStatus status = UserStatus.ACTIVE;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "Role_Identifier")
     private Role role;
 
-    @Column(name = "failed_login_attempts")
-    private Integer failedLoginAttempts = 0;
+    @Column(name = "First_Name", length = 100)
+    private String firstName;
     
-    @Column(name = "locked_until")
-    private LocalDateTime lockedUntil;
+    @Column(name = "Middle_Name", length = 100)
+    private String middleName;
     
-    @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt;
+    @Column(name = "Last_Name", length = 100)
+    private String lastName;
+
+    @Column(name = "Date_Of_Birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "Residential_Address_Identifier")
+    private Integer residentialAddressIdentifier;
+
+    @Column(name = "Postal_Address_Identifier")
+    private Integer postalAddressIdentifier;
+
+    @Column(name = "Status_Description", length = 20)
+    private String statusDescription;
     
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "Created_Datetime")
+    private LocalDateTime createdDatetime;
     
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "Last_Modified_Datetime")
+    private LocalDateTime lastModifiedDatetime;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        createdDatetime = LocalDateTime.now();
+        lastModifiedDatetime = LocalDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        lastModifiedDatetime = LocalDateTime.now();
     }
 }

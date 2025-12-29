@@ -11,7 +11,11 @@ spring:
 
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-  expiration: 900000
+  expiration: 86400000  # 24 hours in milliseconds
+
+otp:
+  length: 6
+  expiration: 300  # 5 minutes in seconds
 
 security:
   session-timeout: 900

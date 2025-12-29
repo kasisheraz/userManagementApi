@@ -30,13 +30,15 @@ A Spring Boot microservice providing secure user authentication, role-based acce
 ## ✨ Features
 
 ### Security
-- 🔐 JWT-based stateless authentication
+- 🔐 OAuth2 JWT-based stateless authentication
+- 📱 Phone-based Multi-Factor Authentication (MFA) with OTP
 - 👥 Role-Based Access Control (RBAC) with 4 predefined roles
-- 🔒 Account lockout after 5 failed login attempts (15-minute lockout)
-- 🔑 BCrypt password encryption
-- ⏱️ Configurable JWT token expiration
+- 🔒 Time-limited OTP codes (5-minute expiration)
+- 🔑 Secure JWT token generation with HS256
+- ⏱️ Configurable JWT token expiration (24 hours default)
 - 🛡️ HTTPS-only communication
 - 🔐 Secure database connections via Cloud SQL Socket Factory
+- 🧹 Automatic cleanup of expired OTP tokens
 
 ### User Management
 - ✅ User CRUD operations with role-based permissions
@@ -110,29 +112,58 @@ Local: http://localhost:8080
 
 ### Authentication
 
-#### Login
+The API uses OAuth2 with phone-based Multi-Factor Authentication (MFA). Authentication is a two-step process:
+
+#### Step 1: Request OTP
 ```http
-POST /api/auth/login
+POST /api/auth/request-otp
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "Admin@123456"
+  "phoneNumber": "+1234567890"
 }
 
 Response (200 OK):
 {
-  "token": "api-key-1-1766246231463",
-  "username": "admin",
-  "fullName": "System Administrator",
-  "role": "SYSTEM_ADMINISTRATOR"
+  "message": "OTP sent to phone number ending in **7890",
+  "phoneNumber": "+1234567890",
+  "expiresIn": 300
 }
 ```
 
-**Note**: Include the token in subsequent requests:
+#### Step 2: Verify OTP and Receive JWT Token
 ```http
-Authorization: Bearer {token}
+POST /api/auth/verify-otp
+Content-Type: application/json
+
+{
+  "phoneNumber": "+1234567890",
+  "otp": "123456"
+}
+
+Response (200 OK):
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 86400,
+  "user": {
+    "userId": 1,
+    "phoneNumber": "+1234567890",
+    "email": "admin@fincore.com",
+    "firstName": "System",
+    "lastName": "Administrator",
+    "role": "SYSTEM_ADMINISTRATOR",
+    "status": "ACTIVE"
+  }
+}
 ```
+
+**Note**: Include the JWT token in subsequent requests:
+```http
+Authorization: Bearer {accessToken}
+```
+
+**Development Mode**: OTP codes are logged to the console. In production, OTPs should be sent via SMS service (Twilio, AWS SNS, etc.).
 
 ### User Management Endpoints
 
@@ -144,10 +175,20 @@ Authorization: Bearer {token}
 | PUT | `/api/users/{id}` | Update user | ADMIN |
 | DELETE | `/api/users/{id}` | Delete user | ADMIN |
 
+#### Test Phone Numbers
+
+Use these phone numbers from the test data:
+
+| Phone Number | Email | Role | Name |
+|-------------|-------|------|------|
+| +1234567890 | admin@fincore.com | SYSTEM_ADMINISTRATOR | System Administrator |
+| +1234567891 | compliance@fincore.com | COMPLIANCE_OFFICER | Compliance Officer |
+| +1234567892 | staff@fincore.com | OPERATIONAL_STAFF | Operational Staff |
+
 #### Create User Example
 ```http
 POST /api/users
-Authorization: Bearer {token}
+Authorization: Bearer {accessToken}
 Content-Type: application/json
 
 {

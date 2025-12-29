@@ -20,23 +20,15 @@ public interface UserMapper {
     UserDTO toUserDTO(User user);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true)
     @Mapping(target = "role", ignore = true)
-    @Mapping(target = "failedLoginAttempts", ignore = true)
-    @Mapping(target = "lockedUntil", ignore = true)
-    @Mapping(target = "lastLoginAt", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdDatetime", ignore = true)
+    @Mapping(target = "lastModifiedDatetime", ignore = true)
     User toUser(UserCreateDTO userCreateDTO);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true)
     @Mapping(target = "role", ignore = true)
-    @Mapping(target = "failedLoginAttempts", ignore = true)
-    @Mapping(target = "lockedUntil", ignore = true)
-    @Mapping(target = "lastLoginAt", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdDatetime", ignore = true)
+    @Mapping(target = "lastModifiedDatetime", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateUserFromDto(UserUpdateDTO userUpdateDTO, @MappingTarget User user);
 }

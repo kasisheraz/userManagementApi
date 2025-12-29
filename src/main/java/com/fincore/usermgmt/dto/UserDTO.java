@@ -1,23 +1,23 @@
 package com.fincore.usermgmt.dto;
 
-import com.fincore.usermgmt.entity.UserStatus;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 public class UserDTO {
     private Long id;
-    private String username;
-    private String fullName;
-    private String email;
     private String phoneNumber;
-    private String employeeId;
-    private String department;
-    private String jobTitle;
-    private UserStatus status;
+    private String email;
+    private String firstName;
+    private String middleName;
+    private String lastName;
+    private LocalDate dateOfBirth;
+    private Integer residentialAddressIdentifier;
+    private Integer postalAddressIdentifier;
+    private String statusDescription;
     private String role;
-    private LocalDateTime lastLoginAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdDatetime;
+    private LocalDateTime lastModifiedDatetime;
 }

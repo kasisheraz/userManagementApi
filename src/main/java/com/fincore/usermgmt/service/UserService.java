@@ -9,7 +9,6 @@ import com.fincore.usermgmt.mapper.UserMapper;
 import com.fincore.usermgmt.repository.RoleRepository;
 import com.fincore.usermgmt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +23,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<UserDTO> getAllUsers() {
@@ -42,10 +40,11 @@ public class UserService {
     @Transactional
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
         User user = userMapper.toUser(userCreateDTO);
-        user.setPassword(passwordEncoder.encode(userCreateDTO.getPassword()));
-        Role role = roleRepository.findByName(userCreateDTO.getRole())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
-        user.setRole(role);
+        if (userCreateDTO.getRole() != null) {
+            Role role = roleRepository.findByName(userCreateDTO.getRole())
+                    .orElseThrow(() -> new RuntimeException("Role not found"));
+            user.setRole(role);
+        }
         return userMapper.toUserDTO(userRepository.save(user));
     }
 
@@ -54,9 +53,6 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         userMapper.updateUserFromDto(userUpdateDTO, user);
-        if (userUpdateDTO.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
-        }
         if (userUpdateDTO.getRole() != null) {
             Role role = roleRepository.findByName(userUpdateDTO.getRole())
                     .orElseThrow(() -> new RuntimeException("Role not found"));
