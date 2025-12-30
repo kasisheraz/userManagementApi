@@ -26,7 +26,7 @@ spec:
         - name: SPRING_PROFILES_ACTIVE
           value: gcp
         - name: DB_NAME
-          value: my_auth_db
+          value: fincore_db
         - name: DB_USER
           value: fincore_app
         - name: DB_PASSWORD

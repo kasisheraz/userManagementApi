@@ -2,7 +2,7 @@
 -- This script creates the complete database schema for the cloud environment
 -- Execute this script on Cloud SQL MySQL 8.0 instance
 
-USE my_auth_db;
+USE fincore_db;
 
 -- Drop tables in correct order (foreign keys first)
 DROP TABLE IF EXISTS Otp_Tokens;

@@ -362,7 +362,7 @@ gcloud run deploy fincore-npe-api \
   --max-instances=3 \
   --min-instances=0 \
   --add-cloudsql-instances=YOUR_INSTANCE \
-  --set-env-vars="SPRING_PROFILES_ACTIVE=npe,DB_NAME=my_auth_db,DB_USER=fincore_app,DB_PASSWORD=xxx,CLOUD_SQL_INSTANCE=xxx"
+  --set-env-vars="SPRING_PROFILES_ACTIVE=npe,DB_NAME=fincore_db,DB_USER=fincore_app,DB_PASSWORD=xxx,CLOUD_SQL_INSTANCE=xxx"
 ```
 
 ## 🗄️ Database
@@ -381,7 +381,7 @@ gsutil iam ch serviceAccount:SQL_SA:objectViewer gs://your-bucket
 # 3. Import schema
 gcloud sql import sql INSTANCE_NAME \
   gs://your-bucket/cloud-sql-schema.sql \
-  --database=my_auth_db
+  --database=fincore_db
 ```
 
 ### Database Schema
@@ -414,7 +414,7 @@ gcloud sql import sql INSTANCE_NAME \
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `SPRING_PROFILES_ACTIVE` | Active Spring profile | `npe` |
-| `DB_NAME` | Database name | `my_auth_db` |
+| `DB_NAME` | Database name | `fincore_db` |
 | `DB_USER` | Database username | `fincore_app` |
 | `DB_PASSWORD` | Database password | `xxx` |
 | `CLOUD_SQL_INSTANCE` | Full instance name | `project:region:instance` |

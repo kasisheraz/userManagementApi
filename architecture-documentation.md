@@ -39,7 +39,7 @@ The FinCore User Management API is a cloud-native microservice built on Google C
 │        Cloud SQL MySQL 8.0              │
 │    (fincore-npe-db)                     │
 │  ┌────────────────────────────────┐     │
-│  │  Database: my_auth_db          │     │
+│  │  Database: fincore_db          │     │
 │  │  User: fincore_app             │     │
 │  │  - users table                 │     │
 │  │  - roles table                 │     │
@@ -107,13 +107,13 @@ Cloud SQL Instance:
   Public IP: Enabled (with authorized networks)
   
 Database:
-  Name: my_auth_db
+  Name: fincore_db
   User: fincore_app
   Connection Method: Built-in Socket Factory
   SSL: Enabled
   
 Connection String:
-  jdbc:mysql://google/my_auth_db?cloudSqlInstance=<INSTANCE>&socketFactory=com.google.cloud.sql.mysql.SocketFactory
+  jdbc:mysql://google/fincore_db?cloudSqlInstance=<INSTANCE>&socketFactory=com.google.cloud.sql.mysql.SocketFactory
 ```
 
 #### Database Schema
@@ -334,7 +334,7 @@ Health Check & Smoke Tests:
 ```yaml
 Deployment Variables:
   - SPRING_PROFILES_ACTIVE: npe
-  - DB_NAME: my_auth_db
+  - DB_NAME: fincore_db
   - DB_USER: fincore_app (from GitHub secret)
   - DB_PASSWORD: (from GitHub secret)
   - CLOUD_SQL_INSTANCE: (from GitHub secret)

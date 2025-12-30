@@ -16,7 +16,7 @@ PROJECT_ID="${1:-}"
 REGION="${2:-us-central1}"
 SERVICE_NAME="user-management-api"
 DB_INSTANCE="${SERVICE_NAME}-db"
-DB_NAME="my_auth_db"
+DB_NAME="fincore_db"
 DB_USER="root"
 
 print_section() {

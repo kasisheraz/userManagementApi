@@ -3,7 +3,7 @@ instance_class: F2
 
 env_variables:
   SPRING_PROFILES_ACTIVE: "gcp"
-  DB_NAME: "my_auth_db"
+  DB_NAME: "fincore_db"
   DB_USER: "fincore_app"
 
 # Cloud SQL connection
