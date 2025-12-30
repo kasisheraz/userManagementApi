@@ -113,6 +113,6 @@ INSERT INTO Users (Phone_Number, Email, Role_Identifier, First_Name, Middle_Name
 -- Verify the setup
 SELECT 'Setup Complete' as status;
 SELECT COUNT(*) as permission_count FROM Permissions;
-SELECT COUNT(*) as role_count FROM roles; 
-SELECT COUNT(*) as user_count FROM users;
-SELECT COUNT(*) as role_permission_count FROM role_permissions;
+SELECT COUNT(*) as role_count FROM Roles; 
+SELECT COUNT(*) as user_count FROM Users;
+SELECT COUNT(*) as role_permission_count FROM Role_Permissions;
