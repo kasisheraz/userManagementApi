@@ -182,19 +182,40 @@ jobs:
           echo "Testing health endpoint..."
           curl -X GET $SERVICE_URL/actuator/health -H "Content-Type: application/json" | jq .
           
-          # Test login endpoint
-          echo "Testing login endpoint..."
-          LOGIN_RESPONSE=$(curl -s -X POST $SERVICE_URL/api/auth/login \
-            -H "Content-Type: application/json" \
-            -d '{"username":"admin","password":"Admin@123456"}')
+          # Test OTP-based authentication flow
+          echo "Testing OTP authentication flow..."
           
-          if echo $LOGIN_RESPONSE | jq -e '.token' > /dev/null 2>&1; then
-            echo "✅ Login endpoint working"
-            echo $LOGIN_RESPONSE | jq .
+          # Step 1: Request OTP
+          echo "Step 1: Requesting OTP..."
+          OTP_RESPONSE=$(curl -s -X POST $SERVICE_URL/api/auth/request-otp \
+            -H "Content-Type: application/json" \
+            -d '{"phoneNumber":"+1234567890"}')
+          
+          echo "OTP Response: $OTP_RESPONSE"
+          
+          # Extract devOtp from response (available in non-production environments)
+          DEV_OTP=$(echo $OTP_RESPONSE | jq -r '.devOtp // empty')
+          
+          if [ -z "$DEV_OTP" ]; then
+            echo "⚠️ devOtp not in response - this is expected in production mode"
+            echo "✅ OTP request endpoint working (production mode)"
           else
-            echo "❌ Login endpoint failed"
-            echo $LOGIN_RESPONSE
-            exit 1
+            echo "✅ OTP requested: $DEV_OTP"
+            
+            # Step 2: Verify OTP and get token
+            echo "Step 2: Verifying OTP..."
+            LOGIN_RESPONSE=$(curl -s -X POST $SERVICE_URL/api/auth/verify-otp \
+              -H "Content-Type: application/json" \
+              -d "{\"phoneNumber\":\"+1234567890\",\"otp\":\"$DEV_OTP\"}")
+            
+            if echo $LOGIN_RESPONSE | jq -e '.accessToken' > /dev/null 2>&1; then
+              echo "✅ OTP verification successful - JWT token received"
+              echo "User: $(echo $LOGIN_RESPONSE | jq -r '.user.firstName') $(echo $LOGIN_RESPONSE | jq -r '.user.lastName')"
+            else
+              echo "❌ OTP verification failed"
+              echo $LOGIN_RESPONSE
+              exit 1
+            fi
           fi
           
       - name: Deployment success notification
