@@ -136,7 +136,7 @@ jobs:
             --min-instances=0 \
             --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
             --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
-            --update-secrets="DB_PASSWORD=${{ secrets.SECRET_NAME }}:latest" \
+            --update-secrets="DB_PASSWORD=fincore-npe-app-password:latest" \
             --port=8080 \
             --project=${{ env.PROJECT_ID }}
             
