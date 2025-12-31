@@ -84,6 +84,7 @@ gcloud container images list --repository=gcr.io/$PROJECT_ID
 
 ### 5. Deploy to Cloud Run
 ```bash
+# Using Secret Manager for DB_PASSWORD (recommended)
 gcloud run deploy fincore-npe-api \
   --image=gcr.io/$PROJECT_ID/fincore-api:latest \
   --region=europe-west2 \
@@ -96,7 +97,8 @@ gcloud run deploy fincore-npe-api \
   --max-instances=3 \
   --min-instances=0 \
   --add-cloudsql-instances=$CLOUDSQL_INSTANCE \
-  --set-env-vars="SPRING_PROFILES_ACTIVE=npe,DB_NAME=fincore_db,DB_USER=$DB_USER,DB_PASSWORD=$DB_PASSWORD,CLOUD_SQL_INSTANCE=$CLOUDSQL_INSTANCE" \
+  --set-env-vars="SPRING_PROFILES_ACTIVE=npe,DB_NAME=fincore_db,DB_USER=$DB_USER,CLOUD_SQL_INSTANCE=$CLOUDSQL_INSTANCE" \
+  --update-secrets="DB_PASSWORD=fincore-npe-app-password:latest" \
   --port=8080
 ```
 
@@ -154,12 +156,16 @@ SERVICE_URL=$(gcloud run services describe fincore-npe-api \
 # Test health endpoint
 curl $SERVICE_URL/actuator/health
 
-# Test login (should return JWT token)
-curl -X POST $SERVICE_URL/api/auth/login \
+# Test OTP Authentication (Non-Production has devOtp in response)
+# Step 1: Request OTP
+curl -X POST $SERVICE_URL/api/auth/request-otp \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"Admin@123456"}'
+  -d '{"phoneNumber":"+1234567890"}'
 
-# Test with OTP (replace with actual OTP from logs)
+# Response includes devOtp in non-production environments:
+# {"message":"OTP sent successfully","expiresIn":300,"devOtp":"123456"}
+
+# Step 2: Verify OTP and get JWT token
 curl -X POST $SERVICE_URL/api/auth/verify-otp \
   -H "Content-Type: application/json" \
   -d '{"phoneNumber":"+1234567890","otp":"123456"}'

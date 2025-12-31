@@ -51,7 +51,16 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/auth/request-otp" -Method POST
 }
 ```
 
-**Note:** Check the application console logs for the OTP code (in development mode, OTPs are logged).
+**Note:** In non-production environments (local, test, npe), the OTP code is returned directly in the response as `devOtp`. Check the response JSON or console logs for the OTP code.
+
+**Example Response:**
+```json
+{
+  "message": "OTP sent successfully",
+  "expiresIn": 300,
+  "devOtp": "123456"
+}
+```
 
 #### Step 2: Verify OTP and Get JWT Token
 
@@ -101,7 +110,7 @@ Use these phone numbers from the test data:
 | +1234567891 | compliance@fincore.com | COMPLIANCE_OFFICER | Compliance Officer |
 | +1234567892 | staff@fincore.com | OPERATIONAL_STAFF | Operational Staff |
 
-**Note:** In development mode, OTP codes are logged to the console. In production, integrate with an SMS service (Twilio, AWS SNS, etc.) to send actual SMS messages.
+**Note:** In development/test mode, OTP codes are returned in the API response as `devOtp` for easy testing. In production, integrate with an SMS service (Twilio, AWS SNS, etc.) to send actual SMS messages.
 
 ## Access H2 Database Console
 - URL: http://localhost:8080/h2-console

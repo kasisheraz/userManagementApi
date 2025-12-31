@@ -143,7 +143,7 @@ Roles:
   - Created_Datetime (TIMESTAMP)
   
 Permissions:
-  - Permission_Identifier (INT, PK, AUTO_INCREMENT)
+  - Permission_Identifier (BIGINT, PK, AUTO_INCREMENT)
   - Permission_Name (VARCHAR(100), UNIQUE)
   - Description (TEXT)
   - Resource (VARCHAR(50))
@@ -152,7 +152,7 @@ Permissions:
 
 Role_Permissions:
   - Role_Identifier (INT, PK, FK to Roles)
-  - Permission_Identifier (INT, PK, FK to Permissions)
+  - Permission_Identifier (BIGINT, PK, FK to Permissions)
   - Granted_At (TIMESTAMP)
 
 Otp_Tokens:
@@ -209,6 +209,11 @@ Step 1 - Request OTP:
     - Store OTP in database with 5-minute expiration
     - Send OTP to user (logged in dev, SMS in production)
   Output: Confirmation message with masked phone number
+  
+  Non-Production Feature (local, test, npe profiles):
+    - Response includes 'devOtp' field with the OTP code
+    - Enables easy testing without checking logs or SMS
+    - Example response: {"message":"OTP sent successfully","expiresIn":300,"devOtp":"123456"}
 
 Step 2 - Verify OTP and Get JWT:
   Endpoint: POST /api/auth/verify-otp
