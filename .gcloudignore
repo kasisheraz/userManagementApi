@@ -44,5 +44,5 @@ buildNumber.properties
 *.ps1
 *.sql
 .github/
-Dockerfile*
+Dockerfile.simple
 service.yaml

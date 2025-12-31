@@ -24,16 +24,15 @@ spring:
       validation-timeout: 10000
   jpa:
     hibernate:
-      ddl-auto: validate  # Validate schema exists and matches entities
+      ddl-auto: none  # Skip validation - schema managed externally
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
     show-sql: true  # Enable SQL logging for debugging
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
     properties:
       hibernate:
         format_sql: false
-        dialect: org.hibernate.dialect.MySQL8Dialect
         jdbc:
           time_zone: UTC
     defer-datasource-initialization: true
