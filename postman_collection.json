@@ -16,7 +16,14 @@
 							"script": {
 								"exec": [
 									"if (pm.response.code === 200) {",
-									"    console.log(\"OTP requested successfully. Check console logs for OTP code.\");",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.devOtp) {",
+									"        pm.environment.set(\"otp_code\", jsonData.devOtp);",
+									"        console.log(\"✅ OTP auto-captured: \" + jsonData.devOtp);",
+									"    } else {",
+									"        console.log(\"⚠️ Production mode - check server logs for OTP\");",
+									"    }",
+									"    pm.environment.set(\"phone_number\", jsonData.phoneNumber);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -59,8 +66,7 @@
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
 									"    pm.environment.set(\"jwt_token\", jsonData.accessToken);",
-									"    pm.environment.set(\"username\", jsonData.username);",
-									"    console.log(\"JWT Token saved: \" + jsonData.accessToken);",
+									"    console.log(\"✅ JWT Token saved successfully\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -77,7 +83,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"phoneNumber\": \"+1234567890\",\n  \"otp\": \"123456\"\n}"
+							"raw": "{\n  \"phoneNumber\": \"+1234567890\",\n  \"otp\": \"{{otp_code}}\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/verify-otp",
@@ -95,6 +101,23 @@
 				},
 				{
 					"name": "3. Request OTP - Compliance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.devOtp) {",
+									"        pm.environment.set(\"otp_code\", jsonData.devOtp);",
+									"        console.log(\"✅ OTP auto-captured: \" + jsonData.devOtp);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -131,8 +154,7 @@
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
 									"    pm.environment.set(\"jwt_token\", jsonData.accessToken);",
-									"    pm.environment.set(\"username\", jsonData.username);",
-									"    console.log(\"JWT Token saved: \" + jsonData.accessToken);",
+									"    console.log(\"✅ JWT Token saved successfully\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -149,7 +171,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"phoneNumber\": \"+1234567891\",\n  \"otp\": \"123456\"\n}"
+							"raw": "{\n  \"phoneNumber\": \"+1234567891\",\n  \"otp\": \"{{otp_code}}\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/verify-otp",
@@ -167,6 +189,23 @@
 				},
 				{
 					"name": "5. Request OTP - Staff",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.devOtp) {",
+									"        pm.environment.set(\"otp_code\", jsonData.devOtp);",
+									"        console.log(\"✅ OTP auto-captured: \" + jsonData.devOtp);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -203,8 +242,7 @@
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
 									"    pm.environment.set(\"jwt_token\", jsonData.accessToken);",
-									"    pm.environment.set(\"username\", jsonData.username);",
-									"    console.log(\"JWT Token saved: \" + jsonData.accessToken);",
+									"    console.log(\"✅ JWT Token saved successfully\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -221,7 +259,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"phoneNumber\": \"+1234567892\",\n  \"otp\": \"123456\"\n}"
+							"raw": "{\n  \"phoneNumber\": \"+1234567892\",\n  \"otp\": \"{{otp_code}}\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/verify-otp",
@@ -256,6 +294,85 @@
 								"api",
 								"auth",
 								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "🚀 Quick Login (Auto OTP)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Step 1: Request OTP",
+									"const baseUrl = pm.environment.get('base_url');",
+									"const phoneNumber = pm.environment.get('phone_number') || '+1234567890';",
+									"",
+									"pm.sendRequest({",
+									"    url: baseUrl + '/api/auth/request-otp',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({ phoneNumber: phoneNumber })",
+									"    }",
+									"}, function (err, response) {",
+									"    if (err) {",
+									"        console.error('OTP request failed:', err);",
+									"        return;",
+									"    }",
+									"    const jsonData = response.json();",
+									"    if (jsonData.devOtp) {",
+									"        pm.environment.set('otp_code', jsonData.devOtp);",
+									"        console.log('✅ OTP captured: ' + jsonData.devOtp);",
+									"    } else {",
+									"        console.log('⚠️ No devOtp in response - production mode?');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('jwt_token', jsonData.accessToken);",
+									"    console.log('✅ Login successful! Token saved.');",
+									"    console.log('User:', jsonData.user ? jsonData.user.firstName + ' ' + jsonData.user.lastName : 'N/A');",
+									"} else {",
+									"    console.log('❌ Login failed:', pm.response.text());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"{{phone_number}}\",\n  \"otp\": \"{{otp_code}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/verify-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"verify-otp"
 							]
 						}
 					},

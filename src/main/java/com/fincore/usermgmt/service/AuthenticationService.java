@@ -9,6 +9,7 @@ import com.fincore.usermgmt.repository.UserRepository;
 import com.fincore.usermgmt.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,9 @@ public class AuthenticationService {
     private final OtpService otpService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserMapper userMapper;
+    
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
 
     @Transactional
     public OtpResponse initiateAuthentication(String phoneNumber) {
@@ -38,11 +42,29 @@ public class AuthenticationService {
         
         log.info("OTP sent to phone number: {} (OTP: {} - for development only)", phoneNumber, otp);
         
-        return new OtpResponse(
+        OtpResponse response = new OtpResponse(
                 "OTP sent to " + maskPhoneNumber(phoneNumber) + ". Please verify to complete authentication.",
                 phoneNumber,
                 otpService.getOtpExpirationSeconds().longValue()
         );
+        
+        // Include OTP in response for non-production environments (npe, local-h2, test)
+        if (isNonProductionEnvironment()) {
+            response.setDevOtp(otp);
+            log.info("DEV MODE: OTP included in response for testing");
+        }
+        
+        return response;
+    }
+    
+    private boolean isNonProductionEnvironment() {
+        return activeProfile != null && 
+               (activeProfile.contains("npe") || 
+                activeProfile.contains("local") || 
+                activeProfile.contains("test") ||
+                activeProfile.contains("h2") ||
+                activeProfile.contains("dev"));
+    }
     }
 
     @Transactional
