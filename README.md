@@ -4,8 +4,8 @@ A Spring Boot microservice providing secure user authentication, role-based acce
 
 ## 🚀 Live Deployment
 
-- **NPE Environment**: https://fincore-npe-api-lfd6ooarra-nw.a.run.app
-- **Health Check**: https://fincore-npe-api-lfd6ooarra-nw.a.run.app/actuator/health
+- **NPE Environment**: https://fincore-npe-api-994490239798.europe-west2.run.app
+- **Health Check**: https://fincore-npe-api-994490239798.europe-west2.run.app/actuator/health
 - **Status**: ✅ Production Ready
 
 ## 🏗️ Architecture
@@ -106,7 +106,7 @@ mvn spring-boot:run
 
 ### Base URL
 ```
-NPE: https://fincore-npe-api-lfd6ooarra-nw.a.run.app
+NPE: https://fincore-npe-api-994490239798.europe-west2.run.app
 Local: http://localhost:8080
 ```
 
@@ -334,7 +334,7 @@ The repository includes an automated deployment pipeline (`.github/workflows/dep
 GCP_PROJECT_ID          # Your GCP project ID
 GCP_SA_KEY              # Service account JSON key
 DB_USER                 # Database user (fincore_app)
-DB_PASSWORD             # Database password
+SECRET_NAME             # Secret Manager secret name (fincore-npe-app-password)
 CLOUDSQL_INSTANCE       # Full Cloud SQL instance name
 GCP_SERVICE_ACCOUNT     # Service account email
 ```
@@ -483,8 +483,8 @@ For issues or questions, please open a GitHub issue or contact the development t
 
 ---
 
-**Last Updated**: December 20, 2025  
-**Version**: 1.0.0  
+**Last Updated**: December 31, 2025  
+**Version**: 1.0.1  
 **Status**: ✅ Production Ready
 
 ## Quick Start

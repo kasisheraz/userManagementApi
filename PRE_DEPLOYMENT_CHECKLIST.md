@@ -50,7 +50,7 @@ Use this checklist to ensure everything is ready for deployment to GCP.
   - [ ] `GCP_PROJECT_ID`
   - [ ] `GCP_SA_KEY` (service account JSON)
   - [ ] `DB_USER`
-  - [ ] `DB_PASSWORD`
+  - [ ] `SECRET_NAME` (Secret Manager secret name for DB password, e.g., `fincore-npe-app-password`)
   - [ ] `CLOUDSQL_INSTANCE` (format: `project:region:instance`)
   - [ ] `GCP_SERVICE_ACCOUNT` (email format)
 

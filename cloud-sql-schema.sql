@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS Permissions;
 
 -- Create Permissions table
 CREATE TABLE Permissions (
-    Permission_Identifier INT PRIMARY KEY AUTO_INCREMENT,
+    Permission_Identifier BIGINT PRIMARY KEY AUTO_INCREMENT,
     Permission_Name VARCHAR(100) UNIQUE NOT NULL,
     Description TEXT,
     Resource VARCHAR(50),

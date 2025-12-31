@@ -1,6 +1,6 @@
 # NPE Environment Configuration
 # Used for: Non-Production Environment on GCP with built-in Cloud SQL connector
-# Service: https://fincore-npe-api-lfd6ooarra-nw.a.run.app
+# Service: https://fincore-npe-api-994490239798.europe-west2.run.app
 
 spring:
   application:

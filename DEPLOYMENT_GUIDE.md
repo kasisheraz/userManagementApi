@@ -59,7 +59,7 @@ Add the following secrets:
 | `GCP_PROJECT_ID` | Your GCP project ID | `project-07a61357-b791-4255-a9e` |
 | `GCP_SA_KEY` | Service account JSON key | `{...full JSON content...}` |
 | `DB_USER` | Database username | `fincore_app` |
-| `DB_PASSWORD` | Database password | Your secure password |
+| `SECRET_NAME` | Secret Manager secret name for DB password | `fincore-npe-app-password` |
 | `CLOUDSQL_INSTANCE` | Full Cloud SQL instance name | `project-id:region:instance-name` |
 | `GCP_SERVICE_ACCOUNT` | Service account email | `fincore-npe-cloudrun@project-id.iam.gserviceaccount.com` |
 
@@ -396,6 +396,7 @@ For issues or questions:
 
 ---
 
-**Deployment Status:** ✅ Ready to Deploy  
+**Deployment Status:** ✅ Deployed & Running  
 **Database Name:** `fincore_db`  
-**Last Updated:** December 30, 2025
+**Service URL:** `https://fincore-npe-api-994490239798.europe-west2.run.app`  
+**Last Updated:** December 31, 2025
