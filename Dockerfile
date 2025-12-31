@@ -24,10 +24,6 @@ RUN apk add --no-cache curl
 # Copy JAR from builder
 COPY --from=builder /app/target/user-management-api-*.jar app.jar
 
-# Copy startup script
-COPY start-with-proxy.sh /app/start-with-proxy.sh
-RUN chmod +x /app/start-with-proxy.sh
-
 # Create a non-root user for security
 RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser && \
@@ -39,10 +35,11 @@ USER appuser
 EXPOSE 8080
 
 # Set environment variables for Cloud Run
+# Uses 'npe' profile which has built-in Cloud SQL Socket Factory connector
 ENV PORT=8080 \
-    SPRING_PROFILES_ACTIVE=mysql \
+    SPRING_PROFILES_ACTIVE=npe \
     LOG_LEVEL=INFO \
-    JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseStringDeduplication -Xss256k -XX:ReservedCodeCacheSize=64m"
+    JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
 
-# Use startup script with proxy
-ENTRYPOINT ["/app/start-with-proxy.sh"]
+# Run the Spring Boot application directly (Cloud SQL Socket Factory handles DB connection)
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -5,6 +5,8 @@
 spring:
   application:
     name: user-management-api
+  server:
+    port: 8080
   datasource:
     # Built-in Cloud SQL Connector - Direct connection via Socket Factory
     url: jdbc:mysql://google/${DB_NAME:fincore_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=30000&socketTimeout=60000

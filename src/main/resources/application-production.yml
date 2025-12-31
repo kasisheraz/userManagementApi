@@ -5,6 +5,8 @@
 spring:
   application:
     name: user-management-api
+  server:
+    port: 8080
   datasource:
     # Built-in Cloud SQL Connector for Production
     url: jdbc:mysql://google/${DB_NAME}?cloudSqlInstance=${CLOUD_SQL_INSTANCE}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=true&requireSSL=true&serverTimezone=UTC&connectTimeout=10000&autoReconnect=true
