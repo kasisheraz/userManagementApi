@@ -65,7 +65,6 @@ public class AuthenticationService {
                 activeProfile.contains("h2") ||
                 activeProfile.contains("dev"));
     }
-    }
 
     @Transactional
     public AuthenticationResponse verifyOtpAndAuthenticate(String phoneNumber, String otpCode) {
