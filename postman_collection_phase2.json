@@ -37,30 +37,7 @@
       "name": "Authentication",
       "item": [
         {
-          "name": "Login - Request OTP",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"phoneNumber\": \"+1234567890\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
-            },
-            "description": "Initiate login by requesting OTP for the admin user"
-          },
-          "response": []
-        },
-        {
-          "name": "Login - Verify OTP",
+          "name": "Login - Admin",
           "event": [
             {
               "listen": "test",
@@ -86,14 +63,90 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"phoneNumber\": \"+1234567890\",\n    \"otp\": \"123456\"\n}"
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"Admin@123456\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/auth/verify-otp",
+              "raw": "{{baseUrl}}/api/auth/login",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "verify-otp"]
+              "path": ["api", "auth", "login"]
             },
-            "description": "Verify OTP to get JWT token (use OTP from console/logs)"
+            "description": "Login with admin credentials to get JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Compliance Officer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.token);",
+                  "    console.log('Auth token saved:', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"compliance\",\n    \"password\": \"Compliance@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with compliance officer credentials to get JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Operational Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.token);",
+                  "    console.log('Auth token saved:', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"staff\",\n    \"password\": \"Staff@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with operational staff credentials to get JWT token"
           },
           "response": []
         }
