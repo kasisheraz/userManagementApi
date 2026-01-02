@@ -166,6 +166,69 @@ Otp_Tokens:
   - INDEX idx_otp_expires (Expires_At)
 ```
 
+**Phase 2: Organisation Onboarding Tables**
+```sql
+Address:
+  - Address_Identifier (BIGINT, PK, AUTO_INCREMENT)
+  - Type_Code (INT) -- 1=Residential, 2=Business, 3=Registered, 4=Correspondence, 5=Postal
+  - Address_Line1 (VARCHAR(200))
+  - Address_Line2 (VARCHAR(200))
+  - Postal_Code (VARCHAR(20))
+  - State_Code (VARCHAR(50))
+  - City (VARCHAR(100))
+  - Country (VARCHAR(100))
+  - Status_Description (VARCHAR(20))
+  - Created_Datetime (TIMESTAMP)
+  - Last_Modified_Datetime (TIMESTAMP)
+  - Created_By (INT, FK to Users)
+
+Organisation:
+  - Organisation_Identifier (BIGINT, PK, AUTO_INCREMENT)
+  - User_Identifier (INT, FK to Users)
+  - Registration_Number (VARCHAR(50), UNIQUE)
+  - SIC_Code (VARCHAR(10))
+  - Legal_Name (VARCHAR(200))
+  - Business_Name (VARCHAR(200))
+  - Organisation_Type_Description (VARCHAR(20)) -- SOLE_TRADER, PARTNERSHIP, LLP, LTD, PLC, CHARITY, TRUST, OTHER
+  - Business_Description (TEXT)
+  - Incorporation_Date (DATE)
+  - Country_Of_Incorporation (VARCHAR(100))
+  - HMRC_MLR_Number (VARCHAR(50))
+  - FCA_Number (VARCHAR(50))
+  - Number_Of_Branches (VARCHAR(10))
+  - Number_Of_Agents (VARCHAR(10))
+  - Company_Number (VARCHAR(20))
+  - Website_Address (VARCHAR(255))
+  - Primary_Remittance_Destination_Country (VARCHAR(100))
+  - Monthly_Turnover_Range (VARCHAR(50))
+  - Number_Of_Incoming_Transactions (VARCHAR(20))
+  - Number_Of_Outgoing_Transactions (VARCHAR(20))
+  - Registered_Address_Identifier (BIGINT, FK to Address)
+  - Business_Address_Identifier (BIGINT, FK to Address)
+  - Correspondence_Address_Identifier (BIGINT, FK to Address)
+  - Status_Description (VARCHAR(20)) -- PENDING, ACTIVE, SUSPENDED, REJECTED, CLOSED
+  - SumSub_Applicant_Id (VARCHAR(100))
+  - SumSub_External_User_Id (VARCHAR(100))
+  - Created_Datetime (TIMESTAMP)
+  - Last_Modified_Datetime (TIMESTAMP)
+  - Created_By (INT, FK to Users)
+
+KYC_Documents:
+  - KYC_Document_Identifier (BIGINT, PK, AUTO_INCREMENT)
+  - Reference_Identifier (BIGINT, FK to Organisation)
+  - Document_Type_Description (VARCHAR(50)) -- 18 document types supported
+  - File_Name (VARCHAR(255))
+  - File_URL (VARCHAR(500))
+  - Status_Description (VARCHAR(20)) -- PENDING, UNDER_REVIEW, VERIFIED, REJECTED, EXPIRED, REQUIRES_UPDATE
+  - SumSub_Document_Id (VARCHAR(100))
+  - Verification_Date (TIMESTAMP)
+  - Expiry_Date (DATE)
+  - Rejection_Reason (TEXT)
+  - Created_Datetime (TIMESTAMP)
+  - Last_Modified_Datetime (TIMESTAMP)
+  - Created_By (INT, FK to Users)
+```
+
 **Predefined Roles**
 1. **SYSTEM_ADMINISTRATOR**: Full system access (all permissions)
 2. **ADMIN**: User management and read permissions
@@ -177,6 +240,11 @@ Otp_Tokens:
 - `USER_WRITE`: Create and update users
 - `CUSTOMER_READ`: Read customer information
 - `CUSTOMER_WRITE`: Create and update customers
+- `ORG_READ`: Read organisation information (Phase 2)
+- `ORG_WRITE`: Create and update organisations (Phase 2)
+- `KYC_READ`: Read KYC documents (Phase 2)
+- `KYC_WRITE`: Upload and update KYC documents (Phase 2)
+- `KYC_VERIFY`: Verify KYC documents (Phase 2)
 
 ### 3.3 Infrastructure Layer
 
@@ -403,6 +471,46 @@ PUT    /api/users/{id}         # Update user (ADMIN)
 DELETE /api/users/{id}         # Delete user (ADMIN)
 ```
 
+**Phase 2: Organisation Management**
+```http
+GET    /api/organisations                      # List all organisations (paginated)
+GET    /api/organisations/{id}                 # Get organisation by ID
+GET    /api/organisations/registration/{regNo} # Get by registration number
+GET    /api/organisations/user/{userId}        # Get by user
+GET    /api/organisations/status/{status}      # Get by status
+POST   /api/organisations                      # Create organisation
+POST   /api/organisations/search               # Search with filters
+PUT    /api/organisations/{id}                 # Update organisation
+PATCH  /api/organisations/{id}/status          # Update status
+DELETE /api/organisations/{id}                 # Delete organisation
+```
+
+**Phase 2: KYC Document Management**
+```http
+GET    /api/kyc-documents                      # List all documents (paginated)
+GET    /api/kyc-documents/{id}                 # Get document by ID
+GET    /api/kyc-documents/organisation/{orgId} # Get by organisation
+GET    /api/kyc-documents/status/{status}      # Get by status
+GET    /api/kyc-documents/type/{type}          # Get by document type
+GET    /api/kyc-documents/pending-verification # Get pending documents
+GET    /api/kyc-documents/counts-by-status     # Get status counts
+POST   /api/kyc-documents                      # Upload document
+PUT    /api/kyc-documents/{id}                 # Update document
+PATCH  /api/kyc-documents/{id}/verify          # Verify document
+DELETE /api/kyc-documents/{id}                 # Delete document
+```
+
+**Phase 2: Address Management**
+```http
+GET    /api/addresses                    # List all addresses
+GET    /api/addresses/{id}               # Get address by ID
+GET    /api/addresses/type/{type}        # Get by type
+GET    /api/addresses/country/{country}  # Get by country
+POST   /api/addresses                    # Create address
+PUT    /api/addresses/{id}               # Update address
+DELETE /api/addresses/{id}               # Delete address
+```
+
 **Health & Monitoring**
 ```http
 GET /actuator/health           # Service health status
@@ -565,6 +673,16 @@ Container Registry:
 - [ ] API rate limiting
 - [ ] Advanced monitoring dashboards
 
+### 13.2 Completed Features (Phase 2)
+- [x] Organisation onboarding workflow
+- [x] Multi-type address management
+- [x] KYC document upload and verification
+- [x] Organisation status workflow
+- [x] Regulatory compliance fields (FCA, HMRC MLR)
+- [x] SumSub integration preparation
+- [x] Advanced search and filtering
+- [x] Pagination support for list endpoints
+
 ### 13.2 Scalability Improvements
 - [ ] Multi-region deployment
 - [ ] Global load balancing
@@ -594,5 +712,6 @@ Container Registry:
 
 ---
 
-*Last Updated: December 20, 2025*  
+*Last Updated: January 2025*  
+*Version: 2.0.0 (Phase 2 - Organisation Onboarding)*
 *This architecture documentation reflects the current deployed state of the FinCore User Management API on Google Cloud Platform.*

@@ -175,6 +175,49 @@ Authorization: Bearer {accessToken}
 | PUT | `/api/users/{id}` | Update user | ADMIN |
 | DELETE | `/api/users/{id}` | Delete user | ADMIN |
 
+### Organisation Endpoints (Phase 2)
+
+| Method | Endpoint | Description | Required Role |
+|--------|----------|-------------|---------------|
+| GET | `/api/organisations` | List all organisations (paginated) | Authenticated |
+| GET | `/api/organisations/{id}` | Get organisation by ID | Authenticated |
+| GET | `/api/organisations/registration/{regNo}` | Get by registration number | Authenticated |
+| GET | `/api/organisations/user/{userId}` | Get organisations by user | Authenticated |
+| GET | `/api/organisations/status/{status}` | Get by status | Authenticated |
+| POST | `/api/organisations` | Create new organisation | Authenticated |
+| POST | `/api/organisations/search` | Search organisations | Authenticated |
+| PUT | `/api/organisations/{id}` | Update organisation | Authenticated |
+| PATCH | `/api/organisations/{id}/status` | Update status | Authenticated |
+| DELETE | `/api/organisations/{id}` | Delete organisation | Authenticated |
+
+### KYC Document Endpoints (Phase 2)
+
+| Method | Endpoint | Description | Required Role |
+|--------|----------|-------------|---------------|
+| GET | `/api/kyc-documents` | List all documents (paginated) | Authenticated |
+| GET | `/api/kyc-documents/{id}` | Get document by ID | Authenticated |
+| GET | `/api/kyc-documents/organisation/{orgId}` | Get by organisation | Authenticated |
+| GET | `/api/kyc-documents/status/{status}` | Get by status | Authenticated |
+| GET | `/api/kyc-documents/type/{type}` | Get by document type | Authenticated |
+| GET | `/api/kyc-documents/pending-verification` | Get pending documents | Authenticated |
+| GET | `/api/kyc-documents/counts-by-status` | Get counts by status | Authenticated |
+| POST | `/api/kyc-documents` | Upload new document | Authenticated |
+| PUT | `/api/kyc-documents/{id}` | Update document | Authenticated |
+| PATCH | `/api/kyc-documents/{id}/verify` | Verify document | Authenticated |
+| DELETE | `/api/kyc-documents/{id}` | Delete document | Authenticated |
+
+### Address Endpoints (Phase 2)
+
+| Method | Endpoint | Description | Required Role |
+|--------|----------|-------------|---------------|
+| GET | `/api/addresses` | List all addresses | Authenticated |
+| GET | `/api/addresses/{id}` | Get address by ID | Authenticated |
+| GET | `/api/addresses/type/{type}` | Get by address type | Authenticated |
+| GET | `/api/addresses/country/{country}` | Get by country | Authenticated |
+| POST | `/api/addresses` | Create new address | Authenticated |
+| PUT | `/api/addresses/{id}` | Update address | Authenticated |
+| DELETE | `/api/addresses/{id}` | Delete address | Authenticated |
+
 #### Test Phone Numbers
 
 Use these phone numbers from the test data:
@@ -232,16 +275,29 @@ Response (200 OK):
 | USER_WRITE | ✅ | ✅ | ❌ | ❌ |
 | CUSTOMER_READ | ✅ | ✅ | ✅ | ❌ |
 | CUSTOMER_WRITE | ✅ | ✅ | ❌ | ❌ |
+| ORG_READ | ✅ | ✅ | ✅ | ✅ |
+| ORG_WRITE | ✅ | ❌ | ✅ | ❌ |
+| KYC_READ | ✅ | ✅ | ✅ | ✅ |
+| KYC_WRITE | ✅ | ❌ | ✅ | ❌ |
+| KYC_VERIFY | ✅ | ❌ | ✅ | ❌ |
 
 ## 🧪 Testing
 
 ### Using Postman
-Import the Postman collection included in the repository:
+Import the Postman collections included in the repository:
 ```bash
-postman_collection.json
+postman_collection.json              # Phase 1 - User Management
+postman_collection_phase2.json       # Phase 2 - Organisation Onboarding
 postman_environment.json
 postman_environment_cloud.json
 ```
+
+### Phase 2 Postman Collection
+The `postman_collection_phase2.json` includes comprehensive tests for:
+- **Authentication**: OTP request and verification
+- **Organisations**: Full CRUD, search, and status management
+- **KYC Documents**: Upload, verification, status tracking
+- **Addresses**: Management of business, registered, and correspondence addresses
 
 ### Using test.http (VS Code REST Client)
 The repository includes a `test.http` file for quick API testing with VS Code REST Client extension.
@@ -264,36 +320,66 @@ src/main/java/com/fincore/usermgmt/
 │   └── ApplicationStartupListener.java
 ├── controller/          # REST API controllers
 │   ├── AuthController.java
-│   └── UserController.java
+│   ├── UserController.java
+│   ├── OrganisationController.java      # Phase 2
+│   ├── KycDocumentController.java       # Phase 2
+│   └── AddressController.java           # Phase 2
 ├── dto/                 # Data Transfer Objects
 │   ├── LoginRequest.java
 │   ├── LoginResponse.java
-│   └── UserDTO.java
+│   ├── UserDTO.java
+│   ├── OrganisationDTO.java             # Phase 2
+│   ├── OrganisationCreateDTO.java       # Phase 2
+│   ├── OrganisationUpdateDTO.java       # Phase 2
+│   ├── OrganisationSearchDTO.java       # Phase 2
+│   ├── KycDocumentDTO.java              # Phase 2
+│   ├── KycDocumentCreateDTO.java        # Phase 2
+│   ├── KycDocumentUpdateDTO.java        # Phase 2
+│   ├── AddressDTO.java                  # Phase 2
+│   ├── AddressCreateDTO.java            # Phase 2
+│   └── PagedResponse.java               # Phase 2
 ├── entity/             # JPA entities
 │   ├── User.java
 │   ├── Role.java
 │   ├── Permission.java
-│   └── RolePermission.java
+│   ├── RolePermission.java
+│   ├── Organisation.java                # Phase 2
+│   ├── KycDocument.java                 # Phase 2
+│   ├── Address.java                     # Phase 2
+│   ├── AddressType.java                 # Phase 2 (Enum)
+│   ├── OrganisationType.java            # Phase 2 (Enum)
+│   ├── OrganisationStatus.java          # Phase 2 (Enum)
+│   ├── DocumentType.java                # Phase 2 (Enum)
+│   └── DocumentStatus.java              # Phase 2 (Enum)
 ├── mapper/             # MapStruct mappers
-│   └── UserMapper.java
+│   ├── UserMapper.java
+│   ├── OrganisationMapper.java          # Phase 2
+│   ├── KycDocumentMapper.java           # Phase 2
+│   └── AddressMapper.java               # Phase 2
 ├── repository/         # JPA repositories
 │   ├── UserRepository.java
 │   ├── RoleRepository.java
-│   └── PermissionRepository.java
+│   ├── PermissionRepository.java
+│   ├── OrganisationRepository.java      # Phase 2
+│   ├── KycDocumentRepository.java       # Phase 2
+│   └── AddressRepository.java           # Phase 2
 ├── security/           # JWT & security
 │   ├── JwtTokenProvider.java
 │   └── JwtAuthenticationFilter.java
 └── service/            # Business logic
     ├── AuthService.java
-    └── UserService.java
+    ├── UserService.java
+    ├── OrganisationService.java         # Phase 2
+    ├── KycDocumentService.java          # Phase 2
+    └── AddressService.java              # Phase 2
 
 src/main/resources/
 ├── application.yml                    # Base configuration
 ├── application-npe.yml               # NPE environment
 ├── application-production.yml        # Production config
 ├── application-local-h2.yml          # H2 local dev
-├── schema.sql                        # Local H2 schema
-└── data.sql                          # Local H2 test data
+├── schema.sql                        # Local H2 schema (includes Phase 2 tables)
+└── data.sql                          # Local H2 test data (includes Phase 2 data)
 ```
 
 ## 🐳 Docker
@@ -386,11 +472,16 @@ gcloud sql import sql INSTANCE_NAME \
 
 ### Database Schema
 
-**Tables:**
+**Core Tables:**
 - `users`: User accounts and profiles
 - `roles`: User roles (SYSTEM_ADMINISTRATOR, ADMIN, etc.)
 - `permissions`: Granular permissions (USER_READ, USER_WRITE, etc.)
 - `role_permissions`: Many-to-many relationship
+
+**Phase 2 Tables (Organisation Onboarding):**
+- `address`: Multi-type address management (registered, business, correspondence, postal)
+- `organisation`: Company details with regulatory compliance fields (FCA, HMRC MLR)
+- `kyc_documents`: Document verification with SumSub integration support
 
 **Key Features:**
 - Auto-incrementing primary keys
@@ -398,6 +489,8 @@ gcloud sql import sql INSTANCE_NAME \
 - Foreign key relationships
 - Indexed columns for performance
 - Timestamp tracking (created_at, updated_at)
+- Phase 2: Organisation type and status enums
+- Phase 2: Document type and verification status tracking
 
 ## 🔧 Configuration
 
@@ -483,9 +576,29 @@ For issues or questions, please open a GitHub issue or contact the development t
 
 ---
 
-**Last Updated**: December 31, 2025  
-**Version**: 1.0.1  
+**Last Updated**: January 2025  
+**Version**: 2.0.0 (Phase 2 - Organisation Onboarding)  
 **Status**: ✅ Production Ready
+
+## Phase 2 Features (Organisation Onboarding)
+
+### Organisation Management
+- Full CRUD operations for business organisations
+- Support for multiple organisation types (SOLE_TRADER, PARTNERSHIP, LLP, LTD, PLC, CHARITY, TRUST)
+- Regulatory compliance fields (FCA number, HMRC MLR number)
+- Business metrics (turnover, transactions, branches, agents)
+- Status workflow (PENDING → ACTIVE/SUSPENDED/REJECTED/CLOSED)
+
+### KYC Document Management
+- 18 document types supported (Certificate of Incorporation, FCA Authorisation, HMRC Registration, etc.)
+- Document verification workflow (PENDING → UNDER_REVIEW → VERIFIED/REJECTED)
+- SumSub integration support (applicantId, externalUserId fields)
+- Bulk status tracking and counts
+
+### Address Management
+- 5 address types: RESIDENTIAL, BUSINESS, REGISTERED, CORRESPONDENCE, POSTAL
+- Full UK address format support
+- Link addresses to organisations
 
 ## Quick Start
 ```bash

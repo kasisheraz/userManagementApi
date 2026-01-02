@@ -1,0 +1,853 @@
+{
+  "info": {
+    "_postman_id": "phase2-org-onboarding",
+    "name": "User Management API - Phase 2 Organisation Onboarding",
+    "description": "Postman collection for testing Phase 2 Organisation Onboarding endpoints including Organisation, KYC Documents, and Address management.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "organisationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "addressId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "kycDocumentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login - Request OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Initiate login by requesting OTP for the admin user"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.token);",
+                  "    console.log('Auth token saved:', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": \"+1234567890\",\n    \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify-otp"]
+            },
+            "description": "Verify OTP to get JWT token (use OTP from console/logs)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Addresses",
+      "item": [
+        {
+          "name": "Create Address - Registered",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.addressIdentifier) {",
+                  "    pm.collectionVariables.set('addressId', jsonData.addressIdentifier);",
+                  "    console.log('Address ID saved:', jsonData.addressIdentifier);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"typeCode\": \"REGISTERED\",\n    \"addressLine1\": \"123 High Street\",\n    \"addressLine2\": \"Floor 3\",\n    \"postalCode\": \"EC1A 1BB\",\n    \"stateCode\": \"Greater London\",\n    \"city\": \"London\",\n    \"country\": \"United Kingdom\",\n    \"statusDescription\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/addresses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "addresses"]
+            },
+            "description": "Create a new registered address"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Address - Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"typeCode\": \"BUSINESS\",\n    \"addressLine1\": \"456 Business Park\",\n    \"addressLine2\": \"Unit 7\",\n    \"postalCode\": \"M1 2AB\",\n    \"stateCode\": \"Greater Manchester\",\n    \"city\": \"Manchester\",\n    \"country\": \"United Kingdom\",\n    \"statusDescription\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/addresses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "addresses"]
+            },
+            "description": "Create a new business address"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/addresses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "addresses"]
+            },
+            "description": "Get all addresses"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Address by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/addresses/{{addressId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "addresses", "{{addressId}}"]
+            },
+            "description": "Get a specific address by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Addresses by Type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/addresses/type/REGISTERED",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "addresses", "type", "REGISTERED"]
+            },
+            "description": "Get all addresses of a specific type"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Addresses by Country",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/addresses/country/United Kingdom",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "addresses", "country", "United Kingdom"]
+            },
+            "description": "Get all addresses in a specific country"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"typeCode\": \"REGISTERED\",\n    \"addressLine1\": \"123 High Street Updated\",\n    \"addressLine2\": \"Floor 5\",\n    \"postalCode\": \"EC1A 1CC\",\n    \"stateCode\": \"Greater London\",\n    \"city\": \"London\",\n    \"country\": \"United Kingdom\",\n    \"statusDescription\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/addresses/{{addressId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "addresses", "{{addressId}}"]
+            },
+            "description": "Update an existing address"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/addresses/{{addressId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "addresses", "{{addressId}}"]
+            },
+            "description": "Delete an address by ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Organisations",
+      "item": [
+        {
+          "name": "Create Organisation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.organisationIdentifier) {",
+                  "    pm.collectionVariables.set('organisationId', jsonData.organisationIdentifier);",
+                  "    console.log('Organisation ID saved:', jsonData.organisationIdentifier);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userIdentifier\": 1,\n    \"registrationNumber\": \"REG00012345\",\n    \"sicCode\": \"64999\",\n    \"legalName\": \"Test Money Services Ltd\",\n    \"businessName\": \"Test Remittance\",\n    \"organisationTypeDescription\": \"LTD\",\n    \"businessDescription\": \"International money transfer services\",\n    \"incorporationDate\": \"2020-01-15\",\n    \"countryOfIncorporation\": \"United Kingdom\",\n    \"hmrcMlrNumber\": \"XMLR00999888\",\n    \"fcaNumber\": \"FRN999888\",\n    \"numberOfBranches\": \"3\",\n    \"numberOfAgents\": \"10\",\n    \"companyNumber\": \"CN99988877\",\n    \"websiteAddress\": \"https://test-remittance.com\",\n    \"primaryRemittanceDestinationCountry\": \"India\",\n    \"monthlyTurnoverRange\": \"100000-500000\",\n    \"numberOfIncomingTransactions\": \"1000\",\n    \"numberOfOutgoingTransactions\": \"900\",\n    \"statusDescription\": \"PENDING\",\n    \"registeredAddress\": {\n        \"typeCode\": \"REGISTERED\",\n        \"addressLine1\": \"789 Registry Lane\",\n        \"addressLine2\": \"Suite 100\",\n        \"postalCode\": \"EC2A 2BB\",\n        \"stateCode\": \"Greater London\",\n        \"city\": \"London\",\n        \"country\": \"United Kingdom\",\n        \"statusDescription\": \"ACTIVE\"\n    },\n    \"businessAddress\": {\n        \"typeCode\": \"BUSINESS\",\n        \"addressLine1\": \"101 Commerce Road\",\n        \"addressLine2\": \"Building A\",\n        \"postalCode\": \"EC3A 3CC\",\n        \"stateCode\": \"Greater London\",\n        \"city\": \"London\",\n        \"country\": \"United Kingdom\",\n        \"statusDescription\": \"ACTIVE\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations"]
+            },
+            "description": "Create a new organisation with embedded addresses"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Organisations (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations?page=0&size=10&sortBy=legalName&sortDirection=ASC",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "legalName"
+                },
+                {
+                  "key": "sortDirection",
+                  "value": "ASC"
+                }
+              ]
+            },
+            "description": "Get all organisations with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organisation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/{{organisationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "{{organisationId}}"]
+            },
+            "description": "Get a specific organisation by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organisation by Registration Number",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/registration/REG00012345",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "registration", "REG00012345"]
+            },
+            "description": "Get an organisation by its registration number"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organisations by User ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/user/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "user", "1"]
+            },
+            "description": "Get all organisations for a specific user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organisations by Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/status/PENDING",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "status", "PENDING"]
+            },
+            "description": "Get all organisations with a specific status"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Organisations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"legalName\": \"Test\",\n    \"statusDescription\": \"PENDING\",\n    \"organisationTypeDescription\": \"LTD\",\n    \"countryOfIncorporation\": \"United Kingdom\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/search?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "search"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search organisations with filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Organisation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"businessName\": \"Test Remittance Updated\",\n    \"businessDescription\": \"Updated international money transfer services\",\n    \"numberOfBranches\": \"5\",\n    \"numberOfAgents\": \"15\",\n    \"websiteAddress\": \"https://test-remittance-updated.com\",\n    \"monthlyTurnoverRange\": \"500000-1000000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/{{organisationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "{{organisationId}}"]
+            },
+            "description": "Update an existing organisation"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Organisation Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/{{organisationId}}/status?status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "{{organisationId}}", "status"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                }
+              ]
+            },
+            "description": "Update organisation status (PENDING -> ACTIVE)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Organisation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organisations/{{organisationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organisations", "{{organisationId}}"]
+            },
+            "description": "Delete an organisation by ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "KYC Documents",
+      "item": [
+        {
+          "name": "Create KYC Document",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.kycDocumentIdentifier) {",
+                  "    pm.collectionVariables.set('kycDocumentId', jsonData.kycDocumentIdentifier);",
+                  "    console.log('KYC Document ID saved:', jsonData.kycDocumentIdentifier);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"referenceIdentifier\": 1,\n    \"documentTypeDescription\": \"CERTIFICATE_OF_INCORPORATION\",\n    \"fileName\": \"incorporation_cert.pdf\",\n    \"fileUrl\": \"https://storage.example.com/docs/incorporation_cert.pdf\",\n    \"statusDescription\": \"PENDING\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents"]
+            },
+            "description": "Upload a new KYC document"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All KYC Documents (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all KYC documents with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Document by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "{{kycDocumentId}}"]
+            },
+            "description": "Get a specific KYC document by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Documents by Organisation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/organisation/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "organisation", "1"]
+            },
+            "description": "Get all KYC documents for a specific organisation"
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Documents by Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/status/PENDING",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "status", "PENDING"]
+            },
+            "description": "Get all KYC documents with a specific status"
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Documents by Type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/type/CERTIFICATE_OF_INCORPORATION",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "type", "CERTIFICATE_OF_INCORPORATION"]
+            },
+            "description": "Get all KYC documents of a specific type"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Verification Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/pending-verification",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "pending-verification"]
+            },
+            "description": "Get all documents pending verification"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Document Counts by Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/counts-by-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "counts-by-status"]
+            },
+            "description": "Get document counts grouped by status"
+          },
+          "response": []
+        },
+        {
+          "name": "Update KYC Document",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fileName\": \"incorporation_cert_updated.pdf\",\n    \"fileUrl\": \"https://storage.example.com/docs/incorporation_cert_v2.pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "{{kycDocumentId}}"]
+            },
+            "description": "Update an existing KYC document"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify KYC Document (Approve)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}/verify?status=VERIFIED",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "{{kycDocumentId}}", "verify"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "VERIFIED"
+                }
+              ]
+            },
+            "description": "Verify/approve a KYC document"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify KYC Document (Reject)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}/verify?status=REJECTED",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "{{kycDocumentId}}", "verify"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "REJECTED"
+                }
+              ]
+            },
+            "description": "Reject a KYC document"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete KYC Document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kyc-documents", "{{kycDocumentId}}"]
+            },
+            "description": "Delete a KYC document by ID"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

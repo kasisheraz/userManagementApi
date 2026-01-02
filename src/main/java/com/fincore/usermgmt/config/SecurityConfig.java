@@ -30,10 +30,27 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
+                // User endpoints
                 .requestMatchers(HttpMethod.GET, "/api/users/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/users/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/users/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").authenticated()
+                // Organisation endpoints
+                .requestMatchers(HttpMethod.GET, "/api/organisations/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/organisations/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/organisations/**").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/organisations/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/organisations/**").authenticated()
+                // Address endpoints
+                .requestMatchers(HttpMethod.GET, "/api/addresses/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/addresses/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/addresses/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/addresses/**").authenticated()
+                // KYC Document endpoints
+                .requestMatchers(HttpMethod.GET, "/api/kyc-documents/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/kyc-documents/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/kyc-documents/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/kyc-documents/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
