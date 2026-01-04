@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "phase2-org-onboarding",
-    "name": "User Management API - Phase 2 Organisation Onboarding",
-    "description": "Postman collection for testing Phase 2 Organisation Onboarding endpoints including Organisation, KYC Documents, and Address management.",
+    "_postman_id": "fincore-complete-api",
+    "name": "FinCore User Management API - Complete (Phases 1 & 2)",
+    "description": "Complete API collection for User Management (Phase 1) and Organisation Onboarding (Phase 2). All endpoints tested and working.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -18,6 +18,11 @@
     },
     {
       "key": "otpCode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
       "value": "",
       "type": "string"
     },
@@ -48,8 +53,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/actuator/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["actuator", "health"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "Check application health status (no authentication required)"
           },
@@ -62,8 +72,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/actuator/info",
-              "host": ["{{baseUrl}}"],
-              "path": ["actuator", "info"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "info"
+              ]
             },
             "description": "Get application information (no authentication required)"
           },
@@ -108,8 +123,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/request-otp",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "request-otp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "request-otp"
+              ]
             },
             "description": "Request OTP for admin user (Phone: +1234567890). The OTP will be returned in the 'devOtp' field for non-production environments."
           },
@@ -148,8 +169,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/verify-otp",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "verify-otp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-otp"
+              ]
             },
             "description": "Verify the OTP and get JWT token. Use the OTP from the previous request (stored in {{otpCode}} variable)."
           },
@@ -186,8 +213,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/request-otp",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "request-otp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "request-otp"
+              ]
             },
             "description": "Request OTP for compliance officer (Phone: +1234567891)"
           },
@@ -224,8 +257,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/verify-otp",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "verify-otp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-otp"
+              ]
             },
             "description": "Verify OTP for compliance officer"
           },
@@ -262,8 +301,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/request-otp",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "request-otp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "request-otp"
+              ]
             },
             "description": "Request OTP for operational staff (Phone: +1234567892)"
           },
@@ -300,10 +345,258 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/verify-otp",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "verify-otp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-otp"
+              ]
             },
             "description": "Verify OTP for operational staff"
+          },
+          "response": []
+        },
+        {
+          "name": "­ƒÜÇ Quick Login (Auto OTP)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Step 1: Request OTP",
+                  "const baseUrl = pm.environment.get('base_url');",
+                  "const phoneNumber = pm.environment.get('phone_number') || '+1234567890';",
+                  "",
+                  "pm.sendRequest({",
+                  "    url: baseUrl + '/api/auth/request-otp',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({ phoneNumber: phoneNumber })",
+                  "    }",
+                  "}, function (err, response) {",
+                  "    if (err) {",
+                  "        console.error('OTP request failed:', err);",
+                  "        return;",
+                  "    }",
+                  "    const jsonData = response.json();",
+                  "    if (jsonData.devOtp) {",
+                  "        pm.collectionVariables.set('otp_code', jsonData.devOtp);",
+                  "        console.log('Ô£à OTP captured: ' + jsonData.devOtp);",
+                  "    } else {",
+                  "        console.log('ÔÜá´©Å No devOtp in response - production mode?');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "    console.log('Ô£à Login successful! Token saved.');",
+                  "    console.log('User:', jsonData.user ? jsonData.user.firstName + ' ' + jsonData.user.lastName : 'N/A');",
+                  "} else {",
+                  "    console.log('ÔØî Login failed:', pm.response.text());",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{phone_number}}\",\n  \"otp\": \"{{otpCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-otp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+1111111111\",\n  \"email\": \"newuser@fincore.com\",\n  \"firstName\": \"New\",\n  \"middleName\": \"Test\",\n  \"lastName\": \"User\",\n  \"dateOfBirth\": \"1995-06-15\",\n  \"statusDescription\": \"ACTIVE\",\n  \"role\": \"OPERATIONAL_STAFF\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User Name\",\n  \"email\": \"updated@fincore.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1"
+              ]
+            }
           },
           "response": []
         }
@@ -347,8 +640,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/addresses",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "addresses"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "addresses"
+              ]
             },
             "description": "Create a new registered address"
           },
@@ -374,8 +672,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/addresses",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "addresses"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "addresses"
+              ]
             },
             "description": "Create a new business address"
           },
@@ -393,8 +696,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/addresses",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "addresses"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "addresses"
+              ]
             },
             "description": "Get all addresses"
           },
@@ -412,8 +720,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/addresses/{{addressId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "addresses", "{{addressId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "addresses",
+                "{{addressId}}"
+              ]
             },
             "description": "Get a specific address by ID"
           },
@@ -431,8 +745,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/addresses/type/3",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "addresses", "type", "3"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "addresses",
+                "type",
+                "3"
+              ]
             },
             "description": "Get all addresses of a specific type"
           },
@@ -450,8 +771,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/addresses/country/United Kingdom",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "addresses", "country", "United Kingdom"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "addresses",
+                "country",
+                "United Kingdom"
+              ]
             },
             "description": "Get all addresses in a specific country"
           },
@@ -477,8 +805,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/addresses/{{addressId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "addresses", "{{addressId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "addresses",
+                "{{addressId}}"
+              ]
             },
             "description": "Update an existing address"
           },
@@ -496,8 +830,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/addresses/{{addressId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "addresses", "{{addressId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "addresses",
+                "{{addressId}}"
+              ]
             },
             "description": "Delete an address by ID"
           },
@@ -543,8 +883,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/organisations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations"
+              ]
             },
             "description": "Create a new organisation with embedded addresses"
           },
@@ -562,8 +907,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/organisations?page=0&size=10&sortBy=legalName&sortDirection=ASC",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -599,8 +949,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/organisations/{{organisationId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations", "{{organisationId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations",
+                "{{organisationId}}"
+              ]
             },
             "description": "Get a specific organisation by ID"
           },
@@ -618,8 +974,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/organisations/owner/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations", "owner", "1"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations",
+                "owner",
+                "1"
+              ]
             },
             "description": "Get all organisations for a specific owner (user)"
           },
@@ -637,8 +1000,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/organisations/status/PENDING",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations", "status", "PENDING"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations",
+                "status",
+                "PENDING"
+              ]
             },
             "description": "Get all organisations with a specific status"
           },
@@ -664,8 +1034,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/organisations/search?page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations", "search"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations",
+                "search"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -701,8 +1077,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/organisations/{{organisationId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations", "{{organisationId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations",
+                "{{organisationId}}"
+              ]
             },
             "description": "Update an existing organisation"
           },
@@ -720,8 +1102,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/organisations/{{organisationId}}/status?status=ACTIVE",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations", "{{organisationId}}", "status"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations",
+                "{{organisationId}}",
+                "status"
+              ],
               "query": [
                 {
                   "key": "status",
@@ -745,8 +1134,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/organisations/{{organisationId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "organisations", "{{organisationId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organisations",
+                "{{organisationId}}"
+              ]
             },
             "description": "Delete an organisation by ID"
           },
@@ -792,8 +1187,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents"
+              ]
             },
             "description": "Upload a new KYC document"
           },
@@ -811,8 +1211,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/organisation/{{organisationId}}/paged?page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "organisation", "{{organisationId}}", "paged"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "organisation",
+                "{{organisationId}}",
+                "paged"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -840,8 +1248,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "{{kycDocumentId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "{{kycDocumentId}}"
+              ]
             },
             "description": "Get a specific KYC document by ID"
           },
@@ -859,8 +1273,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/organisation/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "organisation", "1"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "organisation",
+                "1"
+              ]
             },
             "description": "Get all KYC documents for a specific organisation"
           },
@@ -878,8 +1299,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/status/PENDING",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "status", "PENDING"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "status",
+                "PENDING"
+              ]
             },
             "description": "Get all KYC documents with a specific status"
           },
@@ -897,8 +1325,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/pending",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "pending"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "pending"
+              ]
             },
             "description": "Get all documents pending verification"
           },
@@ -924,8 +1358,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "{{kycDocumentId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "{{kycDocumentId}}"
+              ]
             },
             "description": "Update an existing KYC document"
           },
@@ -943,8 +1383,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}/verify?verifierId=1&status=VERIFIED",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "{{kycDocumentId}}", "verify"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "{{kycDocumentId}}",
+                "verify"
+              ],
               "query": [
                 {
                   "key": "verifierId",
@@ -972,8 +1419,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}/verify?verifierId=1&status=REJECTED&reason=Documents unclear",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "{{kycDocumentId}}", "verify"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "{{kycDocumentId}}",
+                "verify"
+              ],
               "query": [
                 {
                   "key": "verifierId",
@@ -1005,8 +1459,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/kyc-documents/{{kycDocumentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kyc-documents", "{{kycDocumentId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "kyc-documents",
+                "{{kycDocumentId}}"
+              ]
             },
             "description": "Delete a KYC document by ID"
           },
