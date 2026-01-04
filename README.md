@@ -284,28 +284,57 @@ Response (200 OK):
 ## 🧪 Testing
 
 ### Using Postman
-Import the Postman collections included in the repository:
+Import the comprehensive Postman collection included in the repository:
 ```bash
-postman_collection.json              # Phase 1 - User Management
-postman_collection_phase2.json       # Phase 2 - Organisation Onboarding
-postman_environment.json
-postman_environment_cloud.json
+postman_collection.json              # Complete API collection (All phases merged)
+postman_environment.json             # Local environment variables
+postman_environment_cloud.json       # Cloud environment variables
+POSTMAN_USAGE_GUIDE.md              # Detailed usage instructions
 ```
 
-### Phase 2 Postman Collection
-The `postman_collection_phase2.json` includes comprehensive tests for:
-- **Authentication**: OTP request and verification
+The unified Postman collection includes:
+- **Health Checks**: Health and info endpoints
+- **Authentication**: OTP request and verification for all user roles
+- **User Management**: Complete CRUD operations with role-based access
 - **Organisations**: Full CRUD, search, and status management
-- **KYC Documents**: Upload, verification, status tracking
-- **Addresses**: Management of business, registered, and correspondence addresses
+- **KYC Documents**: Upload, verification, and status tracking
+- **Addresses**: Management of all address types (business, registered, correspondence, postal)
 
-### Using test.http (VS Code REST Client)
-The repository includes a `test.http` file for quick API testing with VS Code REST Client extension.
+**Features**:
+- Automated JWT token management across all requests
+- Pre-request scripts for dynamic data
+- Comprehensive test assertions
+- Environment-based configuration (local/cloud)
+
+For detailed usage instructions, see [POSTMAN_USAGE_GUIDE.md](POSTMAN_USAGE_GUIDE.md).
+
+### Test Coverage
+The project maintains comprehensive test coverage across all layers:
+
+| Layer | Coverage | Status |
+|-------|----------|--------|
+| Config | 72% | ✅ Good |
+| Service | 64% | ✅ Good |
+| Controller | 51% | ⚠️ Needs improvement |
+| DTO | 18% | ❌ Low |
+| Entity | 18% | ❌ Low |
+| Security | 17% | ❌ Critical |
+| Mapper | 2% | ❌ Very Low |
+
+**Overall Coverage**: 22% (Target: 70%+)
+
+For the complete test coverage analysis and improvement plan, see [TEST_COVERAGE_PLAN.md](TEST_COVERAGE_PLAN.md).
 
 ### Automated Tests
 ```bash
 # Run unit tests
 mvn test
+
+# Run tests with coverage report
+mvn clean test jacoco:report
+
+# View coverage report
+# Open: target/site/jacoco/index.html
 
 # Run integration tests
 mvn verify
@@ -576,9 +605,26 @@ For issues or questions, please open a GitHub issue or contact the development t
 
 ---
 
-**Last Updated**: January 2025  
-**Version**: 2.0.0 (Phase 2 - Organisation Onboarding)  
-**Status**: ✅ Production Ready
+**Last Updated**: January 2026  
+**Version**: 2.0.0 (Organisation Onboarding - Production Ready)  
+**Status**: ✅ Deployed to NPE Environment
+
+## Recent Updates
+
+### January 2026
+- ✅ **Unified Postman Collection**: Merged Phase 1 and Phase 2 collections into single comprehensive collection
+- ✅ **Authentication Optimization**: Removed duplicate authentication scripts, streamlined OTP workflow
+- ✅ **Test Coverage Analysis**: Generated comprehensive coverage report (22% baseline, 70% target)
+- ✅ **Documentation Cleanup**: Removed obsolete phase-specific documentation
+- ✅ **Cloud Deployment**: Successfully deployed to GCP Cloud Run with Cloud SQL MySQL
+- ✅ **Phase 2 Complete**: Organisation onboarding with KYC and address management fully implemented
+
+### Key Features (Phase 2)
+- **Organisation Management**: Multi-type support (sole trader, partnership, LLP, LTD, PLC, charity, trust)
+- **KYC Document Verification**: 18 document types with verification workflow
+- **Address Management**: 5 address types with full UK format support
+- **Regulatory Compliance**: FCA and HMRC MLR number tracking
+- **Status Workflow**: Complete lifecycle management for organisations and documents
 
 ## Phase 2 Features (Organisation Onboarding)
 
@@ -605,10 +651,21 @@ For issues or questions, please open a GitHub issue or contact the development t
 # Run with H2 in-memory database
 mvn spring-boot:run
 
-# Test login
-curl -X POST http://localhost:8080/api/auth/login \
+# Access H2 console
+# URL: http://localhost:8080/h2-console
+# JDBC URL: jdbc:h2:mem:fincore_db
+# Username: sa
+# Password: (leave empty)
+
+# Test authentication (Step 1: Request OTP)
+curl -X POST http://localhost:8080/api/auth/request-otp \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"Admin@123456"}'
+  -d '{"phoneNumber":"+1234567890"}'
+
+# Test authentication (Step 2: Verify OTP - check console for OTP code)
+curl -X POST http://localhost:8080/api/auth/verify-otp \
+  -H "Content-Type: application/json" \
+  -d '{"phoneNumber":"+1234567890","otp":"123456"}'
 ```
 
 ## Running Tests

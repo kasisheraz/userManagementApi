@@ -617,9 +617,83 @@ Cloud SQL Scaling:
 - **Container Optimization**: Alpine base image, minimal layers
 - **Build Optimization**: Maven dependency caching in CI/CD
 
-## 11. Security Best Practices
+## 11. Testing & Quality Assurance
 
-### 11.1 Implemented Security Measures
+### 11.1 Test Coverage
+
+The project maintains comprehensive test suites across all layers with continuous monitoring of code coverage:
+
+**Current Coverage Metrics (January 2026)**:
+```yaml
+Overall Coverage: 22% (Target: 70%+)
+
+By Layer:
+  Config:     72%  ✅ Good
+  Service:    64%  ✅ Good
+  Controller: 51%  ⚠️ Needs improvement (branch coverage: 3%)
+  DTO:        18%  ❌ Low - needs validation testing
+  Entity:     18%  ❌ Low - needs entity tests
+  Security:   17%  ❌ Critical - JWT and auth filter tests needed
+  Mapper:      2%  ❌ Very Low - highest priority for improvement
+```
+
+**Test Infrastructure**:
+- **Framework**: JUnit 5, Mockito, Spring Boot Test
+- **Coverage Tool**: Jacoco
+- **Report Location**: `target/site/jacoco/index.html`
+- **CI Integration**: Tests run on every GitHub Actions pipeline execution
+
+**Improvement Plan**:
+1. **High Priority**:
+   - Mapper layer tests (currently 2%)
+   - Security layer tests (JWT provider, authentication filter)
+   - DTO validation tests
+2. **Medium Priority**:
+   - Controller branch coverage (error scenarios)
+   - Entity tests (validation, relationships)
+3. **Low Priority**:
+   - Integration tests for complex workflows
+   - Performance tests
+
+For detailed test coverage analysis and improvement strategies, see `TEST_COVERAGE_PLAN.md`.
+
+### 11.2 Testing Strategy
+
+**Unit Tests**:
+- Service layer: Business logic validation
+- Controller layer: Request/response handling
+- Mapper layer: Entity-DTO transformations
+- DTO layer: Validation rules
+- Entity layer: Constraints and relationships
+
+**Integration Tests**:
+- Database operations (JPA repositories)
+- API endpoint workflows
+- Authentication and authorization flows
+
+**API Testing**:
+- **Postman Collection**: `postman_collection.json`
+  - Unified collection covering all endpoints
+  - Automated JWT token management
+  - Pre-request scripts and test assertions
+  - Environment-based configuration
+- **Usage Guide**: See `POSTMAN_USAGE_GUIDE.md`
+
+**Testing Commands**:
+```bash
+# Run all tests
+mvn test
+
+# Run tests with coverage
+mvn clean test jacoco:report
+
+# Run integration tests
+mvn verify
+```
+
+## 12. Security Best Practices
+
+### 12.1 Implemented Security Measures
 - ✅ JWT-based stateless authentication
 - ✅ BCrypt password hashing
 - ✅ Account lockout mechanism
@@ -630,7 +704,7 @@ Cloud SQL Scaling:
 - ✅ Dedicated service account with minimal permissions
 - ✅ Database user with limited privileges (fincore_app)
 
-### 11.2 Security Recommendations
+### 12.2 Security Recommendations
 - [ ] Enable Cloud Armor for DDoS protection
 - [ ] Implement rate limiting at API level
 - [ ] Add API key authentication for external consumers
@@ -640,9 +714,9 @@ Cloud SQL Scaling:
 - [ ] Implement password rotation policy
 - [ ] Enable Cloud Run VPC ingress control
 
-## 12. Cost Optimization
+## 13. Cost Optimization
 
-### 12.1 Current Cost Structure
+### 13.1 Current Cost Structure
 ```yaml
 Cloud Run:
   - Pay-per-use pricing
@@ -660,9 +734,17 @@ Container Registry:
   - Minimal cost for image storage
 ```
 
-## 13. Future Enhancements
+## 14. Recent Updates & Future Enhancements
 
-### 13.1 Planned Features
+### 14.1 Recent Updates (January 2026)
+- ✅ **Unified Postman Collection**: Merged Phase 1 and Phase 2 collections into comprehensive single collection
+- ✅ **Authentication Optimization**: Removed duplicate authentication scripts across phase collections
+- ✅ **Test Coverage Analysis**: Generated baseline coverage report (22%) with improvement plan targeting 70%+
+- ✅ **Documentation Cleanup**: Removed obsolete phase-specific and temporary documentation files
+- ✅ **Deployment Automation**: Enhanced GitHub Actions CI/CD pipeline with health checks and smoke tests
+- ✅ **Cloud Infrastructure**: Fully deployed to GCP Cloud Run with Cloud SQL MySQL in NPE environment
+
+### 14.2 Planned Features
 - [ ] Production environment deployment
 - [ ] Read replicas for Cloud SQL
 - [ ] Redis caching layer
@@ -673,7 +755,7 @@ Container Registry:
 - [ ] API rate limiting
 - [ ] Advanced monitoring dashboards
 
-### 13.2 Completed Features (Phase 2)
+### 14.2 Completed Features (Organisation Onboarding)
 - [x] Organisation onboarding workflow
 - [x] Multi-type address management
 - [x] KYC document upload and verification
@@ -683,7 +765,7 @@ Container Registry:
 - [x] Advanced search and filtering
 - [x] Pagination support for list endpoints
 
-### 13.2 Scalability Improvements
+### 14.3 Scalability Improvements
 - [ ] Multi-region deployment
 - [ ] Global load balancing
 - [ ] Cloud CDN integration
@@ -712,6 +794,8 @@ Container Registry:
 
 ---
 
-*Last Updated: January 2025*  
-*Version: 2.0.0 (Phase 2 - Organisation Onboarding)*
+*Last Updated: January 2026*  
+*Version: 2.0.0 (Organisation Onboarding - Production Ready)*  
+*Status: ✅ Deployed to NPE Environment*
+
 *This architecture documentation reflects the current deployed state of the FinCore User Management API on Google Cloud Platform.*
