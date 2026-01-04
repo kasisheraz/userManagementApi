@@ -70,6 +70,8 @@ public class JwtTokenProvider {
                     .build()
                     .parseSignedClaims(authToken);
             return true;
+        } catch (io.jsonwebtoken.security.SignatureException ex) {
+            log.error("Invalid JWT signature");
         } catch (SecurityException ex) {
             log.error("Invalid JWT signature");
         } catch (MalformedJwtException ex) {
