@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS Organisation;
 DROP TABLE IF EXISTS Otp_Tokens;
 DROP TABLE IF EXISTS Role_Permissions;
 DROP TABLE IF EXISTS User_Roles;
-DROP TABLE IF EXISTS Address;
+DROP TABLE IF EXISTS address;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Roles;
 DROP TABLE IF EXISTS Permissions;
@@ -82,7 +82,7 @@ CREATE INDEX idx_otp_expires ON Otp_Tokens(Expires_At);
 -- ============================================
 
 -- Create Address table (generic address for various purposes)
-CREATE TABLE Address (
+CREATE TABLE address (
     Address_Identifier INT PRIMARY KEY AUTO_INCREMENT,
     Type_Code SMALLINT NOT NULL COMMENT '1=Residential, 2=Business, 3=Registered, 4=Correspondence, 5=Postal',
     Address_Line1 VARCHAR(100) NOT NULL,
