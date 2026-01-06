@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  * Can be used for various address types (residential, business, registered, etc.)
  */
 @Entity
-@Table(name = "address")
+@Table(name = "Address")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

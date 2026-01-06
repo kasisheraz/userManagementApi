@@ -54,13 +54,13 @@ VALUES ('+1234567892', 'staff@fincore.com', 4, 'Operational', NULL, 'Staff', '19
 -- ============================================
 
 -- Insert sample addresses
-INSERT INTO address (Type_Code, Address_Line1, Address_Line2, Postal_Code, State_Code, City, Country, Status_Description, Created_By) 
+INSERT INTO Address (Type_Code, Address_Line1, Address_Line2, Postal_Code, State_Code, City, Country, Status_Description, Created_By) 
 VALUES (3, '10 Downing Street', 'Westminster', 'SW1A 2AA', 'Greater London', 'London', 'United Kingdom', 'ACTIVE', 1);
 
-INSERT INTO address (Type_Code, Address_Line1, Address_Line2, Postal_Code, State_Code, City, Country, Status_Description, Created_By) 
+INSERT INTO Address (Type_Code, Address_Line1, Address_Line2, Postal_Code, State_Code, City, Country, Status_Description, Created_By) 
 VALUES (2, '1 Canada Square', 'Canary Wharf', 'E14 5AB', 'Greater London', 'London', 'United Kingdom', 'ACTIVE', 1);
 
-INSERT INTO address (Type_Code, Address_Line1, Address_Line2, Postal_Code, State_Code, City, Country, Status_Description, Created_By) 
+INSERT INTO Address (Type_Code, Address_Line1, Address_Line2, Postal_Code, State_Code, City, Country, Status_Description, Created_By) 
 VALUES (4, 'PO Box 1234', NULL, 'EC1A 1AA', 'Greater London', 'London', 'United Kingdom', 'ACTIVE', 1);
 
 -- Insert sample organisation
