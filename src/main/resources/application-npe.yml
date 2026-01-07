@@ -24,7 +24,7 @@ spring:
       validation-timeout: 10000
   jpa:
     hibernate:
-      ddl-auto: none  # Skip validation - schema managed externally
+      ddl-auto: update  # Auto-create/update tables if they don't exist
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
@@ -39,7 +39,8 @@ spring:
     open-in-view: false
   sql:
     init:
-      mode: never  # Skip data initialization for now
+      mode: always  # Run data.sql to insert seed data
+      continue-on-error: true  # Ignore duplicate key errors if data already exists
 
 server:
   port: ${PORT:8080}
