@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Otp_Tokens")
+@Table(name = "otp_tokens")
 @Data
 public class OtpToken {
     @Id

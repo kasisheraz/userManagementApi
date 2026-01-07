@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  * Used for organisation verification and compliance.
  */
 @Entity
-@Table(name = "KYC_Documents")
+@Table(name = "kyc_documents")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

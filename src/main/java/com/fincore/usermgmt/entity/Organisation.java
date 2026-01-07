@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * Supports full organisation onboarding with regulatory compliance information.
  */
 @Entity
-@Table(name = "Organisation")
+@Table(name = "organisation")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
