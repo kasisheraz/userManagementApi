@@ -135,9 +135,10 @@ jobs:
             --max-instances=3 \
             --min-instances=0 \
             --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
-            --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }}" \
+            --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},SPRING_PROFILES_ACTIVE=npe" \
             --update-secrets="DB_PASSWORD=fincore-npe-app-password:latest" \
             --port=8080 \
+            --startup-cpu-boost \
             --project=${{ env.PROJECT_ID }}
             
       - name: Get service URL
