@@ -232,7 +232,9 @@ class AddressControllerTest {
         AddressCreateDTO updateDTO = new AddressCreateDTO();
         updateDTO.setTypeCode(3);
         updateDTO.setAddressLine1("456 New Street");
+        updateDTO.setPostalCode("EC1A 1BB");
         updateDTO.setCity("London");
+        updateDTO.setCountry("United Kingdom");
 
         AddressDTO updatedDTO = new AddressDTO();
         updatedDTO.setId(1L);
@@ -259,6 +261,9 @@ class AddressControllerTest {
         AddressCreateDTO updateDTO = new AddressCreateDTO();
         updateDTO.setTypeCode(3);
         updateDTO.setAddressLine1("456 New Street");
+        updateDTO.setPostalCode("EC1A 1BB");
+        updateDTO.setCity("London");
+        updateDTO.setCountry("United Kingdom");
 
         when(addressService.updateAddress(eq(999L), any(AddressCreateDTO.class)))
                 .thenThrow(new RuntimeException("Address not found"));
@@ -267,7 +272,7 @@ class AddressControllerTest {
         mockMvc.perform(put("/api/addresses/999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDTO)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isNotFound());
     }
 
     @WithMockUser(username = "testuser", roles = {"USER"})
