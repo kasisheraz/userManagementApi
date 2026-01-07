@@ -8,23 +8,25 @@ spring:
   main:
     lazy-initialization: false
   datasource:
-    # Built-in Cloud SQL Connector - Direct connection via Socket Factory
-    url: jdbc:mysql://google/${DB_NAME:fincore_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=30000&socketTimeout=60000
+    # Cloud SQL Socket Factory - Private IP connection (no public IP)
+    # Uses Cloud SQL Proxy built into Cloud Run
+    url: jdbc:mysql:///${DB_NAME:fincore_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&enabledTLSProtocols=TLSv1.2,TLSv1.3&useSSL=true&requireSSL=false&serverTimezone=UTC&autoReconnect=true&connectTimeout=60000&socketTimeout=120000
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 3
-      minimum-idle: 1
-      connection-timeout: 30000
-      idle-timeout: 300000
-      max-lifetime: 1200000
-      initialization-fail-timeout: 60000
-      leak-detection-threshold: 60000
-      validation-timeout: 5000
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 60000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      initialization-fail-timeout: 120000
+      leak-detection-threshold: 120000
+      validation-timeout: 10000
+      connection-test-query: SELECT 1
   jpa:
     hibernate:
-      ddl-auto: update  # Auto-create/update tables if they don't exist
+      ddl-auto: validate  # Validate schema without updating (faster startup)
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
@@ -39,8 +41,7 @@ spring:
     open-in-view: false
   sql:
     init:
-      mode: always  # Run data.sql to insert seed data
-      continue-on-error: true  # Ignore duplicate key errors if data already exists
+      mode: never  # Skip data.sql on startup (tables already seeded)
 
 server:
   port: ${PORT:8080}

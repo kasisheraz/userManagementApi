@@ -135,10 +135,14 @@ jobs:
             --max-instances=3 \
             --min-instances=0 \
             --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
-            --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},SPRING_PROFILES_ACTIVE=npe" \
+            --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},SPRING_PROFILES_ACTIVE=npe,JAVA_TOOL_OPTIONS=-Dcom.google.cloud.sql.core.CoreSocketFactory.enableIamAuth=false" \
             --update-secrets="DB_PASSWORD=fincore-npe-app-password:latest" \
             --port=8080 \
             --startup-cpu-boost \
+            --startup-probe-period=120 \
+            --startup-probe-timeout=10 \
+            --startup-probe-failure-threshold=6 \
+            --no-cpu-throttling \
             --project=${{ env.PROJECT_ID }}
             
       - name: Get service URL
