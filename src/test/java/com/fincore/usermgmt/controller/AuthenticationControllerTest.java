@@ -92,12 +92,17 @@ class AuthenticationControllerTest {
         request.setPhoneNumber("+44-7700-900123");
         request.setOtp("123456");
 
-        AuthenticationResponse response = new AuthenticationResponse();
-        response.setToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
-        response.setPhoneNumber("+44-7700-900123");
-        response.setUserId(1L);
-        response.setRole("USER");
-        response.setMessage("Authentication successful");
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(1L);
+        userDTO.setPhoneNumber("+44-7700-900123");
+        userDTO.setRole("USER");
+
+        AuthenticationResponse response = new AuthenticationResponse(
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "Bearer",
+            3600L,
+            userDTO
+        );
 
         when(authenticationService.verifyOtpAndAuthenticate("+44-7700-900123", "123456"))
                 .thenReturn(response);
@@ -107,11 +112,11 @@ class AuthenticationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."))
-                .andExpect(jsonPath("$.phoneNumber").value("+44-7700-900123"))
-                .andExpect(jsonPath("$.userId").value(1))
-                .andExpect(jsonPath("$.role").value("USER"))
-                .andExpect(jsonPath("$.message").value("Authentication successful"));
+                .andExpect(jsonPath("$.accessToken").value("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."))
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(3600))
+                .andExpect(jsonPath("$.user.id").value(1))
+                .andExpect(jsonPath("$.user.role").value("USER"));
     }
 
     @Test

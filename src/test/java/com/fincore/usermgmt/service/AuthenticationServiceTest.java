@@ -85,7 +85,7 @@ class AuthenticationServiceTest {
         assertThat(response.getPhoneNumber()).isEqualTo(phoneNumber);
         assertThat(response.getMessage()).contains("OTP sent to");
         assertThat(response.getDevOtp()).isEqualTo(otp); // NPE profile includes OTP in response
-        assertThat(response.getExpiresInSeconds()).isEqualTo(300L);
+        assertThat(response.getExpiresIn()).isEqualTo(300L);
 
         verify(userRepository).findByPhoneNumber(phoneNumber);
         verify(otpService).generateOtp(phoneNumber);
@@ -203,7 +203,7 @@ class AuthenticationServiceTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getToken()).isEqualTo(token);
+        assertThat(response.getAccessToken()).isEqualTo(token);
         assertThat(response.getExpiresIn()).isEqualTo(3600L); // Converted to seconds
         assertThat(response.getUser()).isEqualTo(userDTO);
 
