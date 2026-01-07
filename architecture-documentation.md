@@ -2,16 +2,26 @@
 
 ## 1. Executive Summary
 
-The FinCore User Management API is a cloud-native microservice built on Google Cloud Platform (GCP), providing secure user authentication, role-based access control, and user management capabilities. The system leverages modern containerization, managed database services, and automated CI/CD pipelines to deliver high availability, scalability, and security.
+The FinCore User Management API is a cloud-native microservice built on Google Cloud Platform (GCP), providing secure user authentication, role-based access control, user management, and organization onboarding capabilities. The system leverages modern containerization, managed database services, automated CI/CD pipelines with comprehensive testing, and enterprise-grade security to deliver high availability, scalability, and reliability.
+
+**Key Highlights:**
+- ✅ Production-ready deployment on GCP Cloud Run
+- ✅ Automated testing pipeline with post-deployment validation
+- ✅ Secure database access (private Cloud SQL Proxy only)
+- ✅ MySQL case-insensitive configuration for cross-platform compatibility
+- ✅ Comprehensive security hardening
 
 ## 2. System Architecture Overview
 
 ### 2.1 Architecture Principles
 - **Cloud-Native**: Built for GCP using Cloud Run and Cloud SQL
 - **Containerized**: Docker-based deployment for consistency and portability
-- **Security-First**: JWT authentication, RBAC, encrypted connections
+- **Security-First**: JWT authentication, RBAC, private database access, encrypted connections
 - **Infrastructure as Code**: Terraform-managed infrastructure via separate IaC repository
-- **Automated CI/CD**: GitHub Actions for continuous deployment
+- **Automated CI/CD**: GitHub Actions with automated testing and validation
+- **Test-Driven**: Comprehensive smoke tests and integration tests
+- **Zero-Trust Security**: No public database access, Cloud SQL Proxy only
+- **Cross-Platform Compatible**: MySQL case-insensitive configuration
 
 ### 2.2 High-Level Architecture
 
@@ -20,31 +30,36 @@ The FinCore User Management API is a cloud-native microservice built on Google C
 │         Client Applications             │
 │  (Web, Mobile, API Consumers)           │
 └─────────────────┬───────────────────────┘
-                  │ HTTPS
+                  │ HTTPS Only
                   │
 ┌─────────────────▼───────────────────────┐
 │         Cloud Run Service               │
 │    (fincore-npe-api)                    │
 │  ┌────────────────────────────────┐     │
 │  │  Spring Boot 3.2 + Java 21     │     │
-│  │  - JWT Authentication          │     │
+│  │  - JWT Authentication (HS256)  │     │
+│  │  - OTP-based MFA               │     │
 │  │  - RBAC Authorization          │     │
-│  │  - User Management APIs        │     │
+│  │  - User & Org Management APIs  │     │
 │  │  - Health Checks               │     │
 │  └────────────────────────────────┘     │
 └─────────────────┬───────────────────────┘
-                  │ Built-in Socket Factory
-                  │
+                  │ Cloud SQL Proxy (Private)
+                  │ No Public IP Access
 ┌─────────────────▼───────────────────────┐
 │        Cloud SQL MySQL 8.0              │
 │    (fincore-npe-db)                     │
 │  ┌────────────────────────────────┐     │
 │  │  Database: fincore_db          │     │
+│  │  Config: lower_case_tables=1   │     │
 │  │  User: fincore_app             │     │
-│  │  - users table                 │     │
-│  │  - roles table                 │     │
-│  │  - permissions table           │     │
-│  │  - role_permissions table      │     │
+│  │  - users (lowercase)           │     │
+│  │  - roles                       │     │
+│  │  - permissions                 │     │
+│  │  - otp_tokens                  │     │
+│  │  - organisation                │     │
+│  │  - address                     │     │
+│  │  - kyc_documents               │     │
 │  └────────────────────────────────┘     │
 └─────────────────────────────────────────┘
 
@@ -56,8 +71,19 @@ The FinCore User Management API is a cloud-native microservice built on Google C
 │  │  2. Build Docker Image         │     │
 │  │  3. Push to GCR                │     │
 │  │  4. Deploy to Cloud Run        │     │
-│  │  5. Health Check & Smoke Tests │     │
+│  │  5. Health Check (Wait 5min)   │     │
+│  │  6. Smoke Tests ⭐ NEW          │     │
+│  │     - Health endpoint          │     │
+│  │     - OTP request (users)      │     │
+│  │     - OTP verify (auth)        │     │
 │  └────────────────────────────────┘     │
+└─────────────────────────────────────────┘
+
+┌─────────────────────────────────────────┐
+│         Secret Manager                  │
+│  - JWT Secret Key                       │
+│  - Database Passwords                   │
+│  - API Keys                             │
 └─────────────────────────────────────────┘
 ```
 
@@ -736,15 +762,114 @@ Container Registry:
 
 ## 14. Recent Updates & Future Enhancements
 
-### 14.1 Recent Updates (January 2026)
-- ✅ **Unified Postman Collection**: Merged Phase 1 and Phase 2 collections into comprehensive single collection
-- ✅ **Authentication Optimization**: Removed duplicate authentication scripts across phase collections
-- ✅ **Test Coverage Analysis**: Generated baseline coverage report (22%) with improvement plan targeting 70%+
-- ✅ **Documentation Cleanup**: Removed obsolete phase-specific and temporary documentation files
-- ✅ **Deployment Automation**: Enhanced GitHub Actions CI/CD pipeline with health checks and smoke tests
-- ✅ **Cloud Infrastructure**: Fully deployed to GCP Cloud Run with Cloud SQL MySQL in NPE environment
+### 14.1 Recent Updates (January 7, 2026)
 
-### 14.2 Planned Features
+**Security Hardening:**
+- ✅ **Database Security**: Removed public IP access (0.0.0.0/0), enforced Cloud SQL Proxy only
+- ✅ **Zero-Trust Network**: No public database access, all connections via private Cloud SQL Proxy
+- ✅ **Secret Management**: Database passwords and JWT keys stored in Cloud Secret Manager
+- ✅ **Security Documentation**: Created comprehensive [CLOUD_SQL_SECURITY.md](CLOUD_SQL_SECURITY.md)
+
+**Database Improvements:**
+- ✅ **MySQL Case Sensitivity Fix**: Configured `lower_case_table_names=1` for cross-platform compatibility
+- ✅ **Entity Updates**: Changed all `@Table` annotations to lowercase (users, roles, permissions, etc.)
+- ✅ **Schema Synchronization**: Complete entity-based schema in `complete-entity-schema.sql`
+- ✅ **Database Configuration**: Proper setup for Linux/MySQL case-sensitive environments
+
+**Testing & CI/CD:**
+- ✅ **Automated Smoke Tests**: Post-deployment validation (health, OTP request, authentication)
+- ✅ **Integration Tests**: Comprehensive test suite (`ApiIntegrationTest.java`) with 8 scenarios
+- ✅ **Test Documentation**: Created [API_TESTING_STRATEGY.md](API_TESTING_STRATEGY.md)
+- ✅ **CI/CD Enhancement**: Enhanced GitHub Actions pipeline with automated testing
+- ✅ **Deployment Validation**: Tests run automatically after every deployment
+
+**Code Cleanup:**
+- ✅ **Removed 18 Temporary Files**: SQL scripts, test scripts, duplicate documentation
+- ✅ **Documentation Updates**: Updated README.md and architecture-documentation.md
+- ✅ **Unified Documentation**: Consolidated security and testing guides
+
+**Deployment Improvements:**
+- ✅ **Deployment Reliability**: Automated testing prevents broken deployments
+- ✅ **Health Checks**: 5-minute wait period with automatic retries
+- ✅ **Smoke Tests**: Validates critical flows (users table, otp_tokens table, authentication)
+
+### 14.2 Testing Architecture
+
+**Automated Testing Pipeline:**
+```
+┌──────────────────────────────────────────┐
+│      GitHub Actions Pipeline             │
+│                                          │
+│  1. Build & Maven Tests                 │
+│  2. Docker Build & Push to GCR          │
+│  3. Deploy to Cloud Run                 │
+│  4. Health Check (Wait & Retry)         │
+│  5. Smoke Tests ⭐                       │
+│     ├─ Health endpoint (status:UP)      │
+│     ├─ OTP Request (users table)        │
+│     ├─ OTP Verify (otp_tokens table)    │
+│     └─ JWT Token Generation             │
+│                                          │
+│  ✅ Pass → Deployment Complete           │
+│  ❌ Fail → Deployment Failed & Rollback  │
+└──────────────────────────────────────────┘
+```
+
+**Integration Tests (Local & CI):**
+- Health check validation
+- OTP request/verify flow
+- Database table accessibility
+- Invalid input handling
+- Unauthorized access scenarios
+- JWT token validation
+- Role-based access control
+
+See [API_TESTING_STRATEGY.md](API_TESTING_STRATEGY.md) for complete testing documentation.
+
+### 14.3 Security Architecture
+
+**Database Security Layers:**
+```
+┌──────────────────────────────────────────┐
+│         Cloud Run Application            │
+│                                          │
+│    ┌──────────────────────┐             │
+│    │  Spring Boot App     │             │
+│    │  (No DB Credentials) │             │
+│    └────────┬─────────────┘             │
+│             │                            │
+│             │ Cloud SQL Proxy            │
+│             │ (Private Connection)       │
+└─────────────┼──────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────────┐
+│        Cloud SQL Instance                │
+│    (fincore-npe-db)                      │
+│                                          │
+│  ✅ Public IP: DISABLED                  │
+│  ✅ Private IP: ENABLED                  │
+│  ✅ Authorized Networks: NONE (0.0.0.0/0 removed)│
+│  ✅ SSL/TLS: ENFORCED                    │
+│  ✅ Passwords: Secret Manager            │
+│                                          │
+│  Database: fincore_db                    │
+│  - lower_case_table_names=1              │
+│  - Automated backups enabled             │
+└──────────────────────────────────────────┘
+```
+
+**Security Best Practices Implemented:**
+1. **No Public Database Access**: Cloud SQL Proxy only
+2. **Secret Management**: All sensitive data in Secret Manager
+3. **Network Isolation**: Private VPC connection
+4. **Encrypted Connections**: TLS/SSL enforced
+5. **Automated Testing**: Security validation in CI/CD
+6. **Audit Logging**: Comprehensive request/response logging
+
+See [CLOUD_SQL_SECURITY.md](CLOUD_SQL_SECURITY.md) for complete security documentation.
+
+### 14.4 Planned Features
 - [ ] Production environment deployment
 - [ ] Read replicas for Cloud SQL
 - [ ] Redis caching layer

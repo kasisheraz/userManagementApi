@@ -1,12 +1,14 @@
 # FinCore User Management API
 
-A Spring Boot microservice providing secure user authentication, role-based access control, and user management capabilities. Deployed on Google Cloud Platform using Cloud Run and Cloud SQL.
+A Spring Boot microservice providing secure user authentication, role-based access control, user management, and organization onboarding capabilities. Deployed on Google Cloud Platform using Cloud Run and Cloud SQL with automated CI/CD pipeline.
 
 ## 🚀 Live Deployment
 
 - **NPE Environment**: https://fincore-npe-api-994490239798.europe-west2.run.app
 - **Health Check**: https://fincore-npe-api-994490239798.europe-west2.run.app/actuator/health
 - **Status**: ✅ Production Ready
+- **Automated Testing**: GitHub Actions with comprehensive smoke tests
+- **Database**: Cloud SQL MySQL 8.0 (case-insensitive, secure private access)
 
 ## 🏗️ Architecture
 
@@ -21,24 +23,30 @@ A Spring Boot microservice providing secure user authentication, role-based acce
 
 ### Cloud Infrastructure
 - **Platform**: Google Cloud Platform (GCP)
-- **Compute**: Cloud Run (serverless containers)
-- **Database**: Cloud SQL MySQL 8.0 with built-in connector
+- **Compute**: Cloud Run (serverless containers, autoscaling 0-3 instances)
+- **Database**: Cloud SQL MySQL 8.0 (europe-west2, lower_case_table_names=1)
+- **Database Connection**: Private Cloud SQL Proxy (no public IP access)
 - **Networking**: Private VPC + Cloud SQL Socket Factory
-- **Secrets**: Cloud Secret Manager
+- **Secrets**: Cloud Secret Manager (JWT secrets, database passwords)
+- **Container Registry**: Google Container Registry (GCR)
 - **Region**: europe-west2 (London)
+- **CI/CD**: GitHub Actions with automated testing
+- **Security**: HTTPS only, private database access, automated security scans
 
 ## ✨ Features
 
 ### Security
-- 🔐 OAuth2 JWT-based stateless authentication
-- 📱 Phone-based Multi-Factor Authentication (MFA) with OTP
-- 👥 Role-Based Access Control (RBAC) with 4 predefined roles
-- 🔒 Time-limited OTP codes (5-minute expiration)
-- 🔑 Secure JWT token generation with HS256
-- ⏱️ Configurable JWT token expiration (24 hours default)
-- 🛡️ HTTPS-only communication
-- 🔐 Secure database connections via Cloud SQL Socket Factory
+- 🔐 JWT-based stateless authentication with HS256 signing
+- 📱 Phone-based OTP authentication (6-digit codes)
+- 👥 Role-Based Access Control (RBAC) with 4 predefined roles (21 permissions)
+- 🔒 Time-limited OTP codes (5-minute expiration with auto-cleanup)
+- 🔑 Secure JWT token generation (24-hour expiration)
+- 🛡️ HTTPS-only communication in production
+- 🔐 **Private database access via Cloud SQL Proxy** (no public IP exposure)
+- 🔒 Database passwords stored in Secret Manager
 - 🧹 Automatic cleanup of expired OTP tokens
+- ✅ Automated security testing in CI/CD pipeline
+- 🔍 Comprehensive audit logging
 
 ### User Management
 - ✅ User CRUD operations with role-based permissions
@@ -49,11 +57,14 @@ A Spring Boot microservice providing secure user authentication, role-based acce
 - 🔄 Failed login attempt monitoring
 
 ### API & Integration
-- 🌐 RESTful API design
+- 🌐 RESTful API design with comprehensive endpoints
 - 📄 JSON request/response format
 - ❤️ Health check endpoints for monitoring
-- 🧪 Postman collection for API testing
+- 🧪 Postman collection for API testing (unified Phase 1 & 2)
 - 📈 Spring Boot Actuator for observability
+- 🚀 **Automated deployment pipeline with smoke tests**
+- ✅ **CI/CD integration testing** (authentication, OTP flow, database connectivity)
+- 📊 Integration test suite (8 test scenarios)
 
 ## 📋 Prerequisites
 
@@ -283,6 +294,33 @@ Response (200 OK):
 
 ## 🧪 Testing
 
+### Automated Testing in CI/CD
+
+The deployment pipeline includes comprehensive automated tests:
+
+**Post-Deployment Smoke Tests** (runs automatically after every deployment):
+1. **Health Check** - Validates service is up and responding
+2. **OTP Request** - Tests database connectivity (users table)
+3. **OTP Verification** - Tests authentication flow (otp_tokens table)
+4. **JWT Token Generation** - Validates security and roles table access
+
+See [API_TESTING_STRATEGY.md](API_TESTING_STRATEGY.md) for complete testing documentation.
+
+### Integration Tests
+
+Comprehensive Java integration test suite in `src/test/java/com/fincore/usermgmt/integration/`:
+
+```bash
+# Run integration tests locally
+mvn test -Dtest=ApiIntegrationTest
+
+# Tests include:
+# - Authentication flow (OTP request/verify)
+# - Database table accessibility
+# - Invalid input handling
+# - Unauthorized access scenarios
+```
+
 ### Using Postman
 Import the comprehensive Postman collection included in the repository:
 ```bash
@@ -482,44 +520,87 @@ gcloud run deploy fincore-npe-api \
 
 ## 🗄️ Database
 
-### Cloud SQL Setup
+### Cloud SQL Configuration
 
-The database schema is in `cloud-sql-schema.sql`. To set up:
-
-```bash
-# 1. Upload schema to Cloud Storage
-gsutil cp cloud-sql-schema.sql gs://your-bucket/
-
-# 2. Grant Cloud SQL service account access
-gsutil iam ch serviceAccount:SQL_SA:objectViewer gs://your-bucket
-
-# 3. Import schema
-gcloud sql import sql INSTANCE_NAME \
-  gs://your-bucket/cloud-sql-schema.sql \
-  --database=fincore_db
-```
+**Production Database** (fincore-npe-db):
+- **Instance**: fincore-npe-db (europe-west2-c)
+- **Database**: fincore_db
+- **Version**: MySQL 8.0
+- **Configuration**: 
+  - `lower_case_table_names=1` (case-insensitive table names)
+  - Private IP only (no public access for security)
+  - Automated backups enabled
+- **Connection**: Cloud SQL Proxy (private connection)
+- **Schema**: `complete-entity-schema.sql` (all lowercase table names)
 
 ### Database Schema
 
 **Core Tables:**
-- `users`: User accounts and profiles
+- `users`: User accounts and profiles (lowercase)
 - `roles`: User roles (SYSTEM_ADMINISTRATOR, ADMIN, etc.)
 - `permissions`: Granular permissions (USER_READ, USER_WRITE, etc.)
 - `role_permissions`: Many-to-many relationship
+- `otp_tokens`: Temporary OTP codes with expiration
 
 **Phase 2 Tables (Organisation Onboarding):**
-- `address`: Multi-type address management (registered, business, correspondence, postal)
-- `organisation`: Company details with regulatory compliance fields (FCA, HMRC MLR)
-- `kyc_documents`: Document verification with SumSub integration support
+- `address`: Multi-type address management (lowercase)
+- `organisation`: Company details with regulatory compliance fields (lowercase)
+- `kyc_documents`: Document verification with SumSub integration (lowercase)
 
 **Key Features:**
+- All table names are lowercase for MySQL case-sensitivity compatibility
 - Auto-incrementing primary keys
-- Unique constraints on username and email
-- Foreign key relationships
+- Unique constraints on username, email, phone numbers
+- Foreign key relationships with proper cascading
 - Indexed columns for performance
 - Timestamp tracking (created_at, updated_at)
 - Phase 2: Organisation type and status enums
 - Phase 2: Document type and verification status tracking
+
+### Database Setup
+
+The complete database schema is in `complete-entity-schema.sql`:
+
+```bash
+# Upload schema to Cloud Storage
+gsutil cp complete-entity-schema.sql gs://your-bucket/
+
+# Import to Cloud SQL (select fincore_db database in import dialog)
+# Use Cloud Console: SQL > fincore-npe-db > Import
+# Select file from Cloud Storage
+# Select database: fincore_db
+# Click Import
+```
+
+**Schema includes:**
+- 8 tables (users, roles, permissions, role_permissions, otp_tokens, address, organisation, kyc_documents)
+- 21 default permissions
+- 4 default roles
+- 3 test users with different roles
+- Sample addresses and organisations
+
+### Local Development Database
+
+**H2 In-Memory** (default for local development):
+```yaml
+# application-local-h2.yml
+url: jdbc:h2:mem:fincore_db
+username: sa
+password: (empty)
+```
+
+Access H2 Console: http://localhost:8080/h2-console
+
+**Connect to Cloud SQL Locally** (via Cloud SQL Proxy):
+```bash
+# Start Cloud SQL Proxy
+cloud-sql-proxy project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db
+
+# Connect via MySQL client
+mysql -h 127.0.0.1 -u fincore_app -p fincore_db
+```
+
+See [CLOUD_SQL_SECURITY.md](CLOUD_SQL_SECURITY.md) for complete setup instructions.
 
 ## 🔧 Configuration
 
@@ -563,29 +644,47 @@ gcloud sql import sql INSTANCE_NAME \
 ## 🔒 Security Best Practices
 
 ### Implemented
-- ✅ JWT-based authentication
+- ✅ JWT-based authentication with secure token generation
 - ✅ BCrypt password hashing (10 rounds)
-- ✅ Account lockout mechanism
-- ✅ Role-based access control
+- ✅ Phone-based OTP authentication
+- ✅ Role-based access control (RBAC)
 - ✅ HTTPS-only in production
 - ✅ SQL injection prevention (JPA/Hibernate)
-- ✅ Secrets in Cloud Secret Manager
+- ✅ **Private database access (Cloud SQL Proxy only - no public IP)**
+- ✅ Secrets in Cloud Secret Manager (passwords, JWT keys)
 - ✅ Minimal service account permissions
+- ✅ **Automated security testing in CI/CD**
+- ✅ **Database case-insensitivity configuration**
+- ✅ Failed login attempt tracking
+- ✅ OTP expiration and auto-cleanup
+
+### Database Security
+- ✅ **No public IP access** (0.0.0.0/0 removed)
+- ✅ Cloud SQL Proxy for all connections
+- ✅ Passwords stored in Secret Manager
+- ✅ Automatic backups enabled
+- ✅ SSL/TLS connections enforced
+
+See [CLOUD_SQL_SECURITY.md](CLOUD_SQL_SECURITY.md) for complete security configuration.
 
 ### Recommendations
 - Use strong passwords (8+ chars, mixed case, numbers, symbols)
-- Rotate JWT secret regularly
-- Enable Cloud SQL automatic backups
-- Implement API rate limiting
-- Add audit logging
-- Enable 2FA for admin users
+- Rotate JWT secret and database passwords regularly
+- Monitor Cloud SQL automatic backups
+- Implement API rate limiting for production
+- Enable comprehensive audit logging
+- Regular security scans via GitHub Actions
 
 ## 📖 Additional Resources
 
 - **Infrastructure Repository**: [fincore_Iasc](https://github.com/kasisheraz/fincore_Iasc)
-- **Architecture Documentation**: See `architecture-documentation.md`
-- **Run Instructions**: See `RUN_INSTRUCTIONS.md`
-- **Requirements**: See `user-management-requirements.md`
+- **Architecture Documentation**: [architecture-documentation.md](architecture-documentation.md)
+- **API Testing Strategy**: [API_TESTING_STRATEGY.md](API_TESTING_STRATEGY.md) ⭐ NEW
+- **Cloud SQL Security Guide**: [CLOUD_SQL_SECURITY.md](CLOUD_SQL_SECURITY.md) ⭐ NEW
+- **Run Instructions**: [RUN_INSTRUCTIONS.md](RUN_INSTRUCTIONS.md)
+- **Postman Guide**: [POSTMAN_USAGE_GUIDE.md](POSTMAN_USAGE_GUIDE.md)
+- **Deployment Guide**: [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+- **Requirements**: [user-management-requirements.md](user-management-requirements.md)
 
 ## 🤝 Contributing
 
@@ -605,26 +704,28 @@ For issues or questions, please open a GitHub issue or contact the development t
 
 ---
 
-**Last Updated**: January 2026  
+**Last Updated**: January 7, 2026  
 **Version**: 2.0.0 (Organisation Onboarding - Production Ready)  
-**Status**: ✅ Deployed to NPE Environment
+**Status**: ✅ Deployed to NPE Environment with Automated Testing
 
 ## Recent Updates
 
-### January 2026
-- ✅ **Unified Postman Collection**: Merged Phase 1 and Phase 2 collections into single comprehensive collection
-- ✅ **Authentication Optimization**: Removed duplicate authentication scripts, streamlined OTP workflow
-- ✅ **Test Coverage Analysis**: Generated comprehensive coverage report (22% baseline, 70% target)
-- ✅ **Documentation Cleanup**: Removed obsolete phase-specific documentation
-- ✅ **Cloud Deployment**: Successfully deployed to GCP Cloud Run with Cloud SQL MySQL
-- ✅ **Phase 2 Complete**: Organisation onboarding with KYC and address management fully implemented
+### January 7, 2026
+- ✅ **Database Security Hardening**: Removed public IP access (0.0.0.0/0), enforced Cloud SQL Proxy only
+- ✅ **MySQL Case Sensitivity Fix**: Configured lower_case_table_names=1, updated all entity table names to lowercase
+- ✅ **Automated Testing Pipeline**: Added comprehensive smoke tests (health, OTP, authentication)
+- ✅ **Integration Test Suite**: Created ApiIntegrationTest with 8 test scenarios
+- ✅ **CI/CD Enhancements**: Automated deployment with post-deployment validation
+- ✅ **Documentation Updates**: Added API_TESTING_STRATEGY.md and CLOUD_SQL_SECURITY.md
+- ✅ **Schema Synchronization**: Complete entity-based schema (complete-entity-schema.sql)
+- ✅ **Code Cleanup**: Removed 18 temporary troubleshooting files
 
-### Key Features (Phase 2)
-- **Organisation Management**: Multi-type support (sole trader, partnership, LLP, LTD, PLC, charity, trust)
-- **KYC Document Verification**: 18 document types with verification workflow
-- **Address Management**: 5 address types with full UK format support
-- **Regulatory Compliance**: FCA and HMRC MLR number tracking
-- **Status Workflow**: Complete lifecycle management for organisations and documents
+### Key Improvements
+- **Security**: Private database access only, no public IP exposure
+- **Reliability**: Automated testing catches issues before production
+- **Database**: Case-insensitive configuration prevents Linux deployment issues
+- **Testing**: Comprehensive smoke tests validate critical flows
+- **Documentation**: Complete guides for security and testing strategies
 
 ## Phase 2 Features (Organisation Onboarding)
 
