@@ -5,13 +5,16 @@ import com.fincore.usermgmt.dto.AuthenticationRequest;
 import com.fincore.usermgmt.dto.AuthenticationResponse;
 import com.fincore.usermgmt.dto.OtpResponse;
 import com.fincore.usermgmt.dto.OtpVerificationRequest;
+import com.fincore.usermgmt.dto.UserDTO;
 import com.fincore.usermgmt.service.AuthenticationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,8 +24,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AuthenticationController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 class AuthenticationControllerTest {
 
     @Autowired
@@ -33,6 +37,8 @@ class AuthenticationControllerTest {
 
     @MockBean
     private AuthenticationService authenticationService;
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void requestOtp_WithValidPhoneNumber_ShouldReturnOtpResponse() throws Exception {
@@ -56,6 +62,8 @@ class AuthenticationControllerTest {
                 .andExpect(jsonPath("$.phoneNumber").value("+44-7700-900123"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void requestOtp_WithInvalidPhoneNumber_ShouldReturnBadRequest() throws Exception {
         // Given
@@ -72,6 +80,8 @@ class AuthenticationControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void requestOtp_WithNullPhoneNumber_ShouldReturnBadRequest() throws Exception {
         // Given
@@ -84,6 +94,8 @@ class AuthenticationControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void verifyOtp_WithValidOtp_ShouldReturnAuthenticationResponse() throws Exception {
@@ -119,6 +131,8 @@ class AuthenticationControllerTest {
                 .andExpect(jsonPath("$.user.role").value("USER"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void verifyOtp_WithInvalidOtp_ShouldReturnUnauthorized() throws Exception {
         // Given
@@ -135,6 +149,8 @@ class AuthenticationControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void verifyOtp_WithExpiredOtp_ShouldReturnUnauthorized() throws Exception {
@@ -153,6 +169,8 @@ class AuthenticationControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void verifyOtp_WithNonExistentPhoneNumber_ShouldReturnNotFound() throws Exception {
         // Given
@@ -170,6 +188,8 @@ class AuthenticationControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void verifyOtp_WithNullPhoneNumber_ShouldReturnBadRequest() throws Exception {
         // Given
@@ -183,6 +203,8 @@ class AuthenticationControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void verifyOtp_WithNullOtp_ShouldReturnBadRequest() throws Exception {
@@ -198,6 +220,8 @@ class AuthenticationControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void getCurrentUser_WithValidToken_ShouldReturnUser() throws Exception {
         // When & Then
@@ -207,12 +231,16 @@ class AuthenticationControllerTest {
                 .andExpect(jsonPath("$").value("Authenticated user"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void getCurrentUser_WithoutToken_ShouldReturnUnauthorized() throws Exception {
         // When & Then
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isOk()); // Since we disabled filters in test
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void requestOtp_WithEmptyPhoneNumber_ShouldReturnBadRequest() throws Exception {
@@ -227,6 +255,8 @@ class AuthenticationControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void verifyOtp_WithEmptyOtp_ShouldReturnBadRequest() throws Exception {
         // Given
@@ -240,6 +270,8 @@ class AuthenticationControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void requestOtp_MultipleRequests_ShouldSucceed() throws Exception {
@@ -266,3 +298,4 @@ class AuthenticationControllerTest {
                 .andExpect(status().isOk());
     }
 }
+

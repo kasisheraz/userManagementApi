@@ -6,10 +6,12 @@ import com.fincore.usermgmt.dto.AddressDTO;
 import com.fincore.usermgmt.service.AddressService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -18,12 +20,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AddressController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 class AddressControllerTest {
 
     @Autowired
@@ -34,6 +38,8 @@ class AddressControllerTest {
 
     @MockBean
     private AddressService addressService;
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void createAddress_WithValidData_ShouldReturnCreated() throws Exception {
@@ -68,6 +74,8 @@ class AddressControllerTest {
                 .andExpect(jsonPath("$.country").value("United Kingdom"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void getAddressById_WhenExists_ShouldReturnAddress() throws Exception {
         // Given
@@ -87,6 +95,8 @@ class AddressControllerTest {
                 .andExpect(jsonPath("$.city").value("London"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void getAddressById_WhenNotExists_ShouldReturn404() throws Exception {
         // Given
@@ -96,6 +106,8 @@ class AddressControllerTest {
         mockMvc.perform(get("/api/addresses/999"))
                 .andExpect(status().isNotFound());
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void getAllAddresses_ShouldReturnList() throws Exception {
@@ -123,6 +135,8 @@ class AddressControllerTest {
                 .andExpect(jsonPath("$[1].city").value("Manchester"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void getAllAddresses_WhenEmpty_ShouldReturnEmptyList() throws Exception {
         // Given
@@ -133,6 +147,8 @@ class AddressControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void getAddressesByType_WithValidType_ShouldReturnList() throws Exception {
@@ -150,6 +166,8 @@ class AddressControllerTest {
                 .andExpect(jsonPath("$[0].addressType").value("REGISTERED"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void getAddressesByType_WithInvalidType_ShouldReturnBadRequest() throws Exception {
         // Given
@@ -160,6 +178,8 @@ class AddressControllerTest {
         mockMvc.perform(get("/api/addresses/type/INVALID_TYPE"))
                 .andExpect(status().isBadRequest());
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void getAddressesByCountry_ShouldReturnList() throws Exception {
@@ -185,6 +205,8 @@ class AddressControllerTest {
                 .andExpect(jsonPath("$[1].country").value("United Kingdom"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void getAddressesByCity_ShouldReturnList() throws Exception {
         // Given
@@ -201,6 +223,8 @@ class AddressControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].city").value("London"));
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void updateAddress_WhenExists_ShouldReturnUpdated() throws Exception {
@@ -227,6 +251,8 @@ class AddressControllerTest {
                 .andExpect(jsonPath("$.addressLine1").value("456 New Street"));
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void updateAddress_WhenNotExists_ShouldReturn404() throws Exception {
         // Given
@@ -244,12 +270,16 @@ class AddressControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @WithMockUser(username = "testuser", roles = {"USER"})
+
     @Test
     void deleteAddress_WhenExists_ShouldReturnNoContent() throws Exception {
         // When & Then
         mockMvc.perform(delete("/api/addresses/1"))
                 .andExpect(status().isNoContent());
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void deleteAddress_WhenNotExists_ShouldReturn404() throws Exception {
@@ -260,6 +290,8 @@ class AddressControllerTest {
         mockMvc.perform(delete("/api/addresses/999"))
                 .andExpect(status().isNotFound());
     }
+
+    @WithMockUser(username = "testuser", roles = {"USER"})
 
     @Test
     void createAddress_WithMissingRequiredFields_ShouldReturnBadRequest() throws Exception {
@@ -273,3 +305,4 @@ class AddressControllerTest {
                 .andExpect(status().isBadRequest());
     }
 }
+
