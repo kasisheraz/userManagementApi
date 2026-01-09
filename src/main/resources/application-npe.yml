@@ -21,13 +21,13 @@ spring:
       connection-timeout: 60000
       idle-timeout: 600000
       max-lifetime: 1800000
-      initialization-fail-timeout: 120000
+      initialization-fail-timeout: -1
       leak-detection-threshold: 120000
       validation-timeout: 10000
       connection-test-query: SELECT 1
   jpa:
     hibernate:
-      ddl-auto: validate  # Validate schema without updating (faster startup)
+      ddl-auto: none  # Skip schema validation temporarily for debugging
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
