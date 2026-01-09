@@ -134,6 +134,7 @@ jobs:
             --cpu-boost \
             --max-instances=3 \
             --min-instances=0 \
+            --clear-vpc-connector \
             --add-cloudsql-instances=${{ secrets.CLOUDSQL_INSTANCE }} \
             --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},CLOUD_SQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},SPRING_PROFILES_ACTIVE=npe,JAVA_TOOL_OPTIONS=-Dcom.google.cloud.sql.core.CoreSocketFactory.enableIamAuth=false" \
             --update-secrets="DB_PASSWORD=fincore-npe-app-password:latest" \
