@@ -2,6 +2,7 @@
 # Used for: Non-Production Environment on GCP with built-in Cloud SQL connector
 # Service: https://fincore-npe-api-994490239798.europe-west2.run.app
 # Cloud SQL: Public IP 34.89.96.239 (authorized networks: 0.0.0.0/0)
+# VPC Connector: Removed for cost optimization
 
 spring:
   application:
