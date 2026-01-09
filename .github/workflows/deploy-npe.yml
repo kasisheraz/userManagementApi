@@ -135,8 +135,7 @@ jobs:
             --max-instances=3 \
             --min-instances=0 \
             --clear-vpc-connector \
-            --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},SPRING_PROFILES_ACTIVE=npe,JAVA_TOOL_OPTIONS=-Dcom.google.cloud.sql.core.CoreSocketFactory.enableIamAuth=false" \
-            --update-secrets="DB_PASSWORD=fincore-npe-app-password:latest" \
+            --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},SPRING_PROFILES_ACTIVE=npe,JAVA_TOOL_OPTIONS=-Dcom.google.cloud.sql.core.CoreSocketFactory.enableIamAuth=false" \
             --port=8080 \
             --no-cpu-throttling \
             --project=${{ env.PROJECT_ID }}
