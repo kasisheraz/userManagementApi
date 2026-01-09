@@ -8,9 +8,9 @@ spring:
   main:
     lazy-initialization: false
   datasource:
-    # Cloud SQL Socket Factory - Private IP connection (no public IP)
+    # Cloud SQL Socket Factory - Public IP connection with SSL
     # Uses Cloud SQL Proxy built into Cloud Run
-    url: jdbc:mysql:///${DB_NAME:fincore_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&enabledTLSProtocols=TLSv1.2,TLSv1.3&useSSL=true&requireSSL=false&serverTimezone=UTC&autoReconnect=true&connectTimeout=60000&socketTimeout=120000
+    url: jdbc:mysql://google/${DB_NAME:fincore_db}?cloudSqlInstance=${CLOUD_SQL_INSTANCE:project-07a61357-b791-4255-a9e:europe-west2:fincore-npe-db}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=true&requireSSL=true&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=UTC&autoReconnect=true&connectTimeout=60000&socketTimeout=120000
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
