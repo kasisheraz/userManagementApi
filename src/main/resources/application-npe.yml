@@ -27,7 +27,7 @@ spring:
       connection-test-query: SELECT 1
   jpa:
     hibernate:
-      ddl-auto: update  # Create/update schema automatically
+      ddl-auto: validate  # Validate schema only (don't create/update)
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
@@ -42,7 +42,7 @@ spring:
     open-in-view: false
   sql:
     init:
-      mode: always  # Run schema.sql and data.sql on startup
+      mode: never  # Don't run SQL files on startup
 
 server:
   port: ${PORT:8080}
