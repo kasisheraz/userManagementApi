@@ -3,7 +3,7 @@ package com.fincore.usermgmt.service;
 import com.fincore.usermgmt.entity.QuestionnaireQuestion;
 import com.fincore.usermgmt.entity.User;
 import com.fincore.usermgmt.entity.enums.QuestionCategory;
-import com.fincore.usermgmt.repository.QuestionnaireRepository;
+import com.fincore.usermgmt.repository.QuestionnaireQuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 public class QuestionnaireServiceTest {
 
     @Mock
-    private QuestionnaireRepository questionnaireRepository;
+    private QuestionnaireQuestionRepository questionnaireRepository;
 
     @InjectMocks
     private QuestionnaireService questionnaireService;
