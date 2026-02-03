@@ -9,6 +9,10 @@
 USE fincore_db;
 
 -- Drop tables in correct order (handle foreign key constraints)
+DROP TABLE IF EXISTS customer_answers;
+DROP TABLE IF EXISTS questionnaire_questions;
+DROP TABLE IF EXISTS aml_screening_results;
+DROP TABLE IF EXISTS customer_kyc_verification;
 DROP TABLE IF EXISTS kyc_documents;
 DROP TABLE IF EXISTS otp_tokens;
 DROP TABLE IF EXISTS organisation;
@@ -206,6 +210,101 @@ CREATE TABLE otp_tokens (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
+-- PHASE 2: KYC VERIFICATION & COMPLIANCE TABLES
+-- ============================================
+
+-- Customer KYC Verification Table
+CREATE TABLE customer_kyc_verification (
+    verification_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    sumsub_applicant_id VARCHAR(100) UNIQUE,
+    verification_level VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    reason VARCHAR(100),
+    review_result JSON,
+    risk_level VARCHAR(20),
+    submitted_at DATETIME,
+    reviewed_at DATETIME,
+    approved_at DATETIME,
+    rejected_at DATETIME,
+    expires_at DATETIME,
+    created_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    last_modified_datetime DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_modified_by BIGINT,
+    CONSTRAINT fk_kyc_user FOREIGN KEY (user_id) REFERENCES users(User_Identifier) ON DELETE CASCADE,
+    CONSTRAINT fk_kyc_created_by FOREIGN KEY (created_by) REFERENCES users(User_Identifier),
+    CONSTRAINT fk_kyc_modified_by FOREIGN KEY (last_modified_by) REFERENCES users(User_Identifier),
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status),
+    INDEX idx_verification_level (verification_level),
+    INDEX idx_sumsub_applicant_id (sumsub_applicant_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- AML Screening Results Table
+CREATE TABLE aml_screening_results (
+    screening_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    verification_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    screening_type VARCHAR(100) NOT NULL,
+    match_found BOOLEAN NOT NULL DEFAULT FALSE,
+    risk_score INT DEFAULT 0,
+    match_details JSON,
+    screening_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    last_modified_datetime DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_modified_by BIGINT,
+    CONSTRAINT fk_aml_verification FOREIGN KEY (verification_id) REFERENCES customer_kyc_verification(verification_id) ON DELETE CASCADE,
+    CONSTRAINT fk_aml_user FOREIGN KEY (user_id) REFERENCES users(User_Identifier) ON DELETE CASCADE,
+    CONSTRAINT fk_aml_created_by FOREIGN KEY (created_by) REFERENCES users(User_Identifier),
+    CONSTRAINT fk_aml_modified_by FOREIGN KEY (last_modified_by) REFERENCES users(User_Identifier),
+    INDEX idx_verification_id (verification_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_screening_type (screening_type),
+    INDEX idx_match_found (match_found)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Questionnaire Questions Table
+CREATE TABLE questionnaire_questions (
+    question_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    question_text TEXT NOT NULL,
+    question_category VARCHAR(100),
+    display_order INT NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    created_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    last_modified_datetime DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_modified_by BIGINT,
+    CONSTRAINT fk_question_created_by FOREIGN KEY (created_by) REFERENCES users(User_Identifier),
+    CONSTRAINT fk_question_modified_by FOREIGN KEY (last_modified_by) REFERENCES users(User_Identifier),
+    INDEX idx_status (status),
+    INDEX idx_category (question_category),
+    INDEX idx_display_order (display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Customer Answers Table
+CREATE TABLE customer_answers (
+    answer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    question_id BIGINT NOT NULL,
+    answer_text TEXT NOT NULL,
+    answered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    last_modified_datetime DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_modified_by BIGINT,
+    CONSTRAINT fk_answer_user FOREIGN KEY (user_id) REFERENCES users(User_Identifier) ON DELETE CASCADE,
+    CONSTRAINT fk_answer_question FOREIGN KEY (question_id) REFERENCES questionnaire_questions(question_id) ON DELETE CASCADE,
+    CONSTRAINT fk_answer_created_by FOREIGN KEY (created_by) REFERENCES users(User_Identifier),
+    CONSTRAINT fk_answer_modified_by FOREIGN KEY (last_modified_by) REFERENCES users(User_Identifier),
+    UNIQUE KEY unique_user_question (user_id, question_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_question_id (question_id),
+    INDEX idx_answered_at (answered_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
 -- SEED DATA
 -- ============================================
 
@@ -312,6 +411,45 @@ INSERT INTO kyc_documents (Reference_Identifier, Document_Type_Description, File
 VALUES (1, 'PROOF_OF_ADDRESS', 'fincore_utility_bill.pdf', 'https://storage.fincore.com/docs/utility_bill.pdf', 'VERIFIED', 1);
 
 -- ============================================
+-- SAMPLE PHASE 2 DATA (KYC, AML, QUESTIONNAIRE)
+-- ============================================
+
+-- Insert sample KYC verification for admin user
+INSERT INTO customer_kyc_verification (
+    user_id, sumsub_applicant_id, verification_level, status, risk_level,
+    submitted_at, reviewed_at, approved_at, created_by, last_modified_by
+) VALUES (
+    1, 'SUMSUB_12345', 'STANDARD', 'APPROVED', 'LOW',
+    NOW(), NOW(), NOW(), 1, 1
+);
+
+-- Insert sample AML screening result
+INSERT INTO aml_screening_results (
+    verification_id, user_id, screening_type, match_found, risk_score,
+    match_details, screening_date, created_by, last_modified_by
+) VALUES (
+    1, 1, 'SANCTIONS_LIST', FALSE, 5,
+    '{"source":"OFAC","matches":[],"score":5}', NOW(), 1, 1
+);
+
+-- Insert sample questionnaire questions
+INSERT INTO questionnaire_questions (question_text, question_category, display_order, status, created_by, last_modified_by)
+VALUES 
+    ('What is your estimated annual income?', 'FINANCIAL', 1, 'ACTIVE', 1, 1),
+    ('What is the source of your funds?', 'FINANCIAL', 2, 'ACTIVE', 1, 1),
+    ('Do you hold any public office or politically exposed position?', 'COMPLIANCE', 3, 'ACTIVE', 1, 1),
+    ('What is your intended use of this service?', 'OPERATIONAL', 4, 'ACTIVE', 1, 1),
+    ('Have you been involved in any legal disputes in the past 5 years?', 'LEGAL', 5, 'ACTIVE', 1, 1);
+
+-- Insert sample customer answers
+INSERT INTO customer_answers (user_id, question_id, answer_text, created_by, last_modified_by)
+VALUES 
+    (1, 1, '£50,000 - £100,000', 1, 1),
+    (1, 2, 'Employment income', 1, 1),
+    (1, 3, 'No', 1, 1),
+    (1, 4, 'International money transfers for family support', 1, 1);
+
+-- ============================================
 -- VERIFICATION QUERIES
 -- ============================================
 -- Use these queries to verify the schema was created correctly:
@@ -323,9 +461,17 @@ VALUES (1, 'PROOF_OF_ADDRESS', 'fincore_utility_bill.pdf', 'https://storage.finc
 -- SELECT COUNT(*) FROM address;  -- Should return 3
 -- SELECT COUNT(*) FROM organisation;  -- Should return 1
 -- SELECT COUNT(*) FROM kyc_documents;  -- Should return 4
+-- SELECT COUNT(*) FROM customer_kyc_verification;  -- Should return 1
+-- SELECT COUNT(*) FROM aml_screening_results;  -- Should return 1
+-- SELECT COUNT(*) FROM questionnaire_questions;  -- Should return 5
+-- SELECT COUNT(*) FROM customer_answers;  -- Should return 4
 -- 
 -- SHOW TABLES;
 -- DESCRIBE users;
 -- DESCRIBE organisation;
 -- DESCRIBE kyc_documents;
+-- DESCRIBE customer_kyc_verification;
+-- DESCRIBE aml_screening_results;
+-- DESCRIBE questionnaire_questions;
+-- DESCRIBE customer_answers;
 -- ============================================

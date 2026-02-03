@@ -22,6 +22,7 @@ Your Cloud SQL instance currently has `0.0.0.0/0` in authorized networks, which 
 
 1. In **CONNECTIONS** tab
 2. Under **Public IP** section
+2. Under **Public IP** section
 3. **Uncheck** "Enable public IP"
 4. Click **SAVE**
 

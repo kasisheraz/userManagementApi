@@ -1,0 +1,659 @@
+{
+  "info": {
+    "name": "User Management API - Phase 2 (KYC & Questionnaire)",
+    "description": "Complete Postman collection for Phase 2 features:\n- KYC Verification APIs\n- AML Screening (embedded in KYC responses)\n- Questionnaire Management APIs\n- Customer Answer APIs\n\nPhase 2 includes 30+ endpoints with full CRUD operations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "phase2-kyc-questionnaire"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "verification_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "question_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "answer_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Authentication",
+      "item": [
+        {
+          "name": "Login (Get JWT Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    console.log('JWT Token saved:', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+1234567890\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login to get JWT token. Token is automatically saved to collection variables."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. KYC Verification",
+      "item": [
+        {
+          "name": "Submit KYC Verification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('verification_id', jsonData.verificationId);",
+                  "    console.log('Verification ID saved:', jsonData.verificationId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{user_id}},\n  \"verificationLevel\": \"BASIC\",\n  \"sumsubApplicantId\": \"SUMSUB_12345\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "submit"]
+            },
+            "description": "Submit a new KYC verification request. Verification ID is saved automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Verification by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/{{verification_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "{{verification_id}}"]
+            },
+            "description": "Get KYC verification details by verification ID. Includes AML screening results."
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Verifications by User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/user/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "user", "{{user_id}}"]
+            },
+            "description": "Get all KYC verifications for a specific user."
+          },
+          "response": []
+        },
+        {
+          "name": "Update KYC Verification Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\",\n  \"riskLevel\": \"LOW\",\n  \"reviewResult\": {\n    \"reviewerId\": 100,\n    \"comments\": \"Documents verified successfully\",\n    \"approvalReason\": \"All checks passed\"\n  },\n  \"reviewedById\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/{{verification_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "{{verification_id}}", "status"]
+            },
+            "description": "Update KYC verification status (APPROVED, REJECTED, EXPIRED). Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Expired KYC Verifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/expired",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "expired"]
+            },
+            "description": "Get all KYC verifications that have expired."
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Verifications by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/status/PENDING",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "status", "PENDING"]
+            },
+            "description": "Get KYC verifications by status: PENDING, APPROVED, REJECTED, EXPIRED."
+          },
+          "response": []
+        },
+        {
+          "name": "Count KYC Verifications by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/count/APPROVED",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "count", "APPROVED"]
+            },
+            "description": "Get count of KYC verifications by status."
+          },
+          "response": []
+        },
+        {
+          "name": "Check if User Has Approved KYC",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/approved/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "approved", "{{user_id}}"]
+            },
+            "description": "Check if user has at least one approved KYC verification."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete KYC Verification",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/kyc-verification/{{verification_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "kyc-verification", "{{verification_id}}"]
+            },
+            "description": "Delete a KYC verification by ID. Admin only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Questionnaire Management",
+      "item": [
+        {
+          "name": "Get All Questions (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all questions with pagination. Default page size is 20."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Question by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions/{{question_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions", "{{question_id}}"]
+            },
+            "description": "Get a specific question by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Questions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions/active",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions", "active"]
+            },
+            "description": "Get all active questions (status = ACTIVE)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Questions by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions/category/PERSONAL_INFO",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions", "category", "PERSONAL_INFO"]
+            },
+            "description": "Get questions by category: PERSONAL_INFO, FINANCIAL, EMPLOYMENT, IDENTIFICATION, etc."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Question",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('question_id', jsonData.questionId);",
+                  "    console.log('Question ID saved:', jsonData.questionId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionText\": \"What is your annual income?\",\n  \"questionCategory\": \"FINANCIAL\",\n  \"displayOrder\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions"]
+            },
+            "description": "Create a new question. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Question",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionText\": \"What is your current annual income?\",\n  \"questionCategory\": \"FINANCIAL\",\n  \"displayOrder\": 11\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions/{{question_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions", "{{question_id}}"]
+            },
+            "description": "Update an existing question. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Activate Question",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions/{{question_id}}/activate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions", "{{question_id}}", "activate"]
+            },
+            "description": "Activate a question (set status to ACTIVE). Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Inactivate Question",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions/{{question_id}}/inactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions", "{{question_id}}", "inactivate"]
+            },
+            "description": "Inactivate a question (set status to INACTIVE). Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Question (Archive)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions/{{question_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions", "{{question_id}}"]
+            },
+            "description": "Archive a question (set status to ARCHIVED). Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Count Active Questions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/questions/count/active",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "questions", "count", "active"]
+            },
+            "description": "Get count of active questions."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Customer Answers",
+      "item": [
+        {
+          "name": "Submit Answer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('answer_id', jsonData.answerId);",
+                  "    console.log('Answer ID saved:', jsonData.answerId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{user_id}},\n  \"questionId\": {{question_id}},\n  \"answerText\": \"$75,000 per year\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers"]
+            },
+            "description": "Submit a new answer for a question."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Answer by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/{{answer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "{{answer_id}}"]
+            },
+            "description": "Get a specific answer by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Answers for User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/user/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "user", "{{user_id}}"]
+            },
+            "description": "Get all answers submitted by a user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Completed Answers for User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/user/{{user_id}}/completed",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "user", "{{user_id}}", "completed"]
+            },
+            "description": "Get all completed answers (where answer text is not empty)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Answer by User and Question",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/user/{{user_id}}/question/{{question_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "user", "{{user_id}}", "question", "{{question_id}}"]
+            },
+            "description": "Get answer for a specific user and question combination."
+          },
+          "response": []
+        },
+        {
+          "name": "Check if User Answered Question",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/user/{{user_id}}/question/{{question_id}}/answered",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "user", "{{user_id}}", "question", "{{question_id}}", "answered"]
+            },
+            "description": "Check if user has answered a specific question (returns boolean)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Answer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{user_id}},\n  \"questionId\": {{question_id}},\n  \"answerText\": \"$80,000 per year\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/{{answer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "{{answer_id}}"]
+            },
+            "description": "Update an existing answer."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Answer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/{{answer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "{{answer_id}}"]
+            },
+            "description": "Delete a specific answer."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete All Answers for User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/user/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "user", "{{user_id}}"]
+            },
+            "description": "Delete all answers for a specific user. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Count Answers for User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/user/{{user_id}}/count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "user", "{{user_id}}", "count"]
+            },
+            "description": "Get count of total answers submitted by user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Answer Completion Rate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/answers/user/{{user_id}}/completion-rate/10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "answers", "user", "{{user_id}}", "completion-rate", "10"]
+            },
+            "description": "Get answer completion rate (percentage). Pass total questions as path parameter."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Check if application is running."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
