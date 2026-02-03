@@ -5,6 +5,8 @@ import com.fincore.usermgmt.dto.KycVerificationResponseDTO;
 import com.fincore.usermgmt.dto.KycVerificationUpdateDTO;
 import com.fincore.usermgmt.entity.CustomerKycVerification;
 import com.fincore.usermgmt.entity.User;
+import com.fincore.usermgmt.entity.enums.VerificationLevel;
+import com.fincore.usermgmt.entity.enums.VerificationStatus;
 import com.fincore.usermgmt.service.KycVerificationService;
 import com.fincore.usermgmt.mapper.KycAmlMapper;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +47,7 @@ public class KycVerificationController {
 
         CustomerKycVerification verification = kycService.submitVerification(
                 user,
-                request.getVerificationLevel()
+                VerificationLevel.valueOf(request.getVerificationLevel())
         );
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -92,7 +94,7 @@ public class KycVerificationController {
 
         CustomerKycVerification updated = kycService.updateVerificationStatus(
                 id,
-                request.getStatus(),
+                VerificationStatus.valueOf(request.getStatus()),
                 reviewer,
                 request.getReviewResult()
         );

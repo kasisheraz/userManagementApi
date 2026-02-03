@@ -50,13 +50,13 @@ public class CustomerAnswerService {
         if (existingAnswer.isPresent()) {
             log.info("Updating existing answer for user: {}, question: {}", user.getId(), questionId);
             answer = existingAnswer.get();
-            answer.setAnswerText(answerText);
+            answer.setAnswer(answerText);
             answer.setAnsweredAt(LocalDateTime.now());
         } else {
             answer = CustomerAnswer.builder()
                     .user(user)
                     .question(question)
-                    .answerText(answerText)
+                    .answer(answerText)
                     .answeredAt(LocalDateTime.now())
                     .build();
         }
@@ -124,7 +124,7 @@ public class CustomerAnswerService {
         log.info("Updating answer: {}", answerId);
 
         CustomerAnswer answer = getAnswerById(answerId);
-        answer.setAnswerText(newAnswerText);
+        answer.setAnswer(newAnswerText);
         answer.setAnsweredAt(LocalDateTime.now());
 
         return answerRepository.save(answer);
@@ -152,7 +152,7 @@ public class CustomerAnswerService {
     public List<CustomerAnswer> getCompletedAnswersByUser(Long userId) {
         List<CustomerAnswer> answers = getAnswersByUser(userId);
         return answers.stream()
-                .filter(a -> a.getAnswerText() != null && !a.getAnswerText().trim().isEmpty())
+                .filter(a -> a.getAnswer() != null && !a.getAnswer().trim().isEmpty())
                 .toList();
     }
 

@@ -73,7 +73,7 @@ public class KycVerificationService {
                 .orElseThrow(() -> new IllegalArgumentException("Verification not found"));
 
         verification.setStatus(status);
-        verification.setReviewedBy(reviewer);
+        verification.setLastModifiedBy(reviewer);
         verification.setReviewResult(reviewResult);
         verification.setReviewedAt(LocalDateTime.now());
 
