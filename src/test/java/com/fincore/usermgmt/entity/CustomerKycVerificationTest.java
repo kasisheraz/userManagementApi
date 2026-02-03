@@ -35,7 +35,7 @@ class CustomerKycVerificationTest {
                 .status(VerificationStatus.PENDING)
                 .riskLevel(RiskLevel.LOW)
                 .sumsubApplicantId("sumsub-123")
-                .reviewedBy(reviewer)
+                .lastModifiedBy(reviewer)
                 .build();
     }
 
@@ -95,8 +95,8 @@ class CustomerKycVerificationTest {
 
     @Test
     void testReviewerRelationship() {
-        assertNotNull(verification.getReviewedBy());
-        assertEquals(reviewer.getId(), verification.getReviewedBy().getId());
+        assertNotNull(verification.getLastModifiedBy());
+        assertEquals(reviewer.getId(), verification.getLastModifiedBy().getId());
     }
 
     @Test

@@ -30,7 +30,7 @@ class CustomerAnswerTest {
         answer = CustomerAnswer.builder()
                 .user(testUser)
                 .question(question)
-                .answerText("Employed - Full time")
+                .answer("Employed - Full time")
                 .build();
     }
 
@@ -39,20 +39,20 @@ class CustomerAnswerTest {
         assertNotNull(answer);
         assertEquals(testUser.getId(), answer.getUser().getId());
         assertEquals(question.getQuestionId(), answer.getQuestion().getQuestionId());
-        assertEquals("Employed - Full time", answer.getAnswerText());
+        assertEquals("Employed - Full time", answer.getAnswer());
     }
 
     @Test
     void testAnswerText() {
-        answer.setAnswerText("Self-employed");
-        assertEquals("Self-employed", answer.getAnswerText());
+        answer.setAnswer("Self-employed");
+        assertEquals("Self-employed", answer.getAnswer());
     }
 
     @Test
     void testAnswerTextLength() {
         String longAnswer = "a".repeat(500);
-        answer.setAnswerText(longAnswer);
-        assertEquals(longAnswer, answer.getAnswerText());
+        answer.setAnswer(longAnswer);
+        assertEquals(longAnswer, answer.getAnswer());
     }
 
     @Test
@@ -79,12 +79,12 @@ class CustomerAnswerTest {
         CustomerAnswer builtAnswer = CustomerAnswer.builder()
                 .user(testUser)
                 .question(question)
-                .answerText("Unemployed")
+                .answer("Unemployed")
                 .build();
 
         assertEquals(testUser.getId(), builtAnswer.getUser().getId());
         assertEquals(question.getQuestionId(), builtAnswer.getQuestion().getQuestionId());
-        assertEquals("Unemployed", builtAnswer.getAnswerText());
+        assertEquals("Unemployed", builtAnswer.getAnswer());
     }
 
     @Test
@@ -111,7 +111,7 @@ class CustomerAnswerTest {
                 .build();
 
         assertNotNull(minimalAnswer);
-        assertNull(minimalAnswer.getAnswerText());
+        assertNull(minimalAnswer.getAnswer());
         assertNull(minimalAnswer.getAnsweredAt());
     }
 
@@ -122,13 +122,13 @@ class CustomerAnswerTest {
         CustomerAnswer answer1 = CustomerAnswer.builder()
                 .user(testUser)
                 .question(question)
-                .answerText("Answer 1")
+                .answer("Answer 1")
                 .build();
 
         CustomerAnswer answer2 = CustomerAnswer.builder()
                 .user(user2)
                 .question(question)
-                .answerText("Answer 2")
+                .answer("Answer 2")
                 .build();
 
         assertNotNull(answer1);
