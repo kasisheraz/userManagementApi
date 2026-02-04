@@ -28,7 +28,7 @@ spring:
       connection-test-query: SELECT 1
   jpa:
     hibernate:
-      ddl-auto: validate  # Schema is now correct - validate only (don't create/update)
+      ddl-auto: update  # Keep as update until ALL schema issues are resolved
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
