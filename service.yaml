@@ -24,7 +24,7 @@ spec:
           containerPort: 8080
         env:
         - name: SPRING_PROFILES_ACTIVE
-          value: gcp
+          value: npe
         - name: DB_NAME
           value: fincore_db
         - name: DB_USER
@@ -48,11 +48,11 @@ spec:
           httpGet:
             path: /actuator/health/liveness
             port: 8080
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
+          initialDelaySeconds: 60
+          timeoutSeconds: 10
           periodSeconds: 10
           successThreshold: 1
-          failureThreshold: 18
+          failureThreshold: 30
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
