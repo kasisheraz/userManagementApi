@@ -28,7 +28,7 @@ spring:
       connection-test-query: SELECT 1
   jpa:
     hibernate:
-      ddl-auto: update  # TEMPORARY: Let Hibernate fix schema mismatches - CHANGE BACK TO validate AFTER SUCCESSFUL DEPLOYMENT
+      ddl-auto: validate  # Schema is now correct - validate only (don't create/update)
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
