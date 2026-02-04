@@ -235,13 +235,13 @@ jobs:
             
             if [ "$HTTP_CODE" = "200" ]; then
               # Try multiple token field names
-              TOKEN=$(echo "$LOGIN_BODY" | jq -r '.token // .accessToken // .jwt // empty' 2>/dev/null || echo "")
+              TOKEN=$(echo "$LOGIN_BODY" | jq -r '.accessToken // .token // .jwt // empty' 2>/dev/null || echo "")
               
               # Try multiple user name paths
               USER_NAME=$(echo "$LOGIN_BODY" | jq -r '.user.firstName // .firstName // .username // empty' 2>/dev/null || echo "")
               
-              # Try multiple role paths (handle both object and array)
-              USER_ROLE=$(echo "$LOGIN_BODY" | jq -r '.user.role.roleName // .user.roles[0].roleName // .role.name // .roles[0].name // empty' 2>/dev/null || echo "")
+              # Role can be: direct string (.user.role), nested object (.user.role.roleName), or array (.user.roles[0])
+              USER_ROLE=$(echo "$LOGIN_BODY" | jq -r '.user.role // .user.roles[0] // .role // .roles[0] // empty' 2>/dev/null || echo "")
               
               if [ -n "$TOKEN" ]; then
                 echo "✅ OTP verification PASSED"
