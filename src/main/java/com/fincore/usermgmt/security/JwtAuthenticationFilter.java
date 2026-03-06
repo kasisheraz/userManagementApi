@@ -1,6 +1,5 @@
 package com.fincore.usermgmt.security;
 
-import com.fincore.usermgmt.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,53 +25,35 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String requestPath = request.getRequestURI();
             String jwt = getJwtFromRequest(request);
 
-            if (!StringUtils.hasText(jwt)) {
-                log.debug("No JWT token found in request to: {}", requestPath);
-            } else {
-                log.debug("JWT token found for request to: {}", requestPath);
+            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+                String phoneNumber = tokenProvider.getPhoneNumberFromToken(jwt);
                 
-                if (tokenProvider.validateToken(jwt)) {
-                    String phoneNumber = tokenProvider.getPhoneNumberFromToken(jwt);
-                    Long userId = tokenProvider.getUserIdFromToken(jwt);
+                // Create simple authentication without database lookup
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                
+                UserDetails userDetails = org.springframework.security.core.userdetails.User
+                        .withUsername(phoneNumber)
+                        .password("")
+                        .authorities(authorities)
+                        .build();
 
-                    // Load user from database using fully qualified name to avoid conflict with Spring Security User
-                    com.fincore.usermgmt.entity.User user = userRepository.findByPhoneNumber(phoneNumber).orElse(null);
-                    
-                    if (user != null && "ACTIVE".equalsIgnoreCase(user.getStatusDescription())) {
-                        // Create authorities - use simple ROLE_USER since role is lazy loaded
-                        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-                        
-                        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                                .withUsername(phoneNumber)
-                                .password("") // Not used for JWT auth
-                                .authorities(authorities)
-                                .build();
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, authorities);
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, authorities);
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                        log.info("Successfully authenticated user: {} (ID: {}) for request: {}", phoneNumber, userId, requestPath);
-                    } else {
-                        log.warn("User not found or inactive for phone: {} - denying access to: {}", phoneNumber, requestPath);
-                    }
-                } else {
-                    log.warn("JWT token validation failed for request to: {}", requestPath);
-                }
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.info("Authenticated: {}", phoneNumber);
             }
         } catch (Exception ex) {
-            log.error("Could not set user authentication in security context for request: {}", request.getRequestURI(), ex);
+            log.error("Auth error: {}", ex.getMessage());
         }
 
         filterChain.doFilter(request, response);
