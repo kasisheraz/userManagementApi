@@ -28,8 +28,11 @@ public class SecurityConfig {
             .cors(cors -> {})  // Enable CORS using CorsConfig
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // TEMPORARY: Allow all requests to diagnose 403 issue
-                .anyRequest().permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
+                // All other requests require authentication
+                .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
