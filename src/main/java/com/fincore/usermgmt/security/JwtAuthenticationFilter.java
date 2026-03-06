@@ -48,13 +48,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     com.fincore.usermgmt.entity.User user = userRepository.findByPhoneNumber(phoneNumber).orElse(null);
                     
                     if (user != null && "ACTIVE".equalsIgnoreCase(user.getStatusDescription())) {
-                        // Create a proper UserDetails object
+                        // Create authorities - use simple ROLE_USER since role is lazy loaded
                         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                        if (user.getRole() != null && user.getRole().getName() != null) {
-                            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName().toUpperCase()));
-                        } else {
-                            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-                        }
+                        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
                         
                         UserDetails userDetails = org.springframework.security.core.userdetails.User
                                 .withUsername(phoneNumber)
