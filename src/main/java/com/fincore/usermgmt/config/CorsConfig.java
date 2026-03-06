@@ -18,12 +18,12 @@ public class CorsConfig implements WebMvcConfigurer {
                 "https://*.run.app",               // Allow any Cloud Run app
                 "https://*.web.app",               // Allow Firebase Hosting
                 "https://*.firebaseapp.com",
-                "*"                                 // Allow all origins (NPE only)
+                "https://*"                         // Allow all HTTPS origins
             )
             .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")
             .allowedHeaders("*")
             .exposedHeaders("Authorization", "Content-Type")
-            .allowCredentials(true)
+            .allowCredentials(false)                // Disable credentials for wildcard support
             .maxAge(3600);
     }
 }
