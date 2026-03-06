@@ -28,21 +28,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
+            String requestPath = request.getRequestURI();
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String phoneNumber = tokenProvider.getPhoneNumberFromToken(jwt);
-                Long userId = tokenProvider.getUserIdFromToken(jwt);
+            if (!StringUtils.hasText(jwt)) {
+                log.warn("No JWT token found in request to: {}", requestPath);
+            } else {
+                log.debug("JWT token found for request to: {}", requestPath);
+                
+                if (tokenProvider.validateToken(jwt)) {
+                    String phoneNumber = tokenProvider.getPhoneNumberFromToken(jwt);
+                    Long userId = tokenProvider.getUserIdFromToken(jwt);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        phoneNumber, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            phoneNumber, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("Set authentication for user: {}", phoneNumber);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.info("Successfully authenticated user: {} (ID: {}) for request: {}", phoneNumber, userId, requestPath);
+                } else {
+                    log.warn("JWT token validation failed for request to: {}", requestPath);
+                }
             }
         } catch (Exception ex) {
-            log.error("Could not set user authentication in security context", ex);
+            log.error("Could not set user authentication in security context for request: {}", request.getRequestURI(), ex);
         }
 
         filterChain.doFilter(request, response);

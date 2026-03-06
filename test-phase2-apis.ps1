@@ -301,21 +301,21 @@ Write-Host "  Failed: $testsFailed" -ForegroundColor Red
 Write-Host ""
 
 if ($testsFailed -eq 0) {
-    Write-Host "✅ ALL TESTS PASSED!" -ForegroundColor Green
+    Write-Host "[PASS] ALL TESTS PASSED!" -ForegroundColor Green
     Write-Host ""
     Write-Host "Phase 2 Features Verified:" -ForegroundColor Yellow
-    Write-Host "  ✓ KYC Verification (CRUD)" -ForegroundColor White
-    Write-Host "  ✓ AML Screening Results" -ForegroundColor White
-    Write-Host "  ✓ Questionnaire Management" -ForegroundColor White
-    Write-Host "  ✓ Customer Answers" -ForegroundColor White
+    Write-Host "  [OK] KYC Verification (CRUD)" -ForegroundColor White
+    Write-Host "  [OK] AML Screening Results" -ForegroundColor White
+    Write-Host "  [OK] Questionnaire Management" -ForegroundColor White
+    Write-Host "  [OK] Customer Answers" -ForegroundColor White
     Write-Host ""
     Write-Host "Database Tables Tested:" -ForegroundColor Yellow
-    Write-Host "  ✓ customer_kyc_verification" -ForegroundColor White
-    Write-Host "  ✓ aml_screening_results" -ForegroundColor White
-    Write-Host "  ✓ questionnaire_questions" -ForegroundColor White
-    Write-Host "  ✓ customer_answers" -ForegroundColor White
+    Write-Host "  [OK] customer_kyc_verification" -ForegroundColor White
+    Write-Host "  [OK] aml_screening_results" -ForegroundColor White
+    Write-Host "  [OK] questionnaire_questions" -ForegroundColor White
+    Write-Host "  [OK] customer_answers" -ForegroundColor White
     exit 0
 } else {
-    Write-Host "⚠️ Some tests failed. Review errors above." -ForegroundColor Yellow
+    Write-Host "[WARN] Some tests failed. Review errors above." -ForegroundColor Yellow
     exit 1
 }

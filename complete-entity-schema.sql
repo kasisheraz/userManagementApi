@@ -246,11 +246,11 @@ CREATE TABLE aml_screening_results (
     screening_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     verification_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    screening_type VARCHAR(100) NOT NULL,
+    screening_type VARCHAR(20) NOT NULL,
     match_found BOOLEAN NOT NULL DEFAULT FALSE,
     risk_score INT DEFAULT 0,
     match_details JSON,
-    screening_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    screened_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
     last_modified_datetime DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -267,9 +267,9 @@ CREATE TABLE aml_screening_results (
 
 -- Questionnaire Questions Table
 CREATE TABLE questionnaire_questions (
-    question_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    question_id INT AUTO_INCREMENT PRIMARY KEY,
     question_text TEXT NOT NULL,
-    question_category VARCHAR(100),
+    question_category VARCHAR(50),
     display_order INT NOT NULL DEFAULT 0,
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     created_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -287,8 +287,8 @@ CREATE TABLE questionnaire_questions (
 CREATE TABLE customer_answers (
     answer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    question_id BIGINT NOT NULL,
-    answer_text TEXT NOT NULL,
+    question_id INT NOT NULL,
+    answer VARCHAR(500) NOT NULL,
     answered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,

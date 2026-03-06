@@ -32,26 +32,22 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 // User endpoints
-                .requestMatchers(HttpMethod.GET, "/api/users/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/users/**").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/users/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/users/**").authenticated()
+                .requestMatchers("/api/users/**").authenticated()
+                // Role endpoints
+                .requestMatchers("/api/roles/**").authenticated()
                 // Organisation endpoints
-                .requestMatchers(HttpMethod.GET, "/api/organisations/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/organisations/**").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/organisations/**").authenticated()
-                .requestMatchers(HttpMethod.PATCH, "/api/organisations/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/organisations/**").authenticated()
+                .requestMatchers("/api/organisations/**").authenticated()
                 // Address endpoints
-                .requestMatchers(HttpMethod.GET, "/api/addresses/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/addresses/**").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/addresses/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/addresses/**").authenticated()
+                .requestMatchers("/api/addresses/**").authenticated()
                 // KYC Document endpoints
-                .requestMatchers(HttpMethod.GET, "/api/kyc-documents/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/kyc-documents/**").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/kyc-documents/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/kyc-documents/**").authenticated()
+                .requestMatchers("/api/kyc-documents/**").authenticated()
+                // Phase 2 API v1 endpoints
+                .requestMatchers("/api/v1/questions/**").authenticated()
+                .requestMatchers("/api/v1/questionnaires/**").authenticated()
+                .requestMatchers("/api/v1/answers/**").authenticated()
+                .requestMatchers("/api/v1/kyc-verification/**").authenticated()
+                .requestMatchers("/api/v1/aml-screening/**").authenticated()
+                // Catch-all - require authentication for everything else
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

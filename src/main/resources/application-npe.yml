@@ -83,6 +83,7 @@ logging:
   level:
     root: INFO
     com.fincore.usermgmt: INFO
+    com.fincore.usermgmt.security: DEBUG  # Enable debug for JWT authentication
     com.google.cloud.sql: DEBUG  # Enable for Cloud SQL connector debugging
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
