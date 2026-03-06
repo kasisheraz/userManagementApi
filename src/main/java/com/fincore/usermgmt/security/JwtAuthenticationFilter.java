@@ -1,6 +1,5 @@
 package com.fincore.usermgmt.security;
 
-import com.fincore.usermgmt.entity.User;
 import com.fincore.usermgmt.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,7 +11,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.User.UserBuilder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -20,7 +18,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -47,8 +44,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String phoneNumber = tokenProvider.getPhoneNumberFromToken(jwt);
                     Long userId = tokenProvider.getUserIdFromToken(jwt);
 
-                    // Load user from database to ensure they still exist and are active
-                    User user = userRepository.findByPhoneNumber(phoneNumber).orElse(null);
+                    // Load user from database using fully qualified name to avoid conflict with Spring Security User
+                    com.fincore.usermgmt.entity.User user = userRepository.findByPhoneNumber(phoneNumber).orElse(null);
                     
                     if (user != null && "ACTIVE".equalsIgnoreCase(user.getStatusDescription())) {
                         // Create a proper UserDetails object
