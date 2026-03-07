@@ -5,6 +5,7 @@ package com.fincore.usermgmt.entity.enums;
  */
 public enum VerificationLevel {
     BASIC("Basic identity verification"),
+    ENHANCED("Enhanced verification with additional checks"),
     FULL("Full KYC verification including document and biometric checks"),
     AML("AML screening and enhanced due diligence");
 

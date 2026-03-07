@@ -15,7 +15,7 @@ import java.util.List;
  * REST Controller for Organisation management endpoints.
  */
 @RestController
-@RequestMapping("/api/organisations")
+@RequestMapping("/api/organizations")
 @RequiredArgsConstructor
 @Slf4j
 public class OrganisationController {

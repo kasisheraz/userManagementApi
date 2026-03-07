@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/answers")
+@RequestMapping("/api/customer-answers")
 @RequiredArgsConstructor
 public class CustomerAnswerController {
 
