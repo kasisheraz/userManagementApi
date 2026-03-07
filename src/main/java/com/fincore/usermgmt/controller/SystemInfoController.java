@@ -1,7 +1,10 @@
 package com.fincore.usermgmt.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,10 +21,25 @@ public class SystemInfoController {
         Map<String, Object> info = new HashMap<>();
         info.put("timestamp", LocalDateTime.now().toString());
         info.put("version", "1.0.0");
-        info.put("build", "24e5038-simplified-jwt");
+        info.put("build", "c59166f-with-auth-debug");
         info.put("javaVersion", System.getProperty("java.version"));
         info.put("status", "running");
-        info.put("message", "If you see build=24e5038, the new code is deployed");
+        info.put("message", "Build deployed successfully");
+        return ResponseEntity.ok(info);
+    }
+    
+    @GetMapping("/auth-test")
+    public ResponseEntity<Map<String, Object>> testAuth(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Map<String, Object> info = new HashMap<>();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        
+        info.put("hasAuthHeader", authHeader != null);
+        info.put("authHeaderLength", authHeader != null ? authHeader.length() : 0);
+        info.put("isAuthenticated", auth != null && auth.isAuthenticated());
+        info.put("principal", auth != null ? auth.getPrincipal().toString() : "null");
+        info.put("authorities", auth != null ? auth.getAuthorities().toString() : "null");
+        info.put("message", "Check if JWT authentication is working");
+        
         return ResponseEntity.ok(info);
     }
 }
