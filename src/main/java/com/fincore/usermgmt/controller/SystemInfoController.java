@@ -35,10 +35,25 @@ public class SystemInfoController {
         
         info.put("hasAuthHeader", authHeader != null);
         info.put("authHeaderLength", authHeader != null ? authHeader.length() : 0);
+        info.put("authHeaderPreview", authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "null");
         info.put("isAuthenticated", auth != null && auth.isAuthenticated());
+        info.put("authType", auth != null ? auth.getClass().getSimpleName() : "null");
         info.put("principal", auth != null ? auth.getPrincipal().toString() : "null");
         info.put("authorities", auth != null ? auth.getAuthorities().toString() : "null");
         info.put("message", "Check if JWT authentication is working");
+        info.put("WARNING", "This endpoint is permitAll(), so it allows anonymous access!");
+        
+        return ResponseEntity.ok(info);
+    }
+    
+    @GetMapping("/protected-test")
+    public ResponseEntity<Map<String, Object>> protectedTest() {
+        Map<String, Object> info = new HashMap<>();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        
+        info.put("message", "If you see this, JWT auth is working!");
+        info.put("principal", auth != null ? auth.getPrincipal().toString() : "null");
+        info.put("authorities", auth != null ? auth.getAuthorities().toString() : "null");
         
         return ResponseEntity.ok(info);
     }
