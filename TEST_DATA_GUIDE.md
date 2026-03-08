@@ -12,7 +12,17 @@ Comprehensive test data has been prepared for UI testing. The data includes user
 
 2. **[load-test-data.ps1](load-test-data.ps1)**
    - PowerShell script for automated import via GCS
+.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())# View latest logs
+gcloud run logs read fincore-npe-api --region=europe-west2 --limit=100
 
+# Tail logs in real-time
+gcloud run logs tail fincore-npe-api --region=europe-west2
+
+# Filter for specific text (e.g., JWT Filter logs)
+gcloud run logs read fincore-npe-api --region=europe-west2 --limit=200 | Select-String "JWT"
+
+# View logs for specific time period (last 1 hour)
+gcloud run logs read fincore-npe-api --region=europe-west2 --limit=500 --format="table(timestamp,textPayload)"
 3. **[UI_INTEGRATION_GUIDE.md](UI_INT EGRATION_GUIDE.md)**
    - Complete guide for UI integration and testing
 
