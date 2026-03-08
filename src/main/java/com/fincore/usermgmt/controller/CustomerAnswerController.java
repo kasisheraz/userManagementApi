@@ -31,8 +31,22 @@ public class CustomerAnswerController {
     private final KycAmlMapper mapper;
 
     /**
+     * Get all customer answers (for admin/overview purposes).
+     * GET /api/customer-answers
+     */
+    @GetMapping
+    public ResponseEntity<List<CustomerAnswerResponseDTO>> getAllAnswers() {
+        log.info("Fetching all customer answers");
+        List<CustomerAnswer> answers = answerService.getAllAnswers();
+        List<CustomerAnswerResponseDTO> response = answers.stream()
+                .map(mapper::toCustomerAnswerResponseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Save or update answer
-     * POST /api/v1/answers
+     * POST /api/customer-answers
      */
     @PostMapping
     public ResponseEntity<CustomerAnswerResponseDTO> saveAnswer(

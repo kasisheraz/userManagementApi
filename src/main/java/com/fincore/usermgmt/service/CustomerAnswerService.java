@@ -202,4 +202,13 @@ public class CustomerAnswerService {
                 .map(pair -> saveAnswer(user, pair.getKey(), pair.getValue()))
                 .toList();
     }
+
+    /**
+     * Get all customer answers (for admin purposes)
+     */
+    @Transactional(readOnly = true)
+    public List<CustomerAnswer> getAllAnswers() {
+        log.info("Fetching all customer answers");
+        return answerRepository.findAll();
+    }
 }

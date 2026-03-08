@@ -246,4 +246,13 @@ public class KycVerificationService {
         log.info("Deleting verification: {}", verificationId);
         kycRepository.deleteById(verificationId);
     }
+
+    /**
+     * Get all verifications (for admin purposes)
+     */
+    @Transactional(readOnly = true)
+    public List<CustomerKycVerification> getAllVerifications() {
+        log.info("Fetching all KYC verifications");
+        return kycRepository.findAll();
+    }
 }

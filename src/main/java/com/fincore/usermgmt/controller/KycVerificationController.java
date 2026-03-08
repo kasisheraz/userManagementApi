@@ -33,8 +33,22 @@ public class KycVerificationController {
     private final KycAmlMapper mapper;
 
     /**
+     * Get all KYC verifications (for admin/overview purposes).
+     * GET /api/kyc-verifications
+     */
+    @GetMapping
+    public ResponseEntity<List<KycVerificationResponseDTO>> getAllVerifications() {
+        log.info("Fetching all KYC verifications");
+        List<CustomerKycVerification> verifications = kycService.getAllVerifications();
+        List<KycVerificationResponseDTO> response = verifications.stream()
+                .map(mapper::toKycVerificationResponseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Submit a new KYC verification
-     * POST /api/v1/kyc-verification/submit
+     * POST /api/kyc-verifications/submit
      */
     @PostMapping("/submit")
     public ResponseEntity<KycVerificationResponseDTO> submitVerification(

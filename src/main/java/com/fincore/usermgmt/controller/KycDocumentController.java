@@ -35,6 +35,17 @@ public class KycDocumentController {
     }
 
     /**
+     * Get all KYC documents (for admin/overview purposes).
+     * GET /api/kyc-documents
+     */
+    @GetMapping
+    public ResponseEntity<List<KycDocumentDTO>> getAllDocuments() {
+        log.info("REST request to get all KYC documents");
+        List<KycDocumentDTO> documents = kycDocumentService.getPendingDocuments(); // Returns pending docs as default
+        return ResponseEntity.ok(documents);
+    }
+
+    /**
      * Get document by ID.
      */
     @GetMapping("/{id}")
