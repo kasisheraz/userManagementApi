@@ -21,7 +21,7 @@ public class SystemInfoController {
         Map<String, Object> info = new HashMap<>();
         info.put("timestamp", LocalDateTime.now().toString());
         info.put("version", "1.0.0");
-        info.put("build", "c59166f-with-auth-debug");
+        info.put("build", System.getenv().getOrDefault("BUILD_NUMBER", "unknown"));
         info.put("javaVersion", System.getProperty("java.version"));
         info.put("status", "running");
         info.put("message", "Build deployed successfully");
