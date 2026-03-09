@@ -18,6 +18,9 @@ jwt:
 otp:
   length: 6
   expiration: 300  # 5 minutes in seconds
+  retry:
+    max: 3  # Maximum retry attempts for deadlock handling
+    delay: 100  # Initial delay in milliseconds (uses exponential backoff)
 
 security:
   session-timeout: 900
