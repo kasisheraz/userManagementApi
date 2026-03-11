@@ -6,7 +6,12 @@ package com.fincore.usermgmt.entity.enums;
 public enum QuestionCategory {
     PERSONAL("Personal information questions"),
     EMPLOYMENT("Employment and income questions"),
-    FINANCIAL("Financial background questions");
+    FINANCIAL("Financial background questions"),
+    LEGAL("Legal and compliance questions"),
+    OPERATIONAL("Operational questions"),
+    COMPLIANCE("Compliance and regulatory questions"),
+    REGULATORY("Regulatory requirements questions"),
+    OTHER("Other questions");
 
     private final String description;
 

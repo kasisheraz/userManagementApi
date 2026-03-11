@@ -120,7 +120,7 @@ public class QuestionnaireController {
             if (description != null && !description.trim().isEmpty()) {
                 questionText = questionText + ": " + description;
             }
-            questionCategory = request.getOrDefault("category", "OTHER").toString();
+            questionCategory = request.getOrDefault("category", "PERSONAL").toString();
             displayOrder = request.containsKey("displayOrder") ? 
                 Integer.parseInt(request.get("displayOrder").toString()) : 1;
         } 
