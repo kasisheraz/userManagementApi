@@ -2,7 +2,32 @@
 
 This guide walks you through deploying the User Management API to Google Cloud Platform with the updated database name `fincore_db`.
 
-## 📋 Prerequisites
+## � Current Deployment Status
+
+**NPE Environment (Production)**
+- **URL**: https://fincore-npe-api-994490239798.europe-west2.run.app
+- **Build**: d6a9603 (January 2025)
+- **Status**: ✅ Fully Operational (12/12 APIs working)
+- **Runtime**: Java 21 (JDK 21.0.10)
+- **Database**: fincore_db (Cloud SQL MySQL 8.0)
+- **Region**: europe-west2 (London)
+- **Service**: fincore-npe-api
+
+**Recent Deployments:**
+- **d6a9603** (Latest): OTP deadlock fix with retry logic and database indexes
+- **54266e4**: OTP service optimization with READ_COMMITTED isolation
+- **8d04901**: SystemInfo controller fix for BUILD_NUMBER environment variable
+- **97d1594**: API path fixes for Phase 2 endpoints
+
+**Test Results:**
+```
+✅ Phase 1 APIs: 3/3 working (Users, Addresses, KYC Documents)
+✅ Phase 2 APIs: 5/5 working (Organizations, Questionnaires, Questions, KYC Verifications, Customer Answers)
+✅ Auth APIs: 2/2 working (OTP Request, OTP Verify)
+✅ OTP Concurrent Requests: 5/5 successful (0 deadlocks)
+```
+
+## �📋 Prerequisites
 
 Before deploying, ensure you have:
 

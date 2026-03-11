@@ -6,6 +6,7 @@
 userManagementApi/
 ├── 📄 Core Documentation
 │   ├── README.md                          # Main project documentation
+│   ├── API_STATUS_REPORT.md               # Current API status and test results
 │   ├── DEPLOYMENT_GUIDE.md                # How to deploy to GCP
 │   ├── RUNNING_LOCALLY_GUIDE.md           # Local development setup
 │   ├── SMOKE_TESTING_GUIDE.md             # Testing guidelines
@@ -13,6 +14,8 @@ userManagementApi/
 │   ├── POSTMAN_USAGE_GUIDE.md             # API testing with Postman
 │   ├── PHASE2_POSTMAN_GUIDE.md            # Phase 2 API testing
 │   ├── CLOUD_SQL_SECURITY.md              # Database security config
+│   ├── CLEANUP_ANDCODE_REVIEW.md          # Code quality and cleanup report
+│   ├── PROJECT_STRUCTURE.md               # This file - project organization
 │   ├── architecture-documentation.md      # System architecture
 │   └── RUN_INSTRUCTIONS.md                # Quick start guide
 │
