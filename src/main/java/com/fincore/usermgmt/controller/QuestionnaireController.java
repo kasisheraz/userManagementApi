@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -96,21 +97,52 @@ public class QuestionnaireController {
 
     /**
      * Create a new question
-     * POST /api/v1/questions
+     * POST /api/questionnaires
+     * Supports both new format {name, description} and legacy format {questionText, questionCategory, displayOrder}
      */
     @PostMapping
     public ResponseEntity<QuestionnaireQuestionResponseDTO> createQuestion(
-            @RequestBody QuestionnaireQuestionRequestDTO request,
+            @RequestBody Map<String, Object> request,
             @RequestHeader(value = "X-User-Id", required = false) Long userId) {
 
-        log.info("Creating new question: {}", request.getQuestionText());
+        String questionText;
+        String questionCategory;
+        Integer displayOrder;
+
+        // Support frontend format: {name, description, version, isActive}
+        if (request.containsKey("name")) {
+            questionText = (String) request.get("name");
+            if (questionText == null || questionText.trim().isEmpty()) {
+                throw new IllegalArgumentException("name is required");
+            }
+            // Use description as additional context if provided
+            String description = (String) request.get("description");
+            if (description != null && !description.trim().isEmpty()) {
+                questionText = questionText + ": " + description;
+            }
+            questionCategory = request.getOrDefault("category", "OTHER").toString();
+            displayOrder = request.containsKey("displayOrder") ? 
+                Integer.parseInt(request.get("displayOrder").toString()) : 1;
+        } 
+        // Support legacy format: {questionText, questionCategory, displayOrder}
+        else {
+            questionText = (String) request.get("questionText");
+            if (questionText == null || questionText.trim().isEmpty()) {
+                throw new IllegalArgumentException("questionText is required");
+            }
+            questionCategory = (String) request.get("questionCategory");
+            displayOrder = request.containsKey("displayOrder") ? 
+                Integer.parseInt(request.get("displayOrder").toString()) : 1;
+        }
+
+        log.info("Creating new question: {}", questionText);
 
         User creator = userId != null ? User.builder().id(userId).build() : null;
 
         QuestionnaireQuestion question = questionnaireService.createQuestion(
-                request.getQuestionText(),
-                QuestionCategory.valueOf(request.getQuestionCategory()),
-                request.getDisplayOrder(),
+                questionText,
+                QuestionCategory.valueOf(questionCategory != null ? questionCategory : "OTHER"),
+                displayOrder,
                 creator
         );
 

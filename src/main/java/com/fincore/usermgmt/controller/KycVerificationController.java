@@ -48,13 +48,20 @@ public class KycVerificationController {
 
     /**
      * Submit a new KYC verification
-     * POST /api/kyc-verifications/submit
+     * POST /api/kyc-verifications (primary endpoint)
      */
-    @PostMapping("/submit")
-    public ResponseEntity<KycVerificationResponseDTO> submitVerification(
+    @PostMapping
+    public ResponseEntity<KycVerificationResponseDTO> createVerification(
             @RequestBody KycVerificationRequestDTO request) {
 
-        log.info("Submitting KYC verification for user: {}", request.getUserId());
+        log.info("Creating KYC verification for user: {}", request.getUserId());
+
+        if (request.getUserId() == null) {
+            throw new IllegalArgumentException("userId is required");
+        }
+        if (request.getVerificationLevel() == null) {
+            throw new IllegalArgumentException("verificationLevel is required");
+        }
 
         // Note: In real implementation, fetch User from database
         User user = User.builder().id(request.getUserId()).build();
@@ -66,6 +73,18 @@ public class KycVerificationController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(mapper.toKycVerificationResponseDTO(verification));
+    }
+
+    /**
+     * Submit a new KYC verification (legacy endpoint)
+     * POST /api/kyc-verifications/submit
+     */
+    @PostMapping("/submit")
+    public ResponseEntity<KycVerificationResponseDTO> submitVerification(
+            @RequestBody KycVerificationRequestDTO request) {
+
+        log.info("Submitting KYC verification for user: {} (legacy endpoint)", request.getUserId());
+        return createVerification(request);
     }
 
     /**
