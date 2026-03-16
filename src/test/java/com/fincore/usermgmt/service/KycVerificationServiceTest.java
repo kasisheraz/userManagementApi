@@ -55,7 +55,7 @@ public class KycVerificationServiceTest {
                 .verificationLevel(VerificationLevel.STANDARD)
                 .status(VerificationStatus.PENDING)
                 .riskLevel(RiskLevel.MEDIUM)
-                .createdAt(LocalDateTime.now())
+                .createdDatetime(LocalDateTime.now())
                 .build();
     }
 
@@ -107,8 +107,8 @@ public class KycVerificationServiceTest {
      */
     @Test
     void testGetUserVerification_Success() {
-        when(kycRepository.findByUserIdOrderByCreatedAtDesc(1L))
-                .thenReturn(Arrays.asList(testVerification));
+        when(kycRepository.findLatestByUserId(1L))
+                .thenReturn(Optional.of(testVerification));
 
         Optional<CustomerKycVerification> result = kycService.getUserVerification(1L);
 
@@ -121,8 +121,8 @@ public class KycVerificationServiceTest {
      */
     @Test
     void testGetUserVerification_Empty() {
-        when(kycRepository.findByUserIdOrderByCreatedAtDesc(anyLong()))
-                .thenReturn(Arrays.asList());
+        when(kycRepository.findLatestByUserId(anyLong()))
+                .thenReturn(Optional.empty());
 
         Optional<CustomerKycVerification> result = kycService.getUserVerification(999L);
 
@@ -134,7 +134,7 @@ public class KycVerificationServiceTest {
      */
     @Test
     void testGetLatestVerification_Success() {
-        when(kycRepository.findFirstByUserIdOrderByCreatedAtDesc(1L))
+        when(kycRepository.findLatestByUserId(1L))
                 .thenReturn(Optional.of(testVerification));
 
         Optional<CustomerKycVerification> result = kycService.getLatestVerification(1L);
@@ -151,7 +151,7 @@ public class KycVerificationServiceTest {
         User reviewer = User.builder().id(2L).build();
         CustomerKycVerification approvedVerification = testVerification;
         approvedVerification.setStatus(VerificationStatus.APPROVED);
-        approvedVerification.setReviewedBy(reviewer);
+        approvedVerification.setCreatedBy(reviewer);
 
         when(kycRepository.findById(1L))
                 .thenReturn(Optional.of(testVerification));
@@ -182,13 +182,13 @@ public class KycVerificationServiceTest {
                         .build()
         );
 
-        when(kycRepository.findByStatusNotIn(anyList()))
+        when(kycRepository.findExpiredVerifications())
                 .thenReturn(expiredList);
 
         List<CustomerKycVerification> result = kycService.findExpiredVerifications();
 
         assertNotNull(result);
-        verify(kycRepository, times(1)).findByStatusNotIn(anyList());
+        verify(kycRepository, times(1)).findExpiredVerifications();
     }
 
     /**
@@ -218,7 +218,7 @@ public class KycVerificationServiceTest {
                         .build()
         );
 
-        when(amlRepository.findByVerificationIdOrderByScreenedAtDesc(1L))
+        when(amlRepository.findByVerification_VerificationId(1L))
                 .thenReturn(screenings);
 
         List<AmlScreeningResult> result = kycService.getAmlScreenings(1L);
@@ -239,7 +239,8 @@ public class KycVerificationServiceTest {
         when(kycRepository.save(any()))
                 .thenReturn(testVerification);
 
-        CustomerKycVerification result = kycService.setSumsubApplicantId(1L, "sumsub-123");
+        kycService.setSumsubApplicantId(1L, "sumsub-123");
+        CustomerKycVerification result = testVerification;
 
         assertEquals("sumsub-123", result.getSumsubApplicantId());
         verify(kycRepository, times(1)).save(any());
@@ -268,7 +269,7 @@ public class KycVerificationServiceTest {
         testVerification.setStatus(VerificationStatus.APPROVED);
         testVerification.setApprovedAt(LocalDateTime.now());
 
-        when(kycRepository.findFirstByUserIdAndStatusOrderByApprovedAtDesc(1L, VerificationStatus.APPROVED))
+        when(kycRepository.findByUserIdAndStatus(1L, VerificationStatus.APPROVED))
                 .thenReturn(Optional.of(testVerification));
 
         boolean result = kycService.hasApprovedVerification(1L);
@@ -281,7 +282,7 @@ public class KycVerificationServiceTest {
      */
     @Test
     void testHasApprovedVerification_False() {
-        when(kycRepository.findFirstByUserIdAndStatusOrderByApprovedAtDesc(anyLong(), any()))
+        when(kycRepository.findByUserIdAndStatus(anyLong(), any()))
                 .thenReturn(Optional.empty());
 
         boolean result = kycService.hasApprovedVerification(1L);
@@ -338,3 +339,11 @@ public class KycVerificationServiceTest {
         assertEquals(VerificationLevel.ENHANCED, result.getVerificationLevel());
     }
 }
+
+
+
+
+
+
+
+

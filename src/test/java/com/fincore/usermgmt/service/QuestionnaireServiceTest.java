@@ -45,11 +45,11 @@ public class QuestionnaireServiceTest {
         testQuestion = QuestionnaireQuestion.builder()
                 .questionId(1)
                 .questionText("What is your occupation?")
-                .questionCategory(QuestionCategory.OCCUPATION)
+                .questionCategory(QuestionCategory.EMPLOYMENT)
                 .status("ACTIVE")
                 .displayOrder(1)
                 .createdBy(testUser)
-                .createdAt(LocalDateTime.now())
+                .createdDatetime(LocalDateTime.now())
                 .build();
     }
 
@@ -63,14 +63,14 @@ public class QuestionnaireServiceTest {
 
         QuestionnaireQuestion result = questionnaireService.createQuestion(
                 "What is your occupation?",
-                QuestionCategory.OCCUPATION,
+                QuestionCategory.EMPLOYMENT,
                 1,
                 testUser
         );
 
         assertNotNull(result);
         assertEquals("What is your occupation?", result.getQuestionText());
-        assertEquals(QuestionCategory.OCCUPATION, result.getQuestionCategory());
+        assertEquals(QuestionCategory.EMPLOYMENT, result.getQuestionCategory());
         assertEquals("ACTIVE", result.getStatus());
         verify(questionnaireRepository, times(1)).save(any());
     }
@@ -142,16 +142,16 @@ public class QuestionnaireServiceTest {
     void testGetQuestionsByCategory() {
         List<QuestionnaireQuestion> categoryQuestions = Arrays.asList(testQuestion);
 
-        when(questionnaireRepository.findByQuestionCategory(QuestionCategory.OCCUPATION))
+        when(questionnaireRepository.findByQuestionCategory(QuestionCategory.EMPLOYMENT))
                 .thenReturn(categoryQuestions);
 
         List<QuestionnaireQuestion> result = questionnaireService
-                .getQuestionsByCategory(QuestionCategory.OCCUPATION);
+                .getQuestionsByCategory(QuestionCategory.EMPLOYMENT);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertTrue(result.stream()
-                .allMatch(q -> QuestionCategory.OCCUPATION.equals(q.getQuestionCategory())));
+                .allMatch(q -> QuestionCategory.EMPLOYMENT.equals(q.getQuestionCategory())));
     }
 
     /**
@@ -161,17 +161,17 @@ public class QuestionnaireServiceTest {
     void testGetActiveQuestionsByCategory() {
         List<QuestionnaireQuestion> activeByCategory = Arrays.asList(testQuestion);
 
-        when(questionnaireRepository.findByStatusAndQuestionCategory("ACTIVE", QuestionCategory.OCCUPATION))
+        when(questionnaireRepository.findByCategoryAndStatus(QuestionCategory.EMPLOYMENT, "ACTIVE"))
                 .thenReturn(activeByCategory);
 
         List<QuestionnaireQuestion> result = questionnaireService
-                .getActiveQuestionsByCategory(QuestionCategory.OCCUPATION);
+                .getActiveQuestionsByCategory(QuestionCategory.EMPLOYMENT);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertTrue(result.stream()
                 .allMatch(q -> "ACTIVE".equals(q.getStatus())
-                        && QuestionCategory.OCCUPATION.equals(q.getQuestionCategory())));
+                        && QuestionCategory.EMPLOYMENT.equals(q.getQuestionCategory())));
     }
 
     /**
@@ -247,7 +247,7 @@ public class QuestionnaireServiceTest {
     void testUpdateQuestion() {
         QuestionnaireQuestion updated = testQuestion;
         updated.setQuestionText("Updated question text?");
-        updated.setQuestionCategory(QuestionCategory.INCOME);
+        updated.setQuestionCategory(QuestionCategory.FINANCIAL);
 
         when(questionnaireRepository.findById(1))
                 .thenReturn(Optional.of(testQuestion));
@@ -257,14 +257,14 @@ public class QuestionnaireServiceTest {
         QuestionnaireQuestion result = questionnaireService.updateQuestion(
                 1,
                 "Updated question text?",
-                QuestionCategory.INCOME,
+                QuestionCategory.FINANCIAL,
                 null,
                 1,
                 testUser
         );
 
         assertEquals("Updated question text?", result.getQuestionText());
-        assertEquals(QuestionCategory.INCOME, result.getQuestionCategory());
+        assertEquals(QuestionCategory.FINANCIAL, result.getQuestionCategory());
         verify(questionnaireRepository, times(1)).save(any());
     }
 
@@ -363,11 +363,11 @@ public class QuestionnaireServiceTest {
     void testGetQuestionsByCategoryAndStatus() {
         List<QuestionnaireQuestion> filtered = Arrays.asList(testQuestion);
 
-        when(questionnaireRepository.findByStatusAndQuestionCategory("ACTIVE", QuestionCategory.OCCUPATION))
+        when(questionnaireRepository.findByCategoryAndStatus(QuestionCategory.EMPLOYMENT, "ACTIVE"))
                 .thenReturn(filtered);
 
         List<QuestionnaireQuestion> result = questionnaireService
-                .getQuestionsByCategoryAndStatus(QuestionCategory.OCCUPATION, "ACTIVE");
+                .getQuestionsByCategoryAndStatus(QuestionCategory.EMPLOYMENT, "ACTIVE");
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -385,8 +385,11 @@ public class QuestionnaireServiceTest {
         when(questionnaireRepository.save(any()))
                 .thenReturn(testQuestion);
 
-        questionnaireService.reorderQuestions(QuestionCategory.OCCUPATION, questionIds, testUser);
+        questionnaireService.reorderQuestions(QuestionCategory.EMPLOYMENT, questionIds, testUser);
 
         verify(questionnaireRepository, atLeast(1)).save(any());
     }
 }
+
+
+

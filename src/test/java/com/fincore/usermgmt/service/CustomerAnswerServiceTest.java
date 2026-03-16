@@ -156,13 +156,13 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testCountAnswersByUser() {
-        when(answerRepository.countByUser_Id(1L))
+        when(answerRepository.countByUserId(1L))
                 .thenReturn(5L);
 
         long count = answerService.countAnswersByUser(1L);
 
         assertEquals(5L, count);
-        verify(answerRepository, times(1)).countByUser_Id(1L);
+        verify(answerRepository, times(1)).countByUserId(1L);
     }
 
     /**
@@ -229,14 +229,14 @@ public class CustomerAnswerServiceTest {
     void testGetCompletedAnswersByUser() {
         List<CustomerAnswer> completedAnswers = Arrays.asList(testAnswer);
 
-        when(answerRepository.findByUser_IdAndAnswerIsNotNull(1L))
+        when(answerRepository.findAnswersWithQuestionDetails(1L))
                 .thenReturn(completedAnswers);
 
         List<CustomerAnswer> result = answerService.getCompletedAnswersByUser(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(answerRepository, times(1)).findByUser_IdAndAnswerIsNotNull(1L);
+        verify(answerRepository, times(1)).findAnswersWithQuestionDetails(1L);
     }
 
     /**
@@ -256,11 +256,11 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testDeleteAllAnswersForUser() {
-        doNothing().when(answerRepository).deleteByUser_Id(1L);
+        doNothing().when(answerRepository).deleteByUserId(1L);
 
         answerService.deleteAllAnswersForUser(1L);
 
-        verify(answerRepository, times(1)).deleteByUser_Id(1L);
+        verify(answerRepository, times(1)).deleteByUserId(1L);
     }
 
     /**
@@ -294,7 +294,7 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testGetAnswerCompletionRate() {
-        when(answerRepository.countByUser_Id(1L))
+        when(answerRepository.countByUserId(1L))
                 .thenReturn(5L);
 
         double rate = answerService.getAnswerCompletionRate(1L, 10);
@@ -307,7 +307,7 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testGetAnswerCompletionRate_Full() {
-        when(answerRepository.countByUser_Id(1L))
+        when(answerRepository.countByUserId(1L))
                 .thenReturn(10L);
 
         double rate = answerService.getAnswerCompletionRate(1L, 10);
@@ -320,7 +320,7 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testGetAnswerCompletionRate_Zero() {
-        when(answerRepository.countByUser_Id(1L))
+        when(answerRepository.countByUserId(1L))
                 .thenReturn(0L);
 
         double rate = answerService.getAnswerCompletionRate(1L, 10);
