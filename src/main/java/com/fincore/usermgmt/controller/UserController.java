@@ -5,6 +5,7 @@ import com.fincore.usermgmt.dto.UserCreateDTO;
 import com.fincore.usermgmt.dto.UserDTO;
 import com.fincore.usermgmt.dto.UserUpdateDTO;
 import com.fincore.usermgmt.service.UserService;
+import com.fincore.usermgmt.util.RoleSecurity;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,7 +24,10 @@ public class UserController {
 
     @GetMapping
     public List<UserDTO> getAllUsers() {
-        return userService.getAllUsers();
+        // Filter out admin users from the response
+        return userService.getAllUsers().stream()
+                .filter(user -> !RoleSecurity.isProtectedRole(user.getRole()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -37,6 +41,17 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Object> createUser(@Valid @RequestBody UserCreateDTO userCreateDTO) {
         try {
+            // Security check: Validate role for creation
+            if (userCreateDTO.getRole() != null) {
+                try {
+                    RoleSecurity.validateRoleForCreation(userCreateDTO.getRole());
+                } catch (IllegalArgumentException | SecurityException e) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                            new ErrorResponse(e.getMessage(), HttpStatus.FORBIDDEN.value())
+                    );
+                }
+            }
+            
             UserDTO createdUser = userService.createUser(userCreateDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (DataIntegrityViolationException e) {
@@ -53,8 +68,32 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+    public ResponseEntity<Object> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
         try {
+            // Security check: Prevent modification of admin users
+            UserDTO existingUser = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            if (RoleSecurity.isProtectedRole(existingUser.getRole())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        new ErrorResponse(
+                                "Cannot modify users with admin roles. User role: " + existingUser.getRole(),
+                                HttpStatus.FORBIDDEN.value()
+                        )
+                );
+            }
+            
+            // Additional check: Validate new role if being changed
+            if (userUpdateDTO.getRole() != null) {
+                try {
+                    RoleSecurity.validateRoleForCreation(userUpdateDTO.getRole());
+                } catch (IllegalArgumentException | SecurityException e) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                            new ErrorResponse(e.getMessage(), HttpStatus.FORBIDDEN.value())
+                    );
+                }
+            }
+            
             return ResponseEntity.ok(userService.updateUser(id, userUpdateDTO));
         } catch (RuntimeException e) {
             if ("User not found".equals(e.getMessage())) {
@@ -65,7 +104,20 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
+        // Security check: Prevent deletion of admin users
+        UserDTO user = userService.getUserById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        
+        if (RoleSecurity.isProtectedRole(user.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new ErrorResponse(
+                            "Cannot delete users with admin roles. User role: " + user.getRole(),
+                            HttpStatus.FORBIDDEN.value()
+                    )
+            );
+        }
+        
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
