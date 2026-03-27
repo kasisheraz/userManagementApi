@@ -42,10 +42,11 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Object> createUser(@Valid @RequestBody UserCreateDTO userCreateDTO) {
-        // Validate and sanitize role - prevent protected role creation
-        String sanitizedRole = RoleSecurity.validateRoleForCreation(userCreateDTO.getRole());
-        userCreateDTO.setRole(sanitizedRole);
-        
+        // Validate and sanitize role only when provided - prevent protected role creation
+        if (userCreateDTO.getRole() != null) {
+            String sanitizedRole = RoleSecurity.validateRoleForCreation(userCreateDTO.getRole());
+            userCreateDTO.setRole(sanitizedRole);
+        }
         try {
             UserDTO createdUser = userService.createUser(userCreateDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
