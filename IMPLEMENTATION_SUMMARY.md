@@ -134,12 +134,11 @@ public ResponseEntity<?> deleteUser(@PathVariable Long id) {
 
 ### Documentation
 
-#### 4. `MANUAL_TESTING_PLAN.md` (NEW)
-- Comprehensive manual test procedures
-- Postman collection JSON
-- Test results template
-- Evidence documentation guidelines
-- Success criteria
+#### 4. `SECURITY_TESTS_GUIDE.md` (NEW)
+- Postman security test collection guide
+- Step-by-step instructions for importing and running `postman_security_tests.json`
+- Description of all 11 security validation tests
+- Test structure across 5 folders (Authentication, Create, Update, Delete, Get Users)
 
 #### 5. `IMPLEMENTATION_SUMMARY.md` (THIS FILE)
 - Technical implementation details
