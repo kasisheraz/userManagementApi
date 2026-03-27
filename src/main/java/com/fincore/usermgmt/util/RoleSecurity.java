@@ -55,7 +55,7 @@ public class RoleSecurity {
             return DEFAULT_ROLE;
         }
         
-        String upperRole = role.toUpperCase();
+        String upperRole = role.trim().toUpperCase();
         
         // If trying to create protected role, default to USER
         if (PROTECTED_ROLES.contains(upperRole)) {
