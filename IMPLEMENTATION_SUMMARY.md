@@ -425,7 +425,7 @@ A: Pre-existing baseline issue (not caused by this implementation). Those tests 
 A: Yes. Production code compiles, security logic is sound, and manual testing provides definitive validation. Frontend security already deployed and working.
 
 **Q: How do we validate the security works?**
-A: Use the Postman collection in MANUAL_TESTING_PLAN.md. It has 14 test cases that verify all security requirements. Run the collection and document results.
+A: Use the Postman collection in SECURITY_TESTS_GUIDE.md. It has 11 test cases that verify all security requirements. Run the collection and document results.
 
 **Q: What if manual testing finds issues?**
 A: Fix the issues, re-test, and document results. The pragmatic approach allows for rapid iteration and validation.
