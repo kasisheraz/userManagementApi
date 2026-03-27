@@ -71,15 +71,11 @@ public class UserSecurityIntegrationTest {
         
         JsonNode otpJson = objectMapper.readTree(otpResponse.getBody());
         
-        // Get OTP - in test env there should be devOtp
-        String otp;
-        if (otpJson.has("devOtp")) {
-            otp = otpJson.get("devOtp").asText();
-        } else {
-            // Fallback: try using a default test OTP if devOtp not available
-            System.out.println("devOtp not found in response. Response: " + otpResponse.getBody());
-            otp = "123456"; // Default test OTP
-        }
+        // Get OTP - in test env there should be devOtp; fail if it's missing to keep tests deterministic
+        assertThat(otpJson.has("devOtp"))
+                .as("Test profile must return 'devOtp' for deterministic OTP verification")
+                .isTrue();
+        String otp = otpJson.get("devOtp").asText();
         
         // Step 2: Verify OTP and get token
         String verifyRequest = String.format("{\"phoneNumber\":\"+1234567890\",\"otp\":\"%s\"}", otp);
