@@ -32,6 +32,8 @@ class OtpServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(otpService, "otpExpirationSeconds", 300); // 5 minutes
         ReflectionTestUtils.setField(otpService, "otpLength", 6);
+        ReflectionTestUtils.setField(otpService, "maxRetries", 3);
+        ReflectionTestUtils.setField(otpService, "retryDelayMs", 100);
     }
 
     // ==================== Generate OTP Tests ====================
