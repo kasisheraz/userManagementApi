@@ -191,5 +191,35 @@ CREATE INDEX IF NOT EXISTS idx_kyc_status ON KYC_Documents(Status_Description);
 
 -- Add foreign key constraints for Users table address references
 -- These are added after Address table creation to avoid circular dependency
-ALTER TABLE Users ADD CONSTRAINT fk_add1_id FOREIGN KEY (Residential_Address_Identifier) REFERENCES Address(Address_Identifier);
-ALTER TABLE Users ADD CONSTRAINT fk_add2_id FOREIGN KEY (Postal_Address_Identifier) REFERENCES Address(Address_Identifier);
+-- Uses conditional logic to be idempotent (safe to run on databases already having these constraints)
+SET @add_fk_add1 = (
+  SELECT IF(
+    NOT EXISTS (
+      SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'Users'
+      AND CONSTRAINT_NAME = 'fk_add1_id'
+    ),
+    'ALTER TABLE Users ADD CONSTRAINT fk_add1_id FOREIGN KEY (Residential_Address_Identifier) REFERENCES Address(Address_Identifier)',
+    'SELECT 1'
+  )
+);
+PREPARE stmt_fk_add1 FROM @add_fk_add1;
+EXECUTE stmt_fk_add1;
+DEALLOCATE PREPARE stmt_fk_add1;
+
+SET @add_fk_add2 = (
+  SELECT IF(
+    NOT EXISTS (
+      SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'Users'
+      AND CONSTRAINT_NAME = 'fk_add2_id'
+    ),
+    'ALTER TABLE Users ADD CONSTRAINT fk_add2_id FOREIGN KEY (Postal_Address_Identifier) REFERENCES Address(Address_Identifier)',
+    'SELECT 1'
+  )
+);
+PREPARE stmt_fk_add2 FROM @add_fk_add2;
+EXECUTE stmt_fk_add2;
+DEALLOCATE PREPARE stmt_fk_add2;
