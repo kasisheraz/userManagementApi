@@ -25,7 +25,7 @@ spring:
       pool-name: UserMgmtPool-Prod
   jpa:
     hibernate:
-      ddl-auto: validate  # Only validate schema in production
+      ddl-auto: none
     show-sql: false  # Never show SQL in production
     database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
@@ -42,14 +42,6 @@ spring:
         enable_lazy_load_no_trans: false
     defer-datasource-initialization: false
     open-in-view: false
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    baseline-version: 0
-    locations: classpath:db/migration
-    validate-on-migrate: true
-    out-of-order: false
-    clean-disabled: true  # Critical: never drop tables in production
 
 server:
   port: ${PORT:8080}

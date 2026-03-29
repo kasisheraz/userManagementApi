@@ -10,12 +10,6 @@ spring:
     banner-mode: off
   server:
     port: 8080
-  flyway:
-    enabled: false  # Disabled by default; each profile that needs Flyway enables it explicitly
-    baseline-on-migrate: true
-    baseline-version: 0
-    locations: classpath:db/migration
-    validate-on-migrate: true
 
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
