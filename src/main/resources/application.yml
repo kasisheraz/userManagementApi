@@ -11,7 +11,7 @@ spring:
   server:
     port: 8080
   flyway:
-    enabled: true
+    enabled: false  # Disabled by default; each profile that needs Flyway enables it explicitly
     baseline-on-migrate: true
     baseline-version: 0
     locations: classpath:db/migration

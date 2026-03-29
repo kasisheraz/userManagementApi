@@ -1,15 +1,5 @@
--- Migration V4.0: Add Foreign Key Constraints to Users Table for Address References
--- This migration adds foreign key constraints to ensure referential integrity
--- between Users and Address tables for residential and postal addresses.
-
--- Add foreign key constraint for Residential_Address_Identifier
-ALTER TABLE Users 
-ADD CONSTRAINT fk_add1_id 
-FOREIGN KEY (Residential_Address_Identifier) 
-REFERENCES Address(Address_Identifier);
-
--- Add foreign key constraint for Postal_Address_Identifier
-ALTER TABLE Users 
-ADD CONSTRAINT fk_add2_id 
-FOREIGN KEY (Postal_Address_Identifier) 
-REFERENCES Address(Address_Identifier);
+-- Migration V4.0: Foreign Key Constraints for Users Table Address References
+-- NOTE: The FK constraints fk_add1_id and fk_add2_id for Residential_Address_Identifier
+-- and Postal_Address_Identifier are already defined at the end of V1.0__Initial_Schema.sql.
+-- This migration intentionally performs no additional schema changes to avoid duplicates.
+SELECT 'FK constraints for Users address references are already defined in V1.0' AS migration_note;
