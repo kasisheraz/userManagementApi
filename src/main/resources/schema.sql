@@ -31,7 +31,7 @@ CREATE TABLE Roles (
     Created_Datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Users table
+-- Create Users table (without address foreign keys initially)
 CREATE TABLE Users (
     User_Identifier INT PRIMARY KEY AUTO_INCREMENT,
     Phone_Number VARCHAR(20) UNIQUE,
@@ -198,3 +198,8 @@ CREATE INDEX idx_address_type ON Address(Type_Code);
 CREATE INDEX idx_address_country ON Address(Country);
 CREATE INDEX idx_kyc_reference ON KYC_Documents(Reference_Identifier);
 CREATE INDEX idx_kyc_status ON KYC_Documents(Status_Description);
+
+-- Add foreign key constraints for Users table address references
+-- These are added after Address table creation to avoid circular dependency
+ALTER TABLE Users ADD CONSTRAINT fk_add1_id FOREIGN KEY (Residential_Address_Identifier) REFERENCES Address(Address_Identifier);
+ALTER TABLE Users ADD CONSTRAINT fk_add2_id FOREIGN KEY (Postal_Address_Identifier) REFERENCES Address(Address_Identifier);
