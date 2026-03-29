@@ -42,6 +42,14 @@ spring:
         enable_lazy_load_no_trans: false
     defer-datasource-initialization: false
     open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    out-of-order: false
+    clean-disabled: true  # Critical: never drop tables in production
 
 server:
   port: ${PORT:8080}

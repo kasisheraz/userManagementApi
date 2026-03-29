@@ -36,6 +36,8 @@ spring:
       mode: always
       schema-locations: classpath:schema.sql
       data-locations: classpath:data.sql
+  flyway:
+    enabled: false  # Schema managed by schema.sql + data.sql; Flyway not used for H2
 
 server:
   port: 8080

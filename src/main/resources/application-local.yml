@@ -31,6 +31,14 @@ spring:
     init:
       mode: never  # Don't run schema.sql since tables already exist
       platform: mysql
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    out-of-order: false
+    clean-disabled: true  # Never drop tables, even locally
 
 server:
   port: 8080
