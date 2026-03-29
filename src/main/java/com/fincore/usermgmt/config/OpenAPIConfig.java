@@ -42,7 +42,7 @@ public class OpenAPIConfig {
                                 ## Authentication
                                 This API uses JWT Bearer token authentication. 
                                 To authenticate:
-                                1. Send OTP to phone number using `/api/auth/send-otp`
+                                1. Request OTP for phone number using `/api/auth/request-otp`
                                 2. Verify OTP using `/api/auth/verify-otp` to get access token
                                 3. Use the access token in the Authorization header for subsequent requests
                                 
