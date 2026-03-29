@@ -1,5 +1,13 @@
 package com.fincore.usermgmt.controller;
 
+import com.fincore.usermgmt.dto.ErrorResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,9 +22,18 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/system")
+@Tag(name = "System Information", description = "APIs for system information, health checks, and authentication testing")
 public class SystemInfoController {
 
     @GetMapping("/info")
+    @Operation(
+        summary = "Get system information",
+        description = "Retrieves system information including version, build number, Java version, and current status. This endpoint is publicly accessible."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved system information",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class)))
+    })
     public ResponseEntity<Map<String, Object>> getSystemInfo() {
         Map<String, Object> info = new HashMap<>();
         info.put("timestamp", LocalDateTime.now().toString());
@@ -29,7 +46,17 @@ public class SystemInfoController {
     }
     
     @GetMapping("/auth-test")
-    public ResponseEntity<Map<String, Object>> testAuth(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+    @Operation(
+        summary = "Test JWT authentication (debug endpoint)",
+        description = "Debug endpoint to test if JWT authentication is working properly. Returns authentication details including header presence, authentication status, and user authorities. WARNING: This endpoint is permitAll() and allows anonymous access."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved authentication information",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class)))
+    })
+    public ResponseEntity<Map<String, Object>> testAuth(
+            @Parameter(description = "Authorization header with Bearer token", example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         Map<String, Object> info = new HashMap<>();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         
@@ -47,6 +74,16 @@ public class SystemInfoController {
     }
     
     @GetMapping("/protected-test")
+    @Operation(
+        summary = "Test protected endpoint",
+        description = "Protected endpoint that requires valid JWT authentication. If you can access this endpoint, JWT authentication is working correctly. Returns principal and authority information."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully authenticated and retrieved information",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Map<String, Object>> protectedTest() {
         Map<String, Object> info = new HashMap<>();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -28,7 +28,7 @@ spring:
       connection-test-query: SELECT 1
   jpa:
     hibernate:
-      ddl-auto: update  # Keep as update until ALL schema issues are resolved
+      ddl-auto: validate  # Changed from 'update' to 'validate' - Flyway now manages schema
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
@@ -44,6 +44,14 @@ spring:
   sql:
     init:
       mode: never  # Don't run SQL files on startup
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    out-of-order: false
+    clean-disabled: true  # Prevent accidental data loss in production
 
 server:
   port: ${PORT:8080}

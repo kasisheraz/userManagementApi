@@ -1,20 +1,10 @@
--- User Management API Database Schema
--- Compatible with both MySQL 8.0 (Cloud SQL) and H2 (Local Development)
--- Phase 2: Organisation Onboarding Support Added
-
--- Drop tables in correct order (foreign keys first)
-DROP TABLE IF EXISTS KYC_Documents;
-DROP TABLE IF EXISTS Organisation;
-DROP TABLE IF EXISTS Otp_Tokens;
-DROP TABLE IF EXISTS Role_Permissions;
-DROP TABLE IF EXISTS User_Roles;
-DROP TABLE IF EXISTS Address;
-DROP TABLE IF EXISTS Users;
-DROP TABLE IF EXISTS Roles;
-DROP TABLE IF EXISTS Permissions;
+-- User Management API Database Schema - Initial Setup
+-- Flyway Migration V1.0
+-- Compatible with MySQL 8.0 (Cloud SQL)
+-- Phase 1 & 2: User Management + Organisation Onboarding Support
 
 -- Create Permissions table
-CREATE TABLE Permissions (
+CREATE TABLE IF NOT EXISTS Permissions (
     Permission_Identifier BIGINT PRIMARY KEY AUTO_INCREMENT,
     Permission_Name VARCHAR(100) UNIQUE NOT NULL,
     Description TEXT,
@@ -24,7 +14,7 @@ CREATE TABLE Permissions (
 );
 
 -- Create Roles table
-CREATE TABLE Roles (
+CREATE TABLE IF NOT EXISTS Roles (
     Role_Identifier INT AUTO_INCREMENT PRIMARY KEY,
     Role_Name VARCHAR(30),
     Role_Description VARCHAR(100),
@@ -32,7 +22,7 @@ CREATE TABLE Roles (
 );
 
 -- Create Users table (without address foreign keys initially)
-CREATE TABLE Users (
+CREATE TABLE IF NOT EXISTS Users (
     User_Identifier INT PRIMARY KEY AUTO_INCREMENT,
     Phone_Number VARCHAR(20) UNIQUE,
     Email VARCHAR(50),
@@ -50,7 +40,7 @@ CREATE TABLE Users (
 );
 
 -- Create Role_Permissions junction table
-CREATE TABLE Role_Permissions (
+CREATE TABLE IF NOT EXISTS Role_Permissions (
     Role_Identifier INT,
     Permission_Identifier BIGINT,
     Granted_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -60,7 +50,7 @@ CREATE TABLE Role_Permissions (
 );
 
 -- Create OTP Tokens table for multi-factor authentication
-CREATE TABLE Otp_Tokens (
+CREATE TABLE IF NOT EXISTS Otp_Tokens (
     Token_Id BIGINT PRIMARY KEY AUTO_INCREMENT,
     Phone_Number VARCHAR(20) NOT NULL,
     Otp_Code VARCHAR(6) NOT NULL,
@@ -70,19 +60,19 @@ CREATE TABLE Otp_Tokens (
 );
 
 -- Create indexes for better performance
-CREATE INDEX idx_users_phone ON Users(Phone_Number);
-CREATE INDEX idx_users_email ON Users(Email);
-CREATE INDEX idx_users_role_id ON Users(Role_Identifier);
-CREATE INDEX idx_users_status ON Users(Status_Description);
-CREATE INDEX idx_otp_phone_code ON Otp_Tokens(Phone_Number, Otp_Code);
-CREATE INDEX idx_otp_expires ON Otp_Tokens(Expires_At);
+CREATE INDEX IF NOT EXISTS idx_users_phone ON Users(Phone_Number);
+CREATE INDEX IF NOT EXISTS idx_users_email ON Users(Email);
+CREATE INDEX IF NOT EXISTS idx_users_role_id ON Users(Role_Identifier);
+CREATE INDEX IF NOT EXISTS idx_users_status ON Users(Status_Description);
+CREATE INDEX IF NOT EXISTS idx_otp_phone_code ON Otp_Tokens(Phone_Number, Otp_Code);
+CREATE INDEX IF NOT EXISTS idx_otp_expires ON Otp_Tokens(Expires_At);
 
 -- ============================================
 -- Phase 2: Organisation Onboarding Tables
 -- ============================================
 
 -- Create Address table (generic address for various purposes)
-CREATE TABLE Address (
+CREATE TABLE IF NOT EXISTS Address (
     Address_Identifier INT PRIMARY KEY AUTO_INCREMENT,
     Type_Code SMALLINT NOT NULL COMMENT '1=Residential, 2=Business, 3=Registered, 4=Correspondence, 5=Postal',
     Address_Line1 VARCHAR(100) NOT NULL,
@@ -97,7 +87,7 @@ CREATE TABLE Address (
 );
 
 -- Create Organisation table
-CREATE TABLE Organisation (
+CREATE TABLE IF NOT EXISTS Organisation (
     Organisation_Identifier INT PRIMARY KEY AUTO_INCREMENT,
     User_Identifier INT NOT NULL COMMENT 'Owner/Primary contact user',
     Registration_Number VARCHAR(20),
@@ -168,7 +158,7 @@ CREATE TABLE Organisation (
 );
 
 -- Create KYC_Documents table (for organisation document verification)
-CREATE TABLE KYC_Documents (
+CREATE TABLE IF NOT EXISTS KYC_Documents (
     Document_Identifier INT PRIMARY KEY AUTO_INCREMENT,
     Verification_Identifier INT COMMENT 'Optional verification batch reference',
     Reference_Identifier INT NOT NULL COMMENT 'Organisation_Identifier reference',
@@ -190,14 +180,14 @@ CREATE TABLE KYC_Documents (
 );
 
 -- Additional indexes for Organisation tables
-CREATE INDEX idx_org_user ON Organisation(User_Identifier);
-CREATE INDEX idx_org_status ON Organisation(Status_Description);
-CREATE INDEX idx_org_legal_name ON Organisation(Legal_Name);
-CREATE INDEX idx_org_reg_number ON Organisation(Registration_Number);
-CREATE INDEX idx_address_type ON Address(Type_Code);
-CREATE INDEX idx_address_country ON Address(Country);
-CREATE INDEX idx_kyc_reference ON KYC_Documents(Reference_Identifier);
-CREATE INDEX idx_kyc_status ON KYC_Documents(Status_Description);
+CREATE INDEX IF NOT EXISTS idx_org_user ON Organisation(User_Identifier);
+CREATE INDEX IF NOT EXISTS idx_org_status ON Organisation(Status_Description);
+CREATE INDEX IF NOT EXISTS idx_org_legal_name ON Organisation(Legal_Name);
+CREATE INDEX IF NOT EXISTS idx_org_reg_number ON Organisation(Registration_Number);
+CREATE INDEX IF NOT EXISTS idx_address_type ON Address(Type_Code);
+CREATE INDEX IF NOT EXISTS idx_address_country ON Address(Country);
+CREATE INDEX IF NOT EXISTS idx_kyc_reference ON KYC_Documents(Reference_Identifier);
+CREATE INDEX IF NOT EXISTS idx_kyc_status ON KYC_Documents(Status_Description);
 
 -- Add foreign key constraints for Users table address references
 -- These are added after Address table creation to avoid circular dependency

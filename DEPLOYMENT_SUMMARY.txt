@@ -1,0 +1,41 @@
+=============================================================================
+DEPLOYMENT SUMMARY: Foreign Key Constraints for Users Table
+=============================================================================
+
+COMPLETED TASKS:
+✓ Created Flyway migration V4.0__Add_Users_Address_Foreign_Keys.sql
+✓ Updated schema.sql with foreign key constraints
+✓ Fixed QuestionCategory enum (added OCCUPATION and INCOME)
+✓ Created manual migration script (manual-db-migration-foreign-keys.sql)
+✓ Created comprehensive deployment plan (NPE_DEPLOYMENT_PLAN.md)
+✓ Code compiles successfully
+
+FOREIGN KEY CONSTRAINTS ADDED:
+1. fk_add1_id: Users.Residential_Address_Identifier -> Address.Address_Identifier
+2. fk_add2_id: Users.Postal_Address_Identifier -> Address.Address_Identifier
+
+DEPLOYMENT OPTIONS:
+
+Option 1 - AUTOMATED (Recommended):
+  • Deploy application to NPE using: .\deploy-cloudrun-npe.ps1
+  • Flyway will automatically apply V4.0 migration
+  • Foreign key constraints will be created automatically
+
+Option 2 - MANUAL:
+  • Execute manual-db-migration-foreign-keys.sql on Cloud SQL
+  • Then deploy application to NPE
+
+IMPORTANT NOTES:
+• Pre-existing test failures exist in the codebase (unrelated to FK constraints)
+• These failures are in AmlScreeningServiceTest, KycVerificationServiceTest, etc.
+• The FK constraint changes do not affect these tests
+• Compilation succeeds; tests fail due to missing repository methods
+
+NEXT STEPS:
+1. Review NPE_DEPLOYMENT_PLAN.md for detailed deployment instructions
+2. Choose deployment option (automatic via Flyway or manual SQL execution)
+3. Deploy to NPE environment
+4. Verify constraints are active using provided SQL queries
+5. Test API functionality with Postman scripts
+
+=============================================================================
