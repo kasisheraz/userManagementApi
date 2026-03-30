@@ -104,8 +104,8 @@ class UserEntityTest {
         user.setMiddleName("Michael");
         user.setLastName("Doe");
         user.setDateOfBirth(LocalDate.of(1990, 5, 15));
-        user.setResidentialAddressIdentifier(1);
-        user.setPostalAddressIdentifier(2);
+        user.setResidentialAddressIdentifier(1L);
+        user.setPostalAddressIdentifier(2L);
         user.setStatusDescription("ACTIVE");
         user.setRole(testRole);
 

@@ -39,8 +39,8 @@ class UserMapperTest {
         user.setMiddleName("Michael");
         user.setLastName("Doe");
         user.setDateOfBirth(LocalDate.of(1990, 1, 15));
-        user.setResidentialAddressIdentifier(100);
-        user.setPostalAddressIdentifier(200);
+        user.setResidentialAddressIdentifier(100L);
+        user.setPostalAddressIdentifier(200L);
         user.setRole(role);
         user.setStatusDescription("ACTIVE");
         user.setCreatedDatetime(LocalDateTime.now());
@@ -138,8 +138,8 @@ class UserMapperTest {
         dto.setMiddleName("Test");
         dto.setLastName("User");
         dto.setDateOfBirth(LocalDate.of(1995, 5, 20));
-        dto.setResidentialAddressIdentifier(300);
-        dto.setPostalAddressIdentifier(400);
+        dto.setResidentialAddressIdentifier(300L);
+        dto.setPostalAddressIdentifier(400L);
         dto.setRole("USER");
         dto.setStatusDescription("PENDING");
 
@@ -197,8 +197,8 @@ class UserMapperTest {
         existing.setMiddleName("Middle");
         existing.setLastName("Name");
         existing.setDateOfBirth(LocalDate.of(1980, 1, 1));
-        existing.setResidentialAddressIdentifier(500);
-        existing.setPostalAddressIdentifier(600);
+        existing.setResidentialAddressIdentifier(500L);
+        existing.setPostalAddressIdentifier(600L);
         existing.setRole(role);
         existing.setStatusDescription("ACTIVE");
 
@@ -237,8 +237,8 @@ class UserMapperTest {
         existing.setMiddleName("Middle");
         existing.setLastName("Name");
         existing.setDateOfBirth(LocalDate.of(1990, 3, 10));
-        existing.setResidentialAddressIdentifier(700);
-        existing.setPostalAddressIdentifier(800);
+        existing.setResidentialAddressIdentifier(700L);
+        existing.setPostalAddressIdentifier(800L);
         existing.setRole(role);
 
         UserUpdateDTO updateDTO = new UserUpdateDTO();
