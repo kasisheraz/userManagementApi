@@ -32,6 +32,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/system/info", "/api/system/auth-test").permitAll()  // Only specific system endpoints
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
+                // Swagger UI and API documentation
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/api-docs/**").permitAll()
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )

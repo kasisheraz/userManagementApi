@@ -43,10 +43,10 @@ public class User {
     private LocalDate dateOfBirth;
 
     @Column(name = "Residential_Address_Identifier")
-    private Integer residentialAddressIdentifier;
+    private Long residentialAddressIdentifier;
 
     @Column(name = "Postal_Address_Identifier")
-    private Integer postalAddressIdentifier;
+    private Long postalAddressIdentifier;
 
     @Column(name = "Status_Description", length = 20)
     private String statusDescription;

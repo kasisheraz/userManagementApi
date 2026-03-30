@@ -529,7 +529,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"+1111111111\",\n  \"email\": \"newuser@fincore.com\",\n  \"firstName\": \"New\",\n  \"middleName\": \"Test\",\n  \"lastName\": \"User\",\n  \"dateOfBirth\": \"1995-06-15\",\n  \"statusDescription\": \"ACTIVE\",\n  \"role\": \"OPERATIONAL_STAFF\"\n}"
+              "raw": "{\n  \"phoneNumber\": \"+1111111111\",\n  \"email\": \"newuser@fincore.com\",\n  \"firstName\": \"New\",\n  \"middleName\": \"Test\",\n  \"lastName\": \"User\",\n  \"dateOfBirth\": \"1995-06-15\",\n  \"residentialAddressIdentifier\": null,\n  \"postalAddressIdentifier\": null,\n  \"statusDescription\": \"ACTIVE\",\n  \"role\": \"OPERATIONAL_STAFF\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/users",
@@ -560,7 +560,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User Name\",\n  \"email\": \"updated@fincore.com\"\n}"
+              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User Name\",\n  \"email\": \"updated@fincore.com\",\n  \"residentialAddressIdentifier\": null,\n  \"postalAddressIdentifier\": null\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/users/1",
