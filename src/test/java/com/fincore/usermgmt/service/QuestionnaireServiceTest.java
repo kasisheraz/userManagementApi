@@ -49,7 +49,7 @@ public class QuestionnaireServiceTest {
                 .status("ACTIVE")
                 .displayOrder(1)
                 .createdBy(testUser)
-                .createdAt(LocalDateTime.now())
+                .createdDatetime(LocalDateTime.now())
                 .build();
     }
 
@@ -161,7 +161,7 @@ public class QuestionnaireServiceTest {
     void testGetActiveQuestionsByCategory() {
         List<QuestionnaireQuestion> activeByCategory = Arrays.asList(testQuestion);
 
-        when(questionnaireRepository.findByStatusAndQuestionCategory("ACTIVE", QuestionCategory.OCCUPATION))
+        when(questionnaireRepository.findAllActiveQuestionsByCategory(QuestionCategory.OCCUPATION))
                 .thenReturn(activeByCategory);
 
         List<QuestionnaireQuestion> result = questionnaireService
@@ -363,7 +363,7 @@ public class QuestionnaireServiceTest {
     void testGetQuestionsByCategoryAndStatus() {
         List<QuestionnaireQuestion> filtered = Arrays.asList(testQuestion);
 
-        when(questionnaireRepository.findByStatusAndQuestionCategory("ACTIVE", QuestionCategory.OCCUPATION))
+        when(questionnaireRepository.findAllActiveQuestionsByCategory(QuestionCategory.OCCUPATION))
                 .thenReturn(filtered);
 
         List<QuestionnaireQuestion> result = questionnaireService
@@ -390,3 +390,4 @@ public class QuestionnaireServiceTest {
         verify(questionnaireRepository, atLeast(1)).save(any());
     }
 }
+

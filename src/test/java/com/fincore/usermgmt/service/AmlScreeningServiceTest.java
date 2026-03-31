@@ -124,14 +124,14 @@ public class AmlScreeningServiceTest {
     void testGetScreeningsByVerification() {
         List<AmlScreeningResult> screenings = Arrays.asList(testScreening);
 
-        when(amlRepository.findByVerificationIdOrderByScreenedAtDesc(1L))
+        when(amlRepository.findByVerification_VerificationId(1L))
                 .thenReturn(screenings);
 
         List<AmlScreeningResult> result = amlService.getScreeningsByVerification(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(amlRepository, times(1)).findByVerificationIdOrderByScreenedAtDesc(1L);
+        verify(amlRepository, times(1)).findByVerification_VerificationId(1L);
     }
 
     /**
@@ -141,7 +141,7 @@ public class AmlScreeningServiceTest {
     void testGetScreeningsByUser() {
         List<AmlScreeningResult> screenings = Arrays.asList(testScreening);
 
-        when(amlRepository.findByUserIdOrderByScreenedAtDesc(1L))
+        when(amlRepository.findByUser_Id(1L))
                 .thenReturn(screenings);
 
         List<AmlScreeningResult> result = amlService.getScreeningsByUser(1L);
@@ -163,7 +163,7 @@ public class AmlScreeningServiceTest {
 
         List<AmlScreeningResult> highRiskList = Arrays.asList(highRiskScreening);
 
-        when(amlRepository.findByMatchFoundTrueOrderByScreenedAtDesc())
+        when(amlRepository.findAll())
                 .thenReturn(highRiskList);
 
         List<AmlScreeningResult> result = amlService.getHighRiskScreenings();
@@ -179,7 +179,7 @@ public class AmlScreeningServiceTest {
     void testGetScreeningsByType() {
         List<AmlScreeningResult> screenings = Arrays.asList(testScreening);
 
-        when(amlRepository.findByScreeningTypeOrderByScreenedAtDesc(ScreeningType.SANCTIONS))
+        when(amlRepository.findByScreeningType(ScreeningType.SANCTIONS))
                 .thenReturn(screenings);
 
         List<AmlScreeningResult> result = amlService.getScreeningsByType(ScreeningType.SANCTIONS);
@@ -200,7 +200,7 @@ public class AmlScreeningServiceTest {
                 .riskScore(50)
                 .build();
 
-        when(amlRepository.findByVerificationIdOrderByScreenedAtDesc(1L))
+        when(amlRepository.findByVerification_VerificationId(1L))
                 .thenReturn(Arrays.asList(matchFound));
 
         RiskLevel risk = amlService.assessOverallRisk(1L);
@@ -219,7 +219,7 @@ public class AmlScreeningServiceTest {
                 .riskScore(85)
                 .build();
 
-        when(amlRepository.findByVerificationIdOrderByScreenedAtDesc(1L))
+        when(amlRepository.findByVerification_VerificationId(1L))
                 .thenReturn(Arrays.asList(highScore));
 
         RiskLevel risk = amlService.assessOverallRisk(1L);
@@ -238,7 +238,7 @@ public class AmlScreeningServiceTest {
                 .riskScore(55)
                 .build();
 
-        when(amlRepository.findByVerificationIdOrderByScreenedAtDesc(1L))
+        when(amlRepository.findByVerification_VerificationId(1L))
                 .thenReturn(Arrays.asList(mediumScore));
 
         RiskLevel risk = amlService.assessOverallRisk(1L);
@@ -251,7 +251,7 @@ public class AmlScreeningServiceTest {
      */
     @Test
     void testAssessOverallRisk_Low() {
-        when(amlRepository.findByVerificationIdOrderByScreenedAtDesc(1L))
+        when(amlRepository.findByVerification_VerificationId(1L))
                 .thenReturn(Arrays.asList(testScreening)); // riskScore = 25
 
         RiskLevel risk = amlService.assessOverallRisk(1L);
@@ -293,7 +293,7 @@ public class AmlScreeningServiceTest {
         when(amlRepository.save(any()))
                 .thenReturn(sanctionsScreening);
 
-        AmlScreeningResult result = amlService.triggerSanctionsScreening(testVerification, testUser, false, 30);
+        AmlScreeningResult result = amlService.triggerSanctionsScreening(testVerification, testUser);
 
         assertEquals(ScreeningType.SANCTIONS, result.getScreeningType());
         verify(amlRepository, times(1)).save(any());
@@ -312,7 +312,7 @@ public class AmlScreeningServiceTest {
         when(amlRepository.save(any()))
                 .thenReturn(pepScreening);
 
-        AmlScreeningResult result = amlService.triggerPepScreening(testVerification, testUser, false, 20);
+        AmlScreeningResult result = amlService.triggerPepScreening(testVerification, testUser);
 
         assertEquals(ScreeningType.PEP, result.getScreeningType());
     }
@@ -330,7 +330,7 @@ public class AmlScreeningServiceTest {
         when(amlRepository.save(any()))
                 .thenReturn(adverseMediaScreening);
 
-        AmlScreeningResult result = amlService.triggerAdverseMediaScreening(testVerification, testUser, false, 15);
+        AmlScreeningResult result = amlService.triggerAdverseMediaScreening(testVerification, testUser);
 
         assertEquals(ScreeningType.ADVERSE_MEDIA, result.getScreeningType());
     }
@@ -340,13 +340,13 @@ public class AmlScreeningServiceTest {
      */
     @Test
     void testCountMatchesByType() {
-        when(amlRepository.countByScreeningTypeAndMatchFoundTrue(ScreeningType.SANCTIONS))
+        when(amlRepository.countMatchesByScreeningType(ScreeningType.SANCTIONS))
                 .thenReturn(5L);
 
         long count = amlService.countMatchesByType(ScreeningType.SANCTIONS);
 
         assertEquals(5L, count);
-        verify(amlRepository, times(1)).countByScreeningTypeAndMatchFoundTrue(ScreeningType.SANCTIONS);
+        verify(amlRepository, times(1)).countMatchesByScreeningType(ScreeningType.SANCTIONS);
     }
 
     /**
@@ -366,7 +366,7 @@ public class AmlScreeningServiceTest {
      */
     @Test
     void testGetLatestScreening() {
-        when(amlRepository.findFirstByVerificationIdOrderByScreenedAtDesc(1L))
+        when(amlRepository.findLatestByVerificationId(1L))
                 .thenReturn(Optional.of(testScreening));
 
         Optional<AmlScreeningResult> result = amlService.getLatestScreening(1L);
@@ -375,3 +375,6 @@ public class AmlScreeningServiceTest {
         assertEquals(testScreening.getScreeningId(), result.get().getScreeningId());
     }
 }
+
+
+

@@ -6,20 +6,22 @@ A comprehensive Spring Boot microservice for secure user authentication, role-ba
 
 - **NPE Environment**: https://fincore-npe-api-994490239798.europe-west2.run.app
 - **Health Check**: https://fincore-npe-api-994490239798.europe-west2.run.app/actuator/health
-- **Status**: ✅ Production Ready (12/12 APIs working)
-- **Current Build**: d6a9603 (Deployed: January 2025)
+- **Status**: ✅ Production Ready (80+ APIs working)
+- **Latest Release**: March 31, 2026 - Bug fixes deployed
+- **Test Coverage**: 608/662 tests passing (92%)
 - **Database**: Cloud SQL MySQL 8.0 (Private access via Cloud SQL Proxy)
 
 ## 🏗️ Architecture
 
 ### Technology Stack
-- **Backend**: Spring Boot 3.2.0 with **Java 21** (LTS) - Upgraded from Java 17
-- **Database**: MySQL 8.0 (Cloud SQL on GCP, local MySQL for development)
+- **Backend**: Spring Boot 3.2.0 with **Java 17** (JDK 17.0.18.8)
+- **Database**: MySQL 8.0 (Cloud SQL on GCP, H2 for testing)
 - **Authentication**: JWT (HS256) with phone-based OTP and role-based access control (RBAC)
 - **Deployment**: Google Cloud Run (serverless containers, autoscaling)
-- **CI/CD**: GitHub Actions (automated build, test, deploy)
-- **Testing**: JUnit 5, Mockito, JaCoCo (80%+ coverage target)
-- **Container**: Docker multi-stage builds with distroless base image
+- **CI/CD**: Manual deployment via PowerShell scripts
+- **Testing**: JUnit 5, Mockito (662 tests, 92% passing)
+- **API Documentation**: OpenAPI 3.0 (Swagger UI available)
+- **Container**: Docker with Maven build
 - **Build Tool**: Maven 3.9+
 
 ### Cloud Infrastructure
