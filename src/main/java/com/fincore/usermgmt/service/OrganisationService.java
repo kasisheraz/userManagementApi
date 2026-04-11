@@ -92,7 +92,7 @@ public class OrganisationService {
                 // Set the organisation ID for each document
                 kycDocDTO.setOrganisationId(saved.getId());
                 try {
-                    kycDocumentService.createKycDocument(kycDocDTO);
+                    kycDocumentService.createDocument(kycDocDTO);
                 } catch (Exception e) {
                     log.error("Failed to create KYC document: {}", e.getMessage());
                     // Continue with other documents even if one fails
