@@ -1,0 +1,352 @@
+{
+  "info": {
+    "name": "User Address & Organization KYC Enhancements",
+    "description": "Updated Postman collection for User Address and Organization KYC enhancements (April 2026):\n\n**New Features:**\n- User Create/Update with full address objects (residential & postal)\n- Organization Create with KYC documents array\n- Address management with 'same as' checkbox logic\n\n**Changes:**\n- UserCreateDTO now accepts residentialAddress and postalAddress objects instead of IDs\n- UserDTO returns full address objects with all fields\n- OrganisationCreateDTO accepts kycDocuments array\n\nVersion: 2.0.0\nLast Updated: April 11, 2026",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "org_id",  
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "    console.log('JWT Token saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+1234567890\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users with Full Addresses",
+      "item": [
+        {
+          "name": "Create User with Residential Address Only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains residential address object', () => {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.residentialAddress).to.exist;",
+                  "    pm.expect(jsonData.residentialAddress.addressLine1).to.exist;",
+                  "    pm.expect(jsonData.residentialAddress.city).to.exist;",
+                  "    pm.collectionVariables.set('user_id', jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phoneNumber\": \"+441234567890\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"role\": \"USER\",\n  \"residentialAddress\": {\n    \"typeCode\": 1,\n    \"addressLine1\": \"123 Main Street\",\n    \"addressLine2\": \"Apartment 4B\",\n    \"city\": \"London\",\n    \"county\": \"Greater London\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"SW1A 1AA\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users"]
+            },
+            "description": "Create a user with only residential address. Postal address is optional."
+          }
+        },
+        {
+          "name": "Create User with Both Addresses (Same)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User created with both addresses', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.residentialAddress).to.exist;",
+                  "    pm.expect(jsonData.postalAddress).to.exist;",
+                  "    pm.expect(jsonData.residentialAddress.addressLine1).to.eql(jsonData.postalAddress.addressLine1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"email\": \"jane.smith@example.com\",\n  \"phoneNumber\": \"+442234567890\",\n  \"dateOfBirth\": \"1992-05-20\",\n  \"role\": \"USER\",\n  \"residentialAddress\": {\n    \"typeCode\": 1,\n    \"addressLine1\": \"456 Oak Avenue\",\n    \"city\": \"Manchester\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"M1 1AA\"\n  },\n  \"postalAddress\": {\n    \"typeCode\": 5,\n    \"addressLine1\": \"456 Oak Avenue\",\n    \"city\": \"Manchester\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"M1 1AA\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users"]
+            },
+            "description": "Simulates UI behavior when 'Same as residential address' checkbox is checked."
+          }
+        },
+        {
+          "name": "Create User with Different Addresses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Michael\",\n  \"lastName\": \"Johnson\",\n  \"email\": \"michael.j@example.com\",\n  \"phoneNumber\": \"+443334567890\",\n  \"dateOfBirth\": \"1988-11-10\",\n  \"role\": \"USER\",\n  \"residentialAddress\": {\n    \"typeCode\": 1,\n    \"addressLine1\": \"789 Residential Road\",\n    \"city\": \"Birmingham\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"B1 1AA\"\n  },\n  \"postalAddress\": {\n    \"typeCode\": 5,\n    \"addressLine1\": \"PO Box 123\",\n    \"city\": \"London\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"W1A 1AA\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users"]
+            },
+            "description": "User with different residential and postal addresses."
+          }
+        },
+        {
+          "name": "Get User by ID (Verify Addresses)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User response contains full address objects', () => {",
+                  "    var jsonData = pm.response.json();",
+                  "    ",
+                  "    if (jsonData.residentialAddress) {",
+                  "        pm.expect(jsonData.residentialAddress.addressLine1).to.exist;",
+                  "        pm.expect(jsonData.residentialAddress.city).to.exist;",
+                  "        pm.expect(jsonData.residentialAddress.country).to.exist;",
+                  "    }",
+                  "    ",
+                  "    if (jsonData.postalAddress) {",
+                  "        pm.expect(jsonData.postalAddress.addressLine1).to.exist;",
+                  "        pm.expect(jsonData.postalAddress.city).to.exist;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "{{user_id}}"]
+            },
+            "description": "Verify that GET returns full address objects, not just IDs."
+          }
+        },
+        {
+          "name": "Update User Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phoneNumber\": \"+441234567890\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"residentialAddress\": {\n    \"id\": null,\n    \"typeCode\": 1,\n    \"addressLine1\": \"999 Updated Street\",\n    \"city\": \"Edinburgh\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"EH1 1AA\"\n  },\n  \"postalAddress\": {\n    \"id\": null,\n    \"typeCode\": 5,\n    \"addressLine1\": \"888 New Postal Address\",\n    \"city\": \"Glasgow\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"G1 1AA\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "{{user_id}}"]
+            },
+            "description": "Update user addresses. If address.id is null, creates new address. If has ID, updates existing."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Organizations with KYC Documents",
+      "item": [
+        {
+          "name": "Create Organization Basic (No KYC)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('org_id', jsonData.id);",
+                  "    console.log('Organization ID saved:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legalName\": \"Test Company Limited\",\n  \"organisationType\": \"LTD\",\n  \"ownerId\": 1,\n  \"registrationNumber\": \"12345678\",\n  \"businessName\": \"Test Business\",\n  \"countryOfIncorporation\": \"United Kingdom\",\n  \"kycDocuments\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organisations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organisations"]
+            },
+            "description": "Create organization without KYC documents (empty array)."
+          }
+        },
+        {
+          "name": "Create Organization with KYC Documents",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organization created with KYC documents', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    console.log('Organization created with ID:', jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legalName\": \"Advanced Tech Solutions Ltd\",\n  \"organisationType\": \"LTD\",\n  \"ownerId\": 1,\n  \"registrationNumber\": \"87654321\",\n  \"businessName\": \"AdvTech\",\n  \"countryOfIncorporation\": \"United Kingdom\",\n  \"incorporationDate\": \"2020-01-15\",\n  \"companyNumber\": \"CN87654321\",\n  \"registeredAddress\": {\n    \"typeCode\": 1,\n    \"addressLine1\": \"10 Downing Street\",\n    \"city\": \"London\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"SW1A 2AA\"\n  },\n  \"kycDocuments\": [\n    {\n      \"documentType\": \"CERTIFICATE_OF_INCORPORATION\",\n      \"fileName\": \"certificate_of_incorporation.pdf\",\n      \"fileUrl\": \"https://storage.example.com/docs/cert.pdf\"\n    },\n    {\n      \"documentType\": \"PROOF_OF_ADDRESS\",\n      \"fileName\": \"proof_of_address.pdf\",\n      \"fileUrl\": \"https://storage.example.com/docs/address_proof.pdf\"\n    },\n    {\n      \"documentType\": \"MEMORANDUM_OF_ASSOCIATION\",\n      \"fileName\": \"memorandum.pdf\",\n      \"fileUrl\": \"https://storage.example.com/docs/memorandum.pdf\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organisations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organisations"]
+            },
+            "description": "Create organization with KYC documents array. Backend will create KYC document records linked to the organization."
+          }
+        },
+        {
+          "name": "Create Organization with Addresses (Same as Registered)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legalName\": \"MultiAddress Corp Ltd\",\n  \"organisationType\": \"LTD\",\n  \"ownerId\": 1,\n  \"registrationNumber\": \"11223344\",\n  \"businessName\": \"MultiAddress\",\n  \"countryOfIncorporation\": \"United Kingdom\",\n  \"registeredAddress\": {\n    \"typeCode\": 1,\n    \"addressLine1\": \"25 Corporate Plaza\",\n    \"city\": \"Manchester\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"M1 2AA\"\n  },\n  \"businessAddress\": {\n    \"typeCode\": 2,\n    \"addressLine1\": \"25 Corporate Plaza\",\n    \"city\": \"Manchester\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"M1 2AA\"\n  },\n  \"correspondenceAddress\": {\n    \"typeCode\": 3,\n    \"addressLine1\": \"25 Corporate Plaza\",\n    \"city\": \"Manchester\",\n    \"country\": \"United Kingdom\",\n    \"postalCode\": \"M1 2AA\"\n  },\n  \"kycDocuments\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organisations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organisations"]
+            },
+            "description": "Simulates UI behavior when 'Same as registered address' checkbox is checked for business and correspondence addresses."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -34,11 +34,11 @@ public class UserUpdateDTO {
     @Schema(description = "User's date of birth", example = "1990-01-15")
     private LocalDate dateOfBirth;
     
-    @Schema(description = "ID of the user's residential address (FK to Address table)", example = "1", type = "integer", format = "int64")
-    private Long residentialAddressIdentifier;
+    @Schema(description = "User's residential address")
+    private AddressCreateDTO residentialAddress;
     
-    @Schema(description = "ID of the user's postal address (FK to Address table)", example = "2", type = "integer", format = "int64")
-    private Long postalAddressIdentifier;
+    @Schema(description = "User's postal address")
+    private AddressCreateDTO postalAddress;
     
     @Size(max = 20)
     @Schema(description = "User status", example = "ACTIVE", allowableValues = {"ACTIVE", "INACTIVE", "PENDING", "SUSPENDED"})

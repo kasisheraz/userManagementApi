@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +44,9 @@ class OrganisationServiceTest {
 
     @Mock
     private AddressMapper addressMapper;
+
+    @Mock
+    private KycDocumentService kycDocumentService;
 
     @InjectMocks
     private OrganisationService organisationService;
@@ -269,5 +273,47 @@ class OrganisationServiceTest {
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    void createOrganisationWithKycDocuments_Success() {
+        // Setup KYC documents
+        List<KycDocumentCreateDTO> kycDocuments = new ArrayList<>();
+        KycDocumentCreateDTO kycDoc = new KycDocumentCreateDTO();
+        kycDoc.setDocumentType("CERTIFICATE_OF_INCORPORATION");
+        kycDoc.setFileName("cert.pdf");
+        kycDoc.setFileUrl("https://storage.example.com/cert.pdf");
+        kycDocuments.add(kycDoc);
+
+        OrganisationCreateDTO createDTOWithKyc = OrganisationCreateDTO.builder()
+                .ownerId(1L)
+                .legalName("Test Company Ltd")
+                .businessName("Test Business")
+                .organisationType("LTD")
+                .registrationNumber("12345678")
+                .companyNumber("CN12345")
+                .countryOfIncorporation("United Kingdom")
+                .kycDocuments(kycDocuments)
+                .build();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
+        when(organisationRepository.existsByRegistrationNumber("12345678")).thenReturn(false);
+        when(organisationRepository.existsByCompanyNumber("CN12345")).thenReturn(false);
+        when(organisationMapper.toOrganisation(any(OrganisationCreateDTO.class))).thenReturn(organisation);
+        when(organisationRepository.save(any(Organisation.class))).thenReturn(organisation);
+        when(organisationMapper.toOrganisationDTO(any(Organisation.class))).thenReturn(organisationDTO);
+        
+        // Mock KYC document creation
+        KycDocument savedDoc = new KycDocument();
+        savedDoc.setId(1L);
+        when(kycDocumentService.createKycDocument(any(KycDocumentCreateDTO.class)))
+                .thenReturn(savedDoc);
+
+        OrganisationDTO result = organisationService.createOrganisation(createDTOWithKyc);
+
+        assertNotNull(result);
+        assertEquals("Test Company Ltd", result.getLegalName());
+        verify(kycDocumentService, times(1)).createKycDocument(any(KycDocumentCreateDTO.class));
+        verify(organisationRepository).save(any(Organisation.class));
     }
 }

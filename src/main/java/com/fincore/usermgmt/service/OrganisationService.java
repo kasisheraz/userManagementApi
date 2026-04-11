@@ -31,6 +31,7 @@ public class OrganisationService {
     private final OrganisationRepository organisationRepository;
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
+    private final KycDocumentService kycDocumentService;
     private final OrganisationMapper organisationMapper;
     private final AddressMapper addressMapper;
 
@@ -81,6 +82,23 @@ public class OrganisationService {
 
         Organisation saved = organisationRepository.save(organisation);
         log.info("Created organisation with ID: {}", saved.getId());
+        
+        // Handle KYC documents if provided
+        if (createDTO.getKycDocuments() != null && !createDTO.getKycDocuments().isEmpty()) {
+            log.info("Creating {} KYC documents for organisation {}", 
+                createDTO.getKycDocuments().size(), saved.getId());
+            
+            for (KycDocumentCreateDTO kycDocDTO : createDTO.getKycDocuments()) {
+                // Set the organisation ID for each document
+                kycDocDTO.setOrganisationId(saved.getId());
+                try {
+                    kycDocumentService.createKycDocument(kycDocDTO);
+                } catch (Exception e) {
+                    log.error("Failed to create KYC document: {}", e.getMessage());
+                    // Continue with other documents even if one fails
+                }
+            }
+        }
         
         return organisationMapper.toOrganisationDTO(saved);
     }

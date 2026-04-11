@@ -1,4 +1,109 @@
-# User Management API - March 2026 Release
+# User Management API - Changelog
+
+---
+
+## 📍 April 2026 Release - Version 2.1.0
+
+### Release Summary
+**Version:** 2.1.0  
+**Release Date:** April 11, 2026  
+**Status:** ✅ Implemented & Ready for Testing  
+**Features:** User Address Enhancements, Organization KYC Integration
+
+### 🎯 New Features
+
+#### 1. Full Address Capture for Users
+**Enhancement:** Users now include complete residential and postal address objects
+
+**API Changes:**
+- `POST /api/v1/users` - Accepts `residentialAddress` and `postalAddress` objects (instead of IDs)
+- `PUT /api/v1/users/{id}` - Accepts full address objects for updates
+- `GET /api/v1/users/{id}` - Returns complete address objects in response
+
+**Before:**
+```json
+{
+  "firstName": "John",
+  "residentialAddressIdentifier": 1,
+  "postalAddressIdentifier": 2
+}
+```
+
+**After:**
+```json
+{
+  "firstName": "John",
+  "residentialAddress": {
+    "typeCode": 1,
+    "addressLine1": "123 Main St",
+    "city": "London",
+    "country": "UK",
+    "postalCode": "SW1A 1AA"
+  },
+  "postalAddress": {
+    "typeCode": 5,
+    "addressLine1": "123 Main St",
+    "city": "London",
+    "country": "UK",
+    "postalCode": "SW1A 1AA"
+  }
+}
+```
+
+#### 2. Organization KYC Document Integration
+**Enhancement:** Organizations can be created with KYC documents in single API call
+
+**API Changes:**
+- `POST /api/v1/organisations` - New field: `kycDocuments[]` (array of KYC documents)
+
+**Example:**
+```json
+{
+  "legalName": "Tech Solutions Ltd",
+  "organisationType": "LTD",
+  "ownerId": 1,
+  "kycDocuments": [
+    {
+      "documentType": "CERTIFICATE_OF_INCORPORATION",
+      "fileName": "cert.pdf",
+      "fileUrl": "https://storage.example.com/cert.pdf"
+    }
+  ]
+}
+```
+
+#### 3. UI/UX Improvements
+- ✅ "Same as residential address" checkbox in User creation form
+- ✅ "Same as registered address" checkboxes in Organization form
+- ✅ Improved address section spacing with dividers and headers
+- ✅ KYC Documents tab moved before Other tab in organization form
+
+### 📦 Files Modified
+
+**Backend:**
+- `UserCreateDTO.java` - Changed to accept address objects
+- `UserUpdateDTO.java` - Changed to accept  address objects
+- `UserDTO.java` - Returns full address objects  
+- `UserService.java` - Handles address creation/update
+- `OrganisationCreateDTO.java` - Added `kycDocuments` field
+- `OrganisationService.java` - Creates KYC documents after org creation
+
+**Frontend:**
+- `UserForm.tsx` - Redesigned with address sections and checkbox
+- `OrganizationForm.tsx` - Added checkboxes and improved spacing
+- `user.types.ts` - Added Address interface
+- `organization.types.ts` - Added KYCDocumentUpload interface
+
+### 🧪 Testing
+
+**New Postman Collection:** `postman-user-address-org-kyc-updates.json`  
+**Test Coverage:** UserServiceTest, OrganisationServiceTest updated with address/KYC tests
+
+**Manual Testing Checklist:** [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)
+
+---
+
+## 📍 March 2026 Release - Version 1.0.0
 
 ## Release Summary
 **Version:** 1.0.0  

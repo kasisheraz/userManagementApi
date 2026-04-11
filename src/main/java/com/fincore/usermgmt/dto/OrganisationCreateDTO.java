@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * DTO for creating a new Organisation.
@@ -144,4 +145,8 @@ public class OrganisationCreateDTO {
 
     @Size(max = 20, message = "Legacy identifier must not exceed 20 characters")
     private String legacyIdentifier;
+    
+    // KYC Documents
+    @Valid
+    private List<KycDocumentCreateDTO> kycDocuments;
 }

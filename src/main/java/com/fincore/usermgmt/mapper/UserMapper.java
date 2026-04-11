@@ -11,22 +11,28 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {AddressMapper.class})
 public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
     @Mapping(target = "role", source = "role.name")
+    @Mapping(target = "residentialAddress", ignore = true)
+    @Mapping(target = "postalAddress", ignore = true)
     UserDTO toUserDTO(User user);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", ignore = true)
+    @Mapping(target = "residentialAddressIdentifier", ignore = true)
+    @Mapping(target = "postalAddressIdentifier", ignore = true)
     @Mapping(target = "createdDatetime", ignore = true)
     @Mapping(target = "lastModifiedDatetime", ignore = true)
     User toUser(UserCreateDTO userCreateDTO);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", ignore = true)
+    @Mapping(target = "residentialAddressIdentifier", ignore = true)
+    @Mapping(target = "postalAddressIdentifier", ignore = true)
     @Mapping(target = "createdDatetime", ignore = true)
     @Mapping(target = "lastModifiedDatetime", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
