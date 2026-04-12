@@ -39,11 +39,13 @@ A comprehensive Spring Boot microservice for secure user authentication, role-ba
 ### Phase 1: User Management & Authentication
 - 🔐 JWT-based stateless authentication (HS256)
 - 📱 Phone-based OTP authentication (6-digit, 5-minute expiration)
-- 👥 Role-Based Access Control (4 roles, 21 permissions)
+- 👥 Role-Based Access Control (4 business roles: Admin, Compliance, Operational, Business User)
 - 🔑 Secure token management (24-hour JWT expiration)
 - 👤 User CRUD operations with validation
 - 📍 Address management (create, update, delete)
 - 🧹 Automatic OTP cleanup (expired tokens removed)
+- 🎯 **Role-Based Data Filtering**: Business Users see only their own data
+- 📊 **Dynamic Enums API**: All dropdown values exposed via `/api/enums` endpoint
 
 ### Phase 2: Organization Onboarding & KYC
 - 🏢 **Organization Management**
@@ -135,6 +137,88 @@ export MYSQL_PASSWORD=root
 mvn spring-boot:run
 ```
 
+## 📱 SMS OTP Configuration
+
+### Current Status
+⚠️ **Development Mode**: OTP codes are currently logged to console only. For production SMS delivery, SMS provider integration is required.
+
+### Integrating SMS Provider (Twilio Recommended)
+
+1. **Add Twilio Dependency** (pom.xml)
+```xml
+<dependency>
+    <groupId>com.twilio.sdk</groupId>
+    <artifactId>twilio</artifactId>
+    <version>9.14.1</version>
+</dependency>
+```
+
+2. **Configure SMS Settings** (application.yml)
+```yaml
+sms:
+  provider: twilio
+  twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID}
+    auth-token: ${TWILIO_AUTH_TOKEN}
+    from-number: ${TWILIO_FROM_NUMBER}  # Your Twilio phone number
+```
+
+3. **Create SmsService**
+```java
+@Service
+public class SmsService {
+    @Value("${sms.twilio.account-sid}")
+    private String accountSid;
+    
+    @Value("${sms.twilio.auth-token}")
+    private String authToken;
+    
+    @Value("${sms.twilio.from-number}")
+    private String fromNumber;
+    
+    public void sendSms(String toPhoneNumber, String message) {
+        Twilio.init(accountSid, authToken);
+        Message.creator(
+            new PhoneNumber(toPhoneNumber),
+            new PhoneNumber(fromNumber),
+            message
+        ).create();
+    }
+}
+```
+
+4. **Update OtpService.java (Line 106)**
+Replace:
+```java
+log.info("Generated OTP for {}: {} (This would be sent via SMS in production)", 
+         phoneNumber, otpCode);
+```
+
+With:
+```java
+String message = String.format("Your FinCore OTP code is: %s. Valid for 5 minutes.", otpCode);
+smsService.sendSms(phoneNumber, message);
+log.info("OTP sent via SMS to {}", phoneNumber);
+```
+
+5. **Set Environment Variables**
+```bash
+export TWILIO_ACCOUNT_SID=your_account_sid
+export TWILIO_AUTH_TOKEN=your_auth_token
+export TWILIO_FROM_NUMBER=+44xxxxxxxxxx  # Your Twilio UK number
+```
+
+### Phone Number Format
+- UK numbers: `+447878282674` (E.164 international format)
+- Must include country code with + prefix
+- No spaces or special characters
+
+### Alternative SMS Providers
+- **AWS SNS**: Enterprise-grade, good for scale
+- **Azure Communication Services**: Good if already on Azure
+- **MessageBird**: European focus, good UK coverage
+- **Vonage (Nexmo)**: Global coverage
+
 ## 🧪 Testing
 
 ### Run All Tests
@@ -159,6 +243,8 @@ mvn clean test jacoco:report
 
 ### API Endpoints (56+ total)
 - **Authentication**: 2 endpoints
+  - POST `/api/auth/otp/request` - Request OTP code
+  - POST `/api/auth/otp/verify` - Verify OTP and get JWT token
 - **Users**: 6 endpoints
 - **Addresses**: 4 endpoints
 - **Organizations**: 6 endpoints
@@ -166,6 +252,42 @@ mvn clean test jacoco:report
 - **KYC Verification**: 9 endpoints
 - **Questionnaire**: 10 endpoints
 - **Customer Answers**: 11 endpoints
+- **Enums**: 10+ endpoints
+  - GET `/api/enums` - Get all enums (single call, recommended)
+  - GET `/api/enums/user-status` - Get user status options
+  - GET `/api/enums/organization-type` - Get organization types (8 types)
+  - GET `/api/enums/document-type` - Get document types (18 types)
+  - GET `/api/enums/document-status` - Get document statuses
+  - GET `/api/enums/address-type` - Get address types
+  - GET `/api/enums/verification-status` - Get verification statuses
+  - GET `/api/enums/verification-level` - Get verification levels
+  - GET `/api/enums/screening-type` - Get AML screening types
+  - GET `/api/enums/risk-level` - Get risk level options
+  - GET `/api/enums/question-category` - Get questionnaire categories
+- **Roles**: 1 endpoint
+  - GET `/api/roles` - Get all available roles (dynamic from database)
+
+### Dynamic Enum Architecture
+All dropdown values are exposed via the `/api/enums` endpoints. Each enum returns:
+```json
+{
+  "value": "ACTIVE",
+  "label": "Active",
+  "description": "User is active and can access the system"
+}
+```
+
+The `/api/enums` endpoint returns all enums in a single call for optimal performance:
+```json
+{
+  "userStatus": [...],
+  "organizationType": [...],
+  "documentType": [...],
+  ...
+}
+```
+
+Frontend components fetch these enums dynamically via `enumService.ts`, eliminating hardcoded values.
 
 See `PHASE2_POSTMAN_GUIDE.md` for Phase 2 API documentation.
 
