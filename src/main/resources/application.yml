@@ -22,6 +22,15 @@ otp:
     max: 3  # Maximum retry attempts for deadlock handling
     delay: 100  # Initial delay in milliseconds (uses exponential backoff)
 
+# SMS Configuration (Twilio)
+sms:
+  enabled: ${SMS_ENABLED:false}  # Set to true to enable SMS sending
+  provider: twilio
+  twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID:}
+    auth-token: ${TWILIO_AUTH_TOKEN:}
+    from-number: ${TWILIO_FROM_NUMBER:}  # Your Twilio phone number (e.g., +447xxxxxxxxxx)
+
 security:
   session-timeout: 900
   max-login-attempts: 5

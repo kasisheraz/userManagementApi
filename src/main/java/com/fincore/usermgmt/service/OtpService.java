@@ -2,8 +2,8 @@ package com.fincore.usermgmt.service;
 
 import com.fincore.usermgmt.entity.OtpToken;
 import com.fincore.usermgmt.repository.OtpTokenRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,13 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class OtpService {
 
     private final OtpTokenRepository otpTokenRepository;
+    private final Optional<SmsService> smsService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Value("${otp.expiration:300}") // 5 minutes in seconds
@@ -34,6 +35,15 @@ public class OtpService {
 
     @Value("${otp.retry.delay:100}")
     private Integer retryDelayMs;
+    
+    @Value("${sms.enabled:false}")
+    private boolean smsEnabled;
+
+    @Autowired
+    public OtpService(OtpTokenRepository otpTokenRepository, Optional<SmsService> smsService) {
+        this.otpTokenRepository = otpTokenRepository;
+        this.smsService = smsService;
+    }
 
     public String generateOtp(String phoneNumber) {
         // Retry logic to handle deadlocks
@@ -95,8 +105,19 @@ public class OtpService {
         
         otpTokenRepository.save(otpToken);
         
-        // In production, send SMS here
-        log.info("Generated OTP for {}: {} (This would be sent via SMS in production)", phoneNumber, otpCode);
+        // Send OTP via SMS if enabled
+        if (smsEnabled && smsService.isPresent()) {
+            try {
+                smsService.get().sendOtp(phoneNumber, otpCode);
+                log.info("OTP sent via SMS to {}", phoneNumber);
+            } catch (Exception e) {
+                log.error("Failed to send OTP via SMS to {}: {}", phoneNumber, e.getMessage());
+                // Continue execution - OTP is saved in database for development fallback
+            }
+        } else {
+            log.info("Generated OTP for {}: {} (SMS disabled - set SMS_ENABLED=true to enable SMS delivery)", 
+                     phoneNumber, otpCode);
+        }
         
         return otpCode; // Return for development purposes only
     }

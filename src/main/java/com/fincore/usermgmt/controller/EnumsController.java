@@ -54,18 +54,18 @@ public class EnumsController {
     public Map<String, List<EnumOption>> getAllEnums() {
         log.info("Fetching all enum values");
         
-        return Map.of(
-            "userStatus", getUserStatusOptions(),
-            "organizationStatus", getOrganizationStatusOptions(),
-            "organizationType", getOrganizationTypeOptions(),
-            "documentType", getDocumentTypeOptions(),
-            "documentStatus", getDocumentStatusOptions(),
-            "addressType", getAddressTypeOptions(),
-            "verificationStatus", getVerificationStatusOptions(),
-            "verificationLevel", getVerificationLevelOptions(),
-            "screeningType", getScreeningTypeOptions(),
-            "riskLevel", getRiskLevelOptions(),
-            "questionCategory", getQuestionCategoryOptions()
+        return Map.ofEntries(
+            Map.entry("userStatus", getUserStatusOptions()),
+            Map.entry("organizationStatus", getOrganizationStatusOptions()),
+            Map.entry("organizationType", getOrganizationTypeOptions()),
+            Map.entry("documentType", getDocumentTypeOptions()),
+            Map.entry("documentStatus", getDocumentStatusOptions()),
+            Map.entry("addressType", getAddressTypeOptions()),
+            Map.entry("verificationStatus", getVerificationStatusOptions()),
+            Map.entry("verificationLevel", getVerificationLevelOptions()),
+            Map.entry("screeningType", getScreeningTypeOptions()),
+            Map.entry("riskLevel", getRiskLevelOptions()),
+            Map.entry("questionCategory", getQuestionCategoryOptions())
         );
     }
 
