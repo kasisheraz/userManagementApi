@@ -11,6 +11,7 @@ import com.fincore.usermgmt.mapper.UserMapper;
 import com.fincore.usermgmt.repository.AddressRepository;
 import com.fincore.usermgmt.repository.RoleRepository;
 import com.fincore.usermgmt.repository.UserRepository;
+import com.fincore.usermgmt.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,9 +32,19 @@ public class UserService {
     private final AddressService addressService;
     private final UserMapper userMapper;
     private final AddressMapper addressMapper;
+    private final SecurityUtil securityUtil;
 
     @Transactional(readOnly = true)
     public List<UserDTO> getAllUsers() {
+        // Business Users can only see their own user record
+        if (securityUtil.isBusinessUser()) {
+            return securityUtil.getCurrentUser()
+                    .map(this::toUserDTOWithAddresses)
+                    .map(List::of)
+                    .orElse(List.of());
+        }
+        
+        // All other roles can see all users
         return userRepository.findAll().stream()
                 .map(this::toUserDTOWithAddresses)
                 .collect(Collectors.toList());
@@ -50,6 +61,12 @@ public class UserService {
         log.info("Creating user with phone: {}", userCreateDTO.getPhoneNumber());
         
         User user = userMapper.toUser(userCreateDTO);
+        
+        // Set default status to Active if not provided
+        if (user.getStatusDescription() == null || user.getStatusDescription().isEmpty()) {
+            user.setStatusDescription("Active");
+            log.info("Setting default status to Active for new user");
+        }
         
         // Handle role
         if (userCreateDTO.getRole() != null) {
@@ -73,7 +90,7 @@ public class UserService {
         }
         
         User savedUser = userRepository.save(user);
-        log.info("User created with ID: {}", savedUser.getId());
+        log.info("User created with ID: {} with status: {}", savedUser.getId(), savedUser.getStatusDescription());
         
         return toUserDTOWithAddresses(savedUser);
     }

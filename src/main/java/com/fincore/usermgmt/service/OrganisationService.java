@@ -7,9 +7,11 @@ import com.fincore.usermgmt.mapper.OrganisationMapper;
 import com.fincore.usermgmt.repository.AddressRepository;
 import com.fincore.usermgmt.repository.OrganisationRepository;
 import com.fincore.usermgmt.repository.UserRepository;
+import com.fincore.usermgmt.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,6 +36,7 @@ public class OrganisationService {
     private final KycDocumentService kycDocumentService;
     private final OrganisationMapper organisationMapper;
     private final AddressMapper addressMapper;
+    private final SecurityUtil securityUtil;
 
     /**
      * Create a new organisation.
@@ -127,6 +130,22 @@ public class OrganisationService {
                 : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
         
+        // Business Users can only see their own organisations
+        if (securityUtil.isBusinessUser()) {
+            return securityUtil.getCurrentUser()
+                    .map(user -> {
+                        List<Organisation> userOrgs = organisationRepository.findByOwnerId(user.getId());
+                        // Calculate pagination manually
+                        int start = (int) pageable.getOffset();
+                        int end = Math.min((start + pageable.getPageSize()), userOrgs.size());
+                        List<Organisation> pageContent = userOrgs.subList(start, Math.min(end, userOrgs.size()));
+                        Page<Organisation> organisationPage = new PageImpl<>(pageContent, pageable, userOrgs.size());
+                        return buildPagedResponse(organisationPage);
+                    })
+                    .orElse(new PagedResponse<>(List.of(), 0, 0, 0L, 0));
+        }
+        
+        // All other roles can see all organisations
         Page<Organisation> organisationPage = organisationRepository.findAll(pageable);
         
         return buildPagedResponse(organisationPage);
@@ -162,6 +181,31 @@ public class OrganisationService {
             }
         }
 
+        // Business Users can only search their own organisations
+        if (securityUtil.isBusinessUser()) {
+            return securityUtil.getCurrentUser()
+                    .map(user -> {
+                        List<Organisation> userOrgs = organisationRepository.findByOwnerId(user.getId());
+                        // Apply filters manually
+                        List<Organisation> filtered = userOrgs.stream()
+                                .filter(org -> searchDTO.getSearchTerm() == null || searchDTO.getSearchTerm().isEmpty() ||
+                                        org.getLegalName().toLowerCase().contains(searchDTO.getSearchTerm().toLowerCase()) ||
+                                        (org.getCompanyNumber() != null && org.getCompanyNumber().toLowerCase().contains(searchDTO.getSearchTerm().toLowerCase())))
+                                .filter(org -> status == null || org.getStatus() == status)
+                                .filter(org -> type == null || org.getOrganisationType() == type)
+                                .collect(Collectors.toList());
+                        
+                        // Calculate pagination manually
+                        int start = (int) pageable.getOffset();
+                        int end = Math.min((start + pageable.getPageSize()), filtered.size());
+                        List<Organisation> pageContent = filtered.subList(start, Math.min(end, filtered.size()));
+                        Page<Organisation> organisationPage = new PageImpl<>(pageContent, pageable, filtered.size());
+                        return buildPagedResponse(organisationPage);
+                    })
+                    .orElse(new PagedResponse<>(List.of(), 0, 0, 0L, 0));
+        }
+
+        // All other roles can search all organisations
         Page<Organisation> organisationPage = organisationRepository.searchOrganisations(
                 searchDTO.getSearchTerm(), status, type, pageable);
         
