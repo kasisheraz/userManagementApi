@@ -181,6 +181,10 @@ public class OrganisationService {
             }
         }
 
+        // Make variables effectively final for lambda
+        final OrganisationStatus finalStatus = status;
+        final OrganisationType finalType = type;
+
         // Business Users can only search their own organisations
         if (securityUtil.isBusinessUser()) {
             return securityUtil.getCurrentUser()
@@ -191,8 +195,8 @@ public class OrganisationService {
                                 .filter(org -> searchDTO.getSearchTerm() == null || searchDTO.getSearchTerm().isEmpty() ||
                                         org.getLegalName().toLowerCase().contains(searchDTO.getSearchTerm().toLowerCase()) ||
                                         (org.getCompanyNumber() != null && org.getCompanyNumber().toLowerCase().contains(searchDTO.getSearchTerm().toLowerCase())))
-                                .filter(org -> status == null || org.getStatus() == status)
-                                .filter(org -> type == null || org.getOrganisationType() == type)
+                                .filter(org -> finalStatus == null || org.getStatus() == finalStatus)
+                                .filter(org -> finalType == null || org.getOrganisationType() == finalType)
                                 .collect(Collectors.toList());
                         
                         // Calculate pagination manually
