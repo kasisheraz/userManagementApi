@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -27,8 +28,23 @@ public class SecurityUtil {
      */
     public String getCurrentUserPhoneNumber() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof String) {
-            return (String) authentication.getPrincipal();
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            
+            // Handle UserDetails principal (created by JWT filter)
+            if (principal instanceof UserDetails) {
+                String phoneNumber = ((UserDetails) principal).getUsername();
+                log.debug("Extracted phone number from UserDetails: {}", phoneNumber);
+                return phoneNumber;
+            }
+            
+            // Handle String principal (fallback)
+            if (principal instanceof String) {
+                log.debug("Extracted phone number from String principal: {}", principal);
+                return (String) principal;
+            }
+            
+            log.warn("Unknown principal type: {}", principal.getClass().getName());
         }
         return null;
     }
