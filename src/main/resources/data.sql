@@ -9,11 +9,11 @@ INSERT INTO Permissions (Permission_Name, Description, Resource, Action) VALUES 
 INSERT INTO Permissions (Permission_Name, Description, Resource, Action) VALUES ('KYC_WRITE', 'Upload and update KYC documents', 'kyc', 'write');
 INSERT INTO Permissions (Permission_Name, Description, Resource, Action) VALUES ('KYC_VERIFY', 'Verify KYC documents', 'kyc', 'verify');
 
--- Insert default roles
-INSERT INTO Roles (Role_Name, Role_Description) VALUES ('SYSTEM_ADMINISTRATOR', 'Full system access');
-INSERT INTO Roles (Role_Name, Role_Description) VALUES ('ADMIN', 'Administrator with user management capabilities');
-INSERT INTO Roles (Role_Name, Role_Description) VALUES ('COMPLIANCE_OFFICER', 'Compliance and AML access');
-INSERT INTO Roles (Role_Name, Role_Description) VALUES ('OPERATIONAL_STAFF', 'Operational access');
+-- Insert default roles (matching V7.0 migration)
+INSERT INTO Roles (Role_Name, Role_Description) VALUES ('Admin', 'Administrator with full system access');
+INSERT INTO Roles (Role_Name, Role_Description) VALUES ('Compliance', 'Compliance officer with audit and review capabilities');
+INSERT INTO Roles (Role_Name, Role_Description) VALUES ('Operational', 'Operational staff with standard operational access');
+INSERT INTO Roles (Role_Name, Role_Description) VALUES ('Business User', 'Business user with access to own data only');
 
 -- Link permissions to roles
 INSERT INTO Role_Permissions (Role_Identifier, Permission_Identifier) VALUES (1, 1);
@@ -39,15 +39,15 @@ INSERT INTO Role_Permissions (Role_Identifier, Permission_Identifier) VALUES (3,
 
 -- Insert default admin user
 INSERT INTO Users (Phone_Number, Email, Role_Identifier, First_Name, Middle_Name, Last_Name, Date_Of_Birth, Status_Description) 
-VALUES ('+1234567890', 'admin@fincore.com', 1, 'System', NULL, 'Administrator', '1990-01-01', 'ACTIVE');
+VALUES ('+1234567890', 'admin@fincore.com', 1, 'System', NULL, 'Administrator', '1990-01-01', 'Active');
 
 -- Insert compliance officer user
 INSERT INTO Users (Phone_Number, Email, Role_Identifier, First_Name, Middle_Name, Last_Name, Date_Of_Birth, Status_Description) 
-VALUES ('+1234567891', 'compliance@fincore.com', 3, 'Compliance', NULL, 'Officer', '1985-05-15', 'ACTIVE');
+VALUES ('+1234567891', 'compliance@fincore.com', 2, 'Compliance', NULL, 'Officer', '1985-05-15', 'Active');
 
 -- Insert operational staff user
 INSERT INTO Users (Phone_Number, Email, Role_Identifier, First_Name, Middle_Name, Last_Name, Date_Of_Birth, Status_Description) 
-VALUES ('+1234567892', 'staff@fincore.com', 4, 'Operational', NULL, 'Staff', '1992-03-20', 'ACTIVE');
+VALUES ('+1234567892', 'staff@fincore.com', 3, 'Operational', NULL, 'Staff', '1992-03-20', 'Active');
 
 -- ============================================
 -- Phase 2: Organisation Sample Data
