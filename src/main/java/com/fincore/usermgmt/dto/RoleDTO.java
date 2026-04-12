@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class RoleDTO {
     
     @Schema(description = "Role identifier", example = "1")
-    private Integer id;
+    private Long id;
     
     @Schema(description = "Role name", example = "Admin")
     private String name;
