@@ -142,7 +142,7 @@ public class OrganisationService {
                         Page<Organisation> organisationPage = new PageImpl<>(pageContent, pageable, userOrgs.size());
                         return buildPagedResponse(organisationPage);
                     })
-                    .orElse(new PagedResponse<>(List.of(), 0, 0, 0L, 0));
+                    .orElse(new PagedResponse<OrganisationDTO>(List.of(), 0, 0, 0L, 0));
         }
         
         // All other roles can see all organisations
@@ -202,7 +202,7 @@ public class OrganisationService {
                         Page<Organisation> organisationPage = new PageImpl<>(pageContent, pageable, filtered.size());
                         return buildPagedResponse(organisationPage);
                     })
-                    .orElse(new PagedResponse<>(List.of(), 0, 0, 0L, 0));
+                    .orElse(new PagedResponse<OrganisationDTO>(List.of(), 0, 0, 0L, 0));
         }
 
         // All other roles can search all organisations
