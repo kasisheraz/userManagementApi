@@ -73,18 +73,11 @@ INSERT IGNORE INTO Role_Permissions (Role_Identifier, Permission_Identifier) VAL
 INSERT IGNORE INTO Users (Phone_Number, Email, Role_Identifier, First_Name, Middle_Name, Last_Name, Date_Of_Birth, Status_Description) 
 VALUES ('+1234567890', 'admin@fincore.com', 1, 'System', NULL, 'Administrator', '1990-01-01', 'ACTIVE');
 
--- Insert compliance officer user
-INSERT IGNORE INTO Users (Phone_Number, Email, Role_Identifier, First_Name, Middle_Name, Last_Name, Date_Of_Birth, Status_Description) 
-VALUES ('+1234567891', 'compliance@fincore.com', 3, 'Compliance', NULL, 'Officer', '1985-05-15', 'ACTIVE');
-
--- Insert operational staff user
-INSERT IGNORE INTO Users (Phone_Number, Email, Role_Identifier, First_Name, Middle_Name, Last_Name, Date_Of_Birth, Status_Description) 
-VALUES ('+1234567892', 'staff@fincore.com', 4, 'Operational', NULL, 'Staff', '1992-03-20', 'ACTIVE');
 
 -- ============================================
 -- Phase 2: Organisation Sample Data
 -- ============================================
-
+//-- delete all these
 -- Insert sample addresses
 INSERT IGNORE INTO Address (Type_Code, Address_Line1, Address_Line2, Postal_Code, State_Code, City, Country, Status_Description, Created_By) 
 VALUES (3, '10 Downing Street', 'Westminster', 'SW1A 2AA', 'Greater London', 'London', 'United Kingdom', 'ACTIVE', 1);
