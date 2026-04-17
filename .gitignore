@@ -38,3 +38,10 @@ gcp-*.json
 .env
 .env.local
 *.env.secret
+# Test artifacts
+test-results/
+
+# Vim swap files
+*.swp
+*.swo
+*~
