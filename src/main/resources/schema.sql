@@ -43,7 +43,7 @@ CREATE TABLE Users (
     Date_Of_Birth DATE,
     Residential_Address_Identifier INT,
     Postal_Address_Identifier INT,
-    Status_Description VARCHAR(20),
+    Status_Description VARCHAR(30),
     Created_Datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Last_Modified_Datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_role_id FOREIGN KEY (Role_Identifier) REFERENCES Roles(Role_Identifier)
@@ -91,7 +91,7 @@ CREATE TABLE Address (
     State_Code VARCHAR(20),
     City VARCHAR(50),
     Country VARCHAR(50) NOT NULL,
-    Status_Description VARCHAR(20) DEFAULT 'ACTIVE',
+    Status_Description VARCHAR(30) DEFAULT 'ACTIVE',
     Created_Datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Created_By INT
 );
@@ -152,7 +152,7 @@ CREATE TABLE Organisation (
     Correspondence_Address_Identifier INT,
     
     -- Status and Audit
-    Status_Description VARCHAR(20) DEFAULT 'PENDING' COMMENT 'PENDING, ACTIVE, SUSPENDED, REJECTED, CLOSED',
+    Status_Description VARCHAR(30) DEFAULT 'PENDING' COMMENT 'PENDING, ACTIVE, SUSPENDED, REJECTED, CLOSED',
     Reason_Description VARCHAR(255),
     Legacy_Identifier VARCHAR(20),
     Created_Datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -176,7 +176,7 @@ CREATE TABLE KYC_Documents (
     Sumsub_Document_Identifier VARCHAR(100) COMMENT 'External verification system reference',
     File_Name VARCHAR(255),
     File_URL TEXT,
-    Status_Description VARCHAR(20) DEFAULT 'PENDING' COMMENT 'PENDING, VERIFIED, REJECTED, EXPIRED',
+    Status_Description VARCHAR(30) DEFAULT 'PENDING' COMMENT 'PENDING, VERIFIED, REJECTED, EXPIRED',
     Reason_Description TEXT,
     Document_Verified_By INT,
     Created_Datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
