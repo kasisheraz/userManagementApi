@@ -1,6 +1,7 @@
 package com.fincore.usermgmt.controller;
 
 import com.fincore.usermgmt.dto.*;
+import com.fincore.usermgmt.service.KycDocumentService;
 import com.fincore.usermgmt.service.OrganisationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,6 +32,7 @@ import java.util.List;
 public class OrganisationController {
 
     private final OrganisationService organisationService;
+    private final KycDocumentService kycDocumentService;
 
     /**
      * Create a new organisation.
@@ -306,5 +308,128 @@ public class OrganisationController {
         log.info("REST request to check registration number: {}", registrationNumber);
         boolean exists = organisationService.existsByRegistrationNumber(registrationNumber);
         return ResponseEntity.ok(exists);
+    }
+
+    /**
+     * Submit organization for admin review.
+     */
+    @PutMapping("/{id}/submit")
+    @Operation(
+        summary = "Submit organisation for review",
+        description = "Submits an organisation for admin review by changing status from PENDING to UNDER_REVIEW"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Organisation submitted successfully",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Organisation not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<OrganisationDTO> submitForReview(
+            @Parameter(description = "Organisation ID", required = true, example = "1")
+            @PathVariable Long id) {
+        log.info("REST request to submit organisation for review - ID: {}", id);
+        try {
+            OrganisationDTO submitted = organisationService.submitForReview(id);
+            return ResponseEntity.ok(submitted);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.notFound().build();
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Approve organization (Admin only).
+     */
+    @PutMapping("/{id}/approve")
+    @Operation(
+        summary = "Approve organisation",
+        description = "Approves an organisation by changing status from UNDER_REVIEW to ACTIVE (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Organisation approved successfully",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Organisation not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<OrganisationDTO> approveOrganisation(
+            @Parameter(description = "Organisation ID", required = true, example = "1")
+            @PathVariable Long id) {
+        log.info("REST request to approve organisation - ID: {}", id);
+        try {
+            OrganisationDTO approved = organisationService.approveOrganisation(id);
+            return ResponseEntity.ok(approved);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.notFound().build();
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Reject organization (Admin only).
+     */
+    @PutMapping("/{id}/reject")
+    @Operation(
+        summary = "Reject organisation",
+        description = "Rejects specific documents with individual feedback and changes org status from UNDER_REVIEW to REQUIRES_RESUBMISSION (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Organisation rejected successfully",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Organisation not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<OrganisationDTO> rejectOrganisation(
+            @Parameter(description = "Organisation ID", required = true, example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "Document rejections with reasons", required = true)
+            @Valid @RequestBody OrganisationRejectionDTO rejectionDTO) {
+        log.info("REST request to reject organisation - ID: {}", id);
+        try {
+            OrganisationDTO rejected = organisationService.rejectOrganisation(id, rejectionDTO);
+            return ResponseEntity.ok(rejected);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.notFound().build();
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Get KYC documents for an organisation.
+     */
+    @GetMapping("/{id}/kyc-documents")
+    @Operation(
+        summary = "Get KYC documents for organisation",
+        description = "Retrieves all KYC documents for a specific organisation including their status and rejection feedback"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved KYC documents",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = KycDocumentDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Organisation not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<List<KycDocumentDTO>> getKycDocuments(
+            @Parameter(description = "Organisation ID", required = true, example = "1")
+            @PathVariable Long id) {
+        log.info("REST request to get KYC documents for organisation - ID: {}", id);
+        List<KycDocumentDTO> documents = kycDocumentService.getDocumentsByOrganisation(id);
+        return ResponseEntity.ok(documents);
     }
 }

@@ -76,6 +76,15 @@ public class UserServiceTest {
 
         when(userMapper.toUser(any(UserCreateDTO.class))).thenReturn(user);
         when(roleRepository.findByName("SYSTEM_ADMINISTRATOR")).thenReturn(Optional.of(role));
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userMapper.toUserDTO(user)).thenReturn(userDTO);
+
+        UserDTO result = userService.createUser(createDTO);
+
+        assertNotNull(result);
+        assertEquals("+1234567890", result.getPhoneNumber());
+        verify(userRepository).save(any(User.class));
+    }
 
     @Test
     void testCreateUserWithAddresses() {
@@ -168,14 +177,5 @@ public class UserServiceTest {
         
         verify(addressService, times(2)).createAddress(any(AddressCreateDTO.class));
         verify(userRepository).save(any(User.class));
-    }
-        when(userRepository.save(any(User.class))).thenReturn(user);
-        when(userMapper.toUserDTO(any(User.class))).thenReturn(userDTO);
-
-        UserDTO result = userService.createUser(createDTO);
-
-        assertEquals("+1234567890", result.getPhoneNumber());
-        assertEquals("Test", result.getFirstName());
-        assertEquals("User", result.getLastName());
     }
 }

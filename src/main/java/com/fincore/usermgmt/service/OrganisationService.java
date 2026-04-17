@@ -5,6 +5,7 @@ import com.fincore.usermgmt.entity.*;
 import com.fincore.usermgmt.mapper.AddressMapper;
 import com.fincore.usermgmt.mapper.OrganisationMapper;
 import com.fincore.usermgmt.repository.AddressRepository;
+import com.fincore.usermgmt.repository.KycDocumentRepository;
 import com.fincore.usermgmt.repository.OrganisationRepository;
 import com.fincore.usermgmt.repository.UserRepository;
 import com.fincore.usermgmt.util.SecurityUtil;
@@ -34,6 +35,7 @@ public class OrganisationService {
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
     private final KycDocumentService kycDocumentService;
+    private final KycDocumentRepository kycDocumentRepository;
     private final OrganisationMapper organisationMapper;
     private final AddressMapper addressMapper;
     private final SecurityUtil securityUtil;
@@ -336,6 +338,131 @@ public class OrganisationService {
     @Transactional(readOnly = true)
     public boolean existsByRegistrationNumber(String registrationNumber) {
         return organisationRepository.existsByRegistrationNumber(registrationNumber);
+    }
+
+    /**
+     * Submit organisation for admin review.
+     * Changes status from PENDING to UNDER_REVIEW.
+     * Also updates all KYC documents to UNDER_REVIEW status.
+     */
+    @Transactional
+    public OrganisationDTO submitForReview(Long id) {
+        log.info("Submitting organisation for review - ID: {}", id);
+        
+        Organisation organisation = organisationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Organisation not found with ID: " + id));
+
+        if (organisation.getStatus() != OrganisationStatus.PENDING && 
+            organisation.getStatus() != OrganisationStatus.REQUIRES_RESUBMISSION) {
+            throw new RuntimeException("Only organisations with status PENDING or REQUIRES_RESUBMISSION can be submitted for review");
+        }
+
+        // Update all KYC documents to UNDER_REVIEW
+        List<KycDocument> kycDocuments = kycDocumentRepository.findByOrganisationId(id);
+        for (KycDocument doc : kycDocuments) {
+            doc.setStatus(DocumentStatus.UNDER_REVIEW);
+        }
+
+        organisation.setStatus(OrganisationStatus.UNDER_REVIEW);
+        organisation.setReasonDescription(null); // Clear any previous rejection reason
+
+        Organisation saved = organisationRepository.save(organisation);
+        log.info("Organisation submitted for review - ID: {}, {} documents updated", saved.getId(), kycDocuments.size());
+        
+        return organisationMapper.toOrganisationDTO(saved);
+    }
+
+    /**
+     * Approve an organisation (Admin only).
+     * Verifies all KYC documents and clears rejection reasons.
+     */
+    @Transactional
+    public OrganisationDTO approveOrganisation(Long id) {
+        log.info("Approving organisation - ID: {}", id);
+        
+        Organisation organisation = organisationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Organisation not found with ID: " + id));
+
+        if (organisation.getStatus() != OrganisationStatus.UNDER_REVIEW) {
+            throw new RuntimeException("Only organisations with status UNDER_REVIEW can be approved");
+        }
+
+        // Verify all KYC documents and clear rejection reasons
+        List<KycDocument> kycDocuments = kycDocumentRepository.findByOrganisationId(id);
+        for (KycDocument doc : kycDocuments) {
+            doc.setStatus(DocumentStatus.VERIFIED);
+            doc.setReasonDescription(null); // Clear any rejection feedback
+        }
+
+        organisation.setStatus(OrganisationStatus.ACTIVE);
+        organisation.setReasonDescription(null); // Clear organisation-level summary
+
+        Organisation saved = organisationRepository.save(organisation);
+        log.info("Organisation approved - ID: {}, {} documents verified", saved.getId(), kycDocuments.size());
+        
+        return organisationMapper.toOrganisationDTO(saved);
+    }
+
+    /**
+     * Reject an organisation (Admin only) with per-document feedback.
+     * Rejects specific documents with detailed feedback and verifies the rest.
+     */
+    @Transactional
+    public OrganisationDTO rejectOrganisation(Long id, OrganisationRejectionDTO rejectionDTO) {
+        log.info("Rejecting organisation - ID: {}, {} documents to reject", id, rejectionDTO.getDocumentRejections().size());
+        
+        Organisation organisation = organisationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Organisation not found with ID: " + id));
+
+        if (organisation.getStatus() != OrganisationStatus.UNDER_REVIEW) {
+            throw new RuntimeException("Only organisations with status UNDER_REVIEW can be rejected");
+        }
+
+        // Get all KYC documents
+        List<KycDocument> kycDocuments = kycDocumentRepository.findByOrganisationId(id);
+        
+        if (kycDocuments.isEmpty()) {
+            throw new RuntimeException("Organisation has no KYC documents to reject");
+        }
+
+        // Process document rejections
+        List<Long> rejectedDocIds = rejectionDTO.getDocumentRejections().stream()
+                .map(OrganisationRejectionDTO.DocumentRejection::getDocumentId)
+                .collect(Collectors.toList());
+
+        int rejectedCount = 0;
+        int verifiedCount = 0;
+
+        for (KycDocument doc : kycDocuments) {
+            Optional<OrganisationRejectionDTO.DocumentRejection> rejection = rejectionDTO.getDocumentRejections().stream()
+                    .filter(r -> r.getDocumentId().equals(doc.getId()))
+                    .findFirst();
+
+            if (rejection.isPresent()) {
+                // Reject this document with specific reason
+                doc.setStatus(DocumentStatus.REJECTED);
+                doc.setReasonDescription(rejection.get().getRejectionReason());
+                rejectedCount++;
+                log.debug("Rejecting document ID: {} - Reason: {}", doc.getId(), rejection.get().getRejectionReason());
+            } else {
+                // Approve documents that weren't rejected
+                doc.setStatus(DocumentStatus.VERIFIED);
+                doc.setReasonDescription(null);
+                verifiedCount++;
+                log.debug("Verifying document ID: {}", doc.getId());
+            }
+        }
+
+        // Auto-generate organisation-level summary
+        String summary = String.format("%d of %d documents rejected", rejectedCount, kycDocuments.size());
+        organisation.setStatus(OrganisationStatus.REQUIRES_RESUBMISSION);
+        organisation.setReasonDescription(summary);
+
+        Organisation saved = organisationRepository.save(organisation);
+        log.info("Organisation rejected - ID: {}, Summary: {}, Rejected: {}, Verified: {}", 
+                 saved.getId(), summary, rejectedCount, verifiedCount);
+        
+        return organisationMapper.toOrganisationDTO(saved);
     }
 
     /**
