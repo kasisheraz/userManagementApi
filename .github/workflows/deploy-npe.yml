@@ -26,10 +26,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
           
@@ -136,7 +136,7 @@ jobs:
             --min-instances=0 \
             --vpc-connector=${{ env.VPC_CONNECTOR }} \
             --vpc-egress=private-ranges-only \
-            --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.NEW_DB_PASSWORD }},SPRING_PROFILES_ACTIVE=npe,JAVA_TOOL_OPTIONS=-Dcom.google.cloud.sql.core.CoreSocketFactory.enableIamAuth=false" \
+            --set-env-vars="DB_NAME=fincore_db,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.NEW_DB_PASSWORD }},SPRING_PROFILES_ACTIVE=npe,GCS_ENABLED=true,GCS_BUCKET_NAME=fincore-kyc-documents,GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},JAVA_TOOL_OPTIONS=-Dcom.google.cloud.sql.core.CoreSocketFactory.enableIamAuth=false" \
             --port=8080 \
             --no-cpu-throttling \
             --project=${{ env.PROJECT_ID }}
