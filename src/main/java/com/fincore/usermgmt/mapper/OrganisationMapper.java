@@ -20,7 +20,7 @@ public interface OrganisationMapper {
     @Mapping(target = "ownerId", source = "owner.id")
     @Mapping(target = "ownerName", expression = "java(getOwnerFullName(organisation))")
     @Mapping(target = "organisationType", source = "organisationType", qualifiedByName = "organisationTypeToString")
-    @Mapping(target = "status", source = "status", qualifiedByName = "statusToString")
+    @Mapping(target = "statusDescription", source = "status", qualifiedByName = "statusToString")
     @Mapping(target = "registeredAddress", source = "registeredAddress")
     @Mapping(target = "businessAddress", source = "businessAddress")
     @Mapping(target = "correspondenceAddress", source = "correspondenceAddress")

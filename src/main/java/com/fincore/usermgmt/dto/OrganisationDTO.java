@@ -73,7 +73,7 @@ public class OrganisationDTO {
     private AddressDTO correspondenceAddress;
     
     // Status and Audit
-    private String status;
+    private String statusDescription;
     private String reasonDescription;
     private String legacyIdentifier;
     private LocalDateTime createdDatetime;
