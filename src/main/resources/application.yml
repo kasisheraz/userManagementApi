@@ -31,6 +31,13 @@ sms:
     auth-token: ${TWILIO_AUTH_TOKEN:}
     from-number: ${TWILIO_FROM_NUMBER:}  # Your Twilio phone number (e.g., +447xxxxxxxxxx)
 
+# Google Cloud Storage Configuration
+gcs:
+  bucket-name: ${GCS_BUCKET_NAME:fincore-kyc-documents}  # Your GCS bucket name
+  project-id: ${GCP_PROJECT_ID:}  # Your GCP project ID
+  enabled: ${GCS_ENABLED:true}  # Enable/disable GCS file storage
+  base-url: https://storage.googleapis.com  # Public URL base for GCS
+
 security:
   session-timeout: 900
   max-login-attempts: 5

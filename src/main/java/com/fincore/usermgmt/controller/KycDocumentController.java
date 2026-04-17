@@ -2,6 +2,7 @@ package com.fincore.usermgmt.controller;
 
 import com.fincore.usermgmt.dto.*;
 import com.fincore.usermgmt.service.KycDocumentService;
+import com.fincore.usermgmt.service.GcsFileStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,8 +15,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,18 +34,78 @@ import java.util.List;
 public class KycDocumentController {
 
     private final KycDocumentService kycDocumentService;
+    private final GcsFileStorageService fileStorageService;
 
     /**
-     * Upload a new KYC document.
+     * Upload a new KYC document with file (multipart/form-data).
+     * This is the preferred endpoint for uploading KYC documents with actual files.
+     */
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(
+        summary = "Upload a new KYC document with file",
+        description = "Uploads a new KYC document for an organisation with an actual file. The file is stored in GCS and metadata is saved to database."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Document uploaded successfully",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = KycDocumentDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data or file",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<KycDocumentDTO> uploadDocument(
+            @Parameter(description = "File to upload", required = true)
+            @RequestParam("file") MultipartFile file,
+            @Parameter(description = "Organisation ID", required = true)
+            @RequestParam("organisationId") Long organisationId,
+            @Parameter(description = "Document type (PASSPORT, DRIVERS_LICENSE, etc.)", required = true)
+            @RequestParam("documentType") String documentType,
+            @Parameter(description = "Verification identifier (optional)")
+            @RequestParam(value = "verificationIdentifier", required = false) Integer verificationIdentifier,
+            @Parameter(description = "Sumsub document identifier (optional)")
+            @RequestParam(value = "sumsubDocumentIdentifier", required = false) String sumsubDocumentIdentifier) {
+        
+        log.info("REST request to upload KYC document file for organisation: {}, type: {}, filename: {}", 
+                 organisationId, documentType, file.getOriginalFilename());
+        
+        try {
+            // Upload file to GCS
+            String fileUrl = fileStorageService.uploadFile(file, "kyc-documents");
+            
+            // Create DTO with file information
+            KycDocumentCreateDTO createDTO = new KycDocumentCreateDTO();
+            createDTO.setOrganisationId(organisationId);
+            createDTO.setDocumentType(documentType);
+            createDTO.setFileName(file.getOriginalFilename());
+            createDTO.setFileUrl(fileUrl);
+            createDTO.setVerificationIdentifier(verificationIdentifier);
+            createDTO.setSumsubDocumentIdentifier(sumsubDocumentIdentifier);
+            
+            // Save metadata to database
+            KycDocumentDTO created = kycDocumentService.createDocument(createDTO);
+            log.info("KYC document uploaded successfully with ID: {}", created.getId());
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (Exception e) {
+            log.error("Failed to upload KYC document", e);
+            throw new RuntimeException("Failed to upload document: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Upload a new KYC document (JSON only - no file).
+     * Use this endpoint only if you're providing a pre-existing file URL.
+     * For uploading actual files, use POST /upload instead.
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
-        summary = "Upload a new KYC document",
-        description = "Uploads a new KYC document for an organisation with document type, file path, and metadata"
+        summary = "Create KYC document record (JSON only)",
+        description = "Creates a new KYC document record with metadata only. Use POST /upload for file uploads."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Document uploaded successfully",
+        @ApiResponse(responseCode = "201", description = "Document created successfully",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = KycDocumentDTO.class))),
         @ApiResponse(responseCode = "400", description = "Invalid input data",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
