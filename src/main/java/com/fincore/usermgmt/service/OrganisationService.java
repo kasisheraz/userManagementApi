@@ -51,6 +51,11 @@ public class OrganisationService {
         User owner = userRepository.findById(createDTO.getOwnerId())
                 .orElseThrow(() -> new RuntimeException("Owner user not found with ID: " + createDTO.getOwnerId()));
 
+        // Check if owner already has an organisation (one organisation per user rule)
+        if (organisationRepository.existsByOwnerId(createDTO.getOwnerId())) {
+            throw new RuntimeException("User already has an organisation. Each user can only create one organisation.");
+        }
+
         // Check for duplicate registration number (only if provided and not empty)
         if (createDTO.getRegistrationNumber() != null && 
             !createDTO.getRegistrationNumber().trim().isEmpty() &&

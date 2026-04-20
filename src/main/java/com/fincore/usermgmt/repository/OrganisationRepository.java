@@ -49,6 +49,14 @@ public interface OrganisationRepository extends JpaRepository<Organisation, Long
     List<Organisation> findByOwnerId(@Param("ownerId") Long ownerId);
 
     /**
+     * Check if an organisation exists for the given owner.
+     * @param ownerId the owner user ID
+     * @return true if the owner already has an organisation
+     */
+    @Query("SELECT COUNT(o) > 0 FROM Organisation o WHERE o.owner.id = :ownerId")
+    boolean existsByOwnerId(@Param("ownerId") Long ownerId);
+
+    /**
      * Find organisations by status.
      * @param status the organisation status
      * @return list of organisations with the specified status
