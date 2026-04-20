@@ -50,10 +50,14 @@ A comprehensive Spring Boot microservice for secure user authentication, role-ba
 ### Phase 2: Organization Onboarding & KYC
 - 🏢 **Organization Management**
   - Create organizations (6 types: LTD, PLC, LLP, SOLE_TRADER, CHARITY, PARTNERSHIP)
+  - **NEW**: One organization per user restriction (business rule enforcement)
   - Update organization details
   - Search/filter organizations (name, type, status, date range)
   - Pagination and sorting
-  - Organization status lifecycle (PENDING → ACTIVE → SUSPENDED → CLOSED)
+  - Organization status lifecycle (PENDING → UNDER_REVIEW → ACTIVE → INACTIVE → REJECTED)
+  - **NEW**: Admin approval workflow with status-based button visibility
+  - Submit for review (transitions to UNDER_REVIEW status)
+  - Approve/reject organizations (admin only)
 
 - 📋 **KYC Document Verification**
   - Upload KYC documents (9 types: PASSPORT, DRIVING_LICENSE, NATIONAL_ID, etc.)
