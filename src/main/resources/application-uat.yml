@@ -9,9 +9,9 @@ spring:
   main:
     lazy-initialization: false
   datasource:
-    # Direct public IP connection (will be updated after DB creation)
-    # Cloud SQL Public IP: TBD (will be set after terraform apply)
-    url: jdbc:mysql://${DB_HOST:localhost}:3306/${DB_NAME:fincore_db}?useSSL=true&requireSSL=true&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=UTC&autoReconnect=true&connectTimeout=30000&socketTimeout=60000
+    # Direct public IP connection
+    # Cloud SQL Public IP: 35.189.81.151
+    url: jdbc:mysql://35.189.81.151:3306/${DB_NAME:fincore_db}?useSSL=true&requireSSL=true&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=UTC&autoReconnect=true&connectTimeout=30000&socketTimeout=60000
     username: ${DB_USER:fincore_app}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
