@@ -1,0 +1,88 @@
+# UAT Environment Configuration
+# Used for: User Acceptance Testing Environment on GCP
+# Service: https://fincore-uat-api-994490239798.europe-west2.run.app
+# Cloud SQL: Will be configured after infrastructure deployment
+
+spring:
+  application:
+    name: user-management-api
+  main:
+    lazy-initialization: false
+  datasource:
+    # Direct public IP connection (will be updated after DB creation)
+    # Cloud SQL Public IP: TBD (will be set after terraform apply)
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/${DB_NAME:fincore_db}?useSSL=true&requireSSL=true&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=UTC&autoReconnect=true&connectTimeout=30000&socketTimeout=60000
+    username: ${DB_USER:fincore_app}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 60000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      initialization-fail-timeout: -1
+      leak-detection-threshold: 120000
+      validation-timeout: 10000
+      connection-test-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+    show-sql: true  # Enable SQL logging for debugging
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+    defer-datasource-initialization: true
+    open-in-view: false
+  sql:
+    init:
+      mode: never  # Don't run SQL files on startup
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    min-response-size: 1024
+  tomcat:
+    max-connections: 200
+    threads:
+      max: 10
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration: 900000  # 15 minutes
+
+# Security Configuration
+security:
+  session-timeout: 900
+  max-login-attempts: 5
+  account-lock-duration: 1800
+
+# Monitoring Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.fincore.usermgmt: INFO
+    com.fincore.usermgmt.security: DEBUG  # Enable debug for JWT authentication
+    com.google.cloud.sql: DEBUG  # Enable for Cloud SQL connector debugging
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
