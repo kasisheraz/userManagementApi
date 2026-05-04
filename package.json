@@ -1,5 +1,16 @@
 {
+  "name": "fincore-user-management-api",
+  "version": "1.0.0",
+  "description": "FinCore User Management API - Backend Service",
+  "scripts": {
+    "smoke-test:uat": "node scripts/smoke-test-uat-api.js",
+    "smoke-test:newman": "newman run postman_collection_uat.json -e postman_environment_uat.json",
+    "smoke-test:all": "npm run smoke-test:uat && npm run smoke-test:newman"
+  },
   "dependencies": {
     "serve": "^14.2.6"
+  },
+  "devDependencies": {
+    "newman": "^6.2.0"
   }
 }

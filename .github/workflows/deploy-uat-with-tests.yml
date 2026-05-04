@@ -1,0 +1,273 @@
+name: Deploy Backend to UAT + Smoke Tests
+
+on:
+  push:
+    branches:
+      - uat
+  workflow_dispatch:
+    inputs:
+      skip_smoke_tests:
+        description: 'Skip smoke tests after deployment'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: deploy-backend-uat-${{ github.ref }}
+  cancel-in-progress: false  # Don't cancel - let deployment finish
+
+env:
+  GCP_PROJECT_ID: project-07a61357-b791-4255-a9e
+  GCP_REGION: europe-west2
+  UAT_API_URL: https://fincore-uat-api-994490239798.europe-west2.run.app
+
+jobs:
+  build:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build Docker image via Cloud Build
+        run: |
+          gcloud builds submit \
+            --tag=gcr.io/${{ env.GCP_PROJECT_ID }}/fincore-api:${{ github.sha }} \
+            --tag=gcr.io/${{ env.GCP_PROJECT_ID }}/fincore-api:uat-latest \
+            --timeout=30m
+
+      - name: Tag build info
+        run: |
+          echo "✅ Build completed: ${{ github.sha }}"
+          echo "📦 Image: gcr.io/${{ env.GCP_PROJECT_ID }}/fincore-api:${{ github.sha }}"
+
+  deploy:
+    name: Deploy to UAT
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      deployment_time: ${{ steps.deploy_time.outputs.time }}
+      service_url: ${{ steps.get_url.outputs.url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get database password from Secret Manager
+        id: get_db_password
+        run: |
+          DB_PASSWORD=$(gcloud secrets versions access latest --secret=fincore-uat-db-app-password)
+          echo "::add-mask::$DB_PASSWORD"
+          echo "DB_PASSWORD=$DB_PASSWORD" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Cloud Run UAT
+        run: |
+          gcloud run deploy fincore-uat-api \
+            --image=gcr.io/${{ env.GCP_PROJECT_ID }}/fincore-api:${{ github.sha }} \
+            --region=${{ env.GCP_REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --memory=1Gi \
+            --cpu=1 \
+            --timeout=900 \
+            --max-instances=3 \
+            --min-instances=0 \
+            --set-env-vars="DB_NAME=fincore_db,DB_USER=fincore_app,DB_PASSWORD=${{ steps.get_db_password.outputs.DB_PASSWORD }},DB_HOST=35.189.81.151,DB_PORT=3306,SPRING_PROFILES_ACTIVE=uat,GCS_ENABLED=true,GCS_BUCKET_NAME=fincore-uat-kyc-documents,GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --port=8080 \
+            --no-cpu-throttling \
+            --quiet
+
+      - name: Get service URL
+        id: get_url
+        run: |
+          SERVICE_URL=$(gcloud run services describe fincore-uat-api \
+            --region=${{ env.GCP_REGION }} \
+            --format='value(status.url)')
+          echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+          echo "✅ Deployed to: $SERVICE_URL"
+
+      - name: Record deployment time
+        id: deploy_time
+        run: |
+          DEPLOY_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "time=$DEPLOY_TIME" >> $GITHUB_OUTPUT
+
+      - name: Wait for service to be ready
+        run: |
+          echo "⏳ Waiting 30 seconds for service to stabilize..."
+          sleep 30
+
+  smoke-tests:
+    name: Run Smoke Tests
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.event.inputs.skip_smoke_tests != 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run API Smoke Tests
+        id: api_tests
+        run: |
+          echo "🧪 Running API smoke tests..."
+          node scripts/smoke-test-uat-api.js
+        env:
+          UAT_API_URL: ${{ env.UAT_API_URL }}
+        continue-on-error: true
+
+      - name: Test Newman/Postman Collection
+        id: newman_tests
+        run: |
+          echo "🧪 Running Postman collection tests..."
+          npm install -g newman
+          newman run postman_collection_uat.json \
+            -e postman_environment_uat.json \
+            --timeout-request 10000 \
+            --delay-request 1000 \
+            --reporters cli,json \
+            --reporter-json-export newman-results.json
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results-${{ github.sha }}
+          path: |
+            newman-results.json
+          retention-days: 30
+
+      - name: Evaluate test results
+        run: |
+          if [ "${{ steps.api_tests.outcome }}" == "failure" ] || [ "${{ steps.newman_tests.outcome }}" == "failure" ]; then
+            echo "❌ Smoke tests FAILED"
+            echo "API Tests: ${{ steps.api_tests.outcome }}"
+            echo "Newman Tests: ${{ steps.newman_tests.outcome }}"
+            echo ""
+            echo "⚠️ UAT Deployment completed but smoke tests failed!"
+            echo "🔍 Please investigate the deployed service manually"
+            echo "📊 Service URL: ${{ needs.deploy.outputs.service_url }}"
+            exit 1
+          else
+            echo "✅ All smoke tests PASSED"
+          fi
+
+  notify:
+    name: Notify Deployment Status
+    needs: [deploy, smoke-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Deployment Success
+        if: needs.smoke-tests.result == 'success'
+        run: |
+          echo "====================================="
+          echo "✅ UAT DEPLOYMENT SUCCESSFUL"
+          echo "====================================="
+          echo "Service URL: ${{ needs.deploy.outputs.service_url }}"
+          echo "Deployment Time: ${{ needs.deploy.outputs.deployment_time }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "All smoke tests passed ✅"
+          echo ""
+          echo "🔗 Test the deployment:"
+          echo "   Frontend: https://fincore-webui-uat-994490239798.europe-west2.run.app"
+          echo "   API: ${{ needs.deploy.outputs.service_url }}"
+
+      - name: Deployment Warning
+        if: needs.deploy.result == 'success' && needs.smoke-tests.result != 'success'
+        run: |
+          echo "====================================="
+          echo "⚠️ UAT DEPLOYMENT COMPLETED WITH WARNINGS"
+          echo "====================================="
+          echo "Service URL: ${{ needs.deploy.outputs.service_url }}"
+          echo "Deployment: SUCCESS ✅"
+          echo "Smoke Tests: FAILED ❌"
+          echo ""
+          echo "The service was deployed but smoke tests failed."
+          echo "Please investigate manually before using this deployment."
+          echo ""
+          echo "🔍 Check logs:"
+          echo "   gcloud run logs read fincore-uat-api --region=europe-west2"
+
+      - name: Deployment Failure
+        if: needs.deploy.result != 'success'
+        run: |
+          echo "====================================="
+          echo "❌ UAT DEPLOYMENT FAILED"
+          echo "====================================="
+          echo "Deployment did not complete successfully"
+          echo "Check the deployment job logs for details"
+          exit 1
+
+  # Optional: Rollback on critical failure
+  rollback:
+    name: Rollback on Critical Failure
+    needs: [deploy, smoke-tests]
+    runs-on: ubuntu-latest
+    if: failure() && needs.smoke-tests.result == 'failure'
+    
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Check if should rollback
+        id: check_rollback
+        run: |
+          # Get previous stable revision
+          REVISIONS=$(gcloud run revisions list \
+            --service=fincore-uat-api \
+            --region=europe-west2 \
+            --format="value(metadata.name)" \
+            --limit=5)
+          
+          echo "Available revisions:"
+          echo "$REVISIONS"
+          
+          # For now, just alert - don't auto-rollback
+          echo "⚠️ Manual rollback may be required"
+          echo "should_rollback=false" >> $GITHUB_OUTPUT
+
+      - name: Alert for manual intervention
+        run: |
+          echo "====================================="
+          echo "🚨 SMOKE TESTS FAILED - MANUAL REVIEW REQUIRED"
+          echo "====================================="
+          echo "The deployment completed but critical smoke tests failed."
+          echo ""
+          echo "Options:"
+          echo "1. Investigate the issue (check logs)"
+          echo "2. Fix and redeploy"
+          echo "3. Manual rollback to previous version"
+          echo ""
+          echo "To rollback manually:"
+          echo "  gcloud run services update-traffic fincore-uat-api \\"
+          echo "    --to-revisions=PREVIOUS_REVISION=100 \\"
+          echo "    --region=europe-west2"

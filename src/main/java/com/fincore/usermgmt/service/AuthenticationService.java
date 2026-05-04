@@ -60,6 +60,7 @@ public class AuthenticationService {
     private boolean isNonProductionEnvironment() {
         return activeProfile != null && 
                (activeProfile.contains("npe") || 
+                activeProfile.contains("uat") || 
                 activeProfile.contains("local") || 
                 activeProfile.contains("test") ||
                 activeProfile.contains("h2") ||
