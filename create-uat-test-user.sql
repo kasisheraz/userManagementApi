@@ -1,9 +1,10 @@
 -- Create or Update UAT Test User: +447700900000 (Admin)
 -- This user is for UAT testing with DevTools
 -- Schema: Uses Role_Identifier (1=Admin), no password (OTP auth only)
+-- IMPORTANT: Using lowercase 'users' table (JPA entity mapping)
 
 -- Use INSERT with ON DUPLICATE KEY UPDATE to handle existing user
-INSERT INTO Users (
+INSERT INTO users (
     Phone_Number,
     Email,
     Role_Identifier,
@@ -36,5 +37,5 @@ SELECT
     Role_Identifier,
     Status_Description,
     Created_Datetime
-FROM Users 
+FROM users 
 WHERE Phone_Number = '+447700900000';
