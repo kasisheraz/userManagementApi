@@ -2,14 +2,26 @@
 
 A comprehensive Spring Boot microservice for secure user authentication, role-based access control, organization onboarding, and KYC verification. Deployed on Google Cloud Platform with automated CI/CD.
 
-## 🚀 Live Deployment
+## 🚀 Live Deployments
 
-- **NPE Environment**: https://fincore-npe-api-994490239798.europe-west2.run.app
+### NPE Environment (Non-Production)
+- **API URL**: https://fincore-npe-api-994490239798.europe-west2.run.app
 - **Health Check**: https://fincore-npe-api-994490239798.europe-west2.run.app/actuator/health
-- **Status**: ✅ Production Ready (80+ APIs working)
-- **Latest Release**: March 31, 2026 - Bug fixes deployed
+- **Status**: ✅ Active
+- **Database**: fincore-npe-db (Cloud SQL MySQL 8.0, Public IP)
+- **Purpose**: Development and testing
+
+### UAT Environment (User Acceptance Testing)
+- **API URL**: https://fincore-uat-api-994490239798.europe-west2.run.app
+- **Health Check**: https://fincore-uat-api-994490239798.europe-west2.run.app/actuator/health
+- **Status**: ✅ Active
+- **Database**: fincore-uat-db (Cloud SQL MySQL 8.0, Public IP: 35.189.81.151)
+- **Purpose**: User acceptance testing before production
+- **Deployed**: May 1, 2026
+
+### Testing & Coverage
 - **Test Coverage**: 608/662 tests passing (92%)
-- **Database**: Cloud SQL MySQL 8.0 (Private access via Cloud SQL Proxy)
+- **Latest Release**: March 31, 2026 - Bug fixes deployed
 
 ## 🏗️ Architecture
 
