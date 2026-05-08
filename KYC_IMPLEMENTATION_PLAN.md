@@ -3,6 +3,42 @@
 ## 📋 Overview
 Implementation plan for a comprehensive customer KYC verification system with SumSub integration, AML screening, and questionnaire-based compliance checks.
 
+## 🔄 Development Strategy: NPE-First Approach
+
+**Environment Progression**: Local → **NPE** → UAT → Production
+
+### Why NPE First?
+1. ✅ **Isolated Testing**: NPE allows complete feature development and testing without affecting UAT
+2. ✅ **Safe Experimentation**: Test SumSub integration, webhooks, and workflows in dedicated environment
+3. ✅ **Stakeholder Demos**: Demonstrate working feature to stakeholders before UAT
+4. ✅ **Bug Fixes**: Identify and fix issues before UAT release
+5. ✅ **Zero UAT Impact**: Current UAT users unaffected during development
+
+### NPE Environment Setup
+- **Database**: Create separate Cloud SQL instance: `fincore-npe-db`
+- **Backend**: Deploy to Cloud Run: `fincore-npe-api`
+- **Frontend**: Deploy to Cloud Run: `fincore-webui-npe`
+- **SumSub**: Use SumSub sandbox environment (free 100 checks/month)
+- **Branch**: `npe` (create from `main`)
+
+### Deployment Flow
+```
+Phase 1-5: Development & Testing
+    ↓
+  NPE Deployment (Week 4-5)
+    → Full feature testing
+    → Bug fixes
+    → Performance tuning
+    ↓
+  UAT Deployment (Week 6)
+    → Stakeholder acceptance testing
+    → Final validation
+    ↓
+  Production Deployment (Week 7+)
+    → Gradual rollout
+    → Monitoring
+```
+
 ## 🔧 SQL Schema Fixes
 
 ### Issues Found in Provided SQL:
@@ -483,18 +519,64 @@ test('Complete KYC workflow', async ({ page }) => {
 
 #### 6.1 Deployment
 
-**UAT Deployment**:
-1. Run Flyway migrations
-2. Deploy backend API
-3. Deploy frontend
-4. Configure SumSub API keys
-5. Smoke tests
+**NPE Deployment** (Primary Development Environment):
+1. Create NPE branch: `git checkout -b npe`
+2. Run Flyway migrations on NPE database
+   ```bash
+   gcloud sql import sql fincore-npe-db gs://fincore-npe-terraform-state/V8.0__Add_KYC_Verification_Tables.sql --database=fincore_db
+   ```
+3. Configure NPE application properties:
+   ```yaml
+   # application-npe.yml
+   spring:
+     profiles: npe
+     datasource:
+       url: jdbc:mysql://fincore-npe-db:3306/fincore_db
+   sumsub:
+     base-url: https://api.sumsub.com  # Sandbox
+     app-token: ${SUMSUB_APP_TOKEN_SANDBOX}
+     secret-key: ${SUMSUB_SECRET_KEY_SANDBOX}
+   ```
+4. Deploy backend API to Cloud Run:
+   ```bash
+   gcloud run deploy fincore-npe-api \
+     --image=gcr.io/project-07a61357-b791-4255-a9e/fincore-api:npe \
+     --region=europe-west2 \
+     --set-env-vars="SPRING_PROFILES_ACTIVE=npe,SUMSUB_APP_TOKEN=$SUMSUB_SANDBOX_TOKEN"
+   ```
+5. Deploy frontend:
+   ```bash
+   gcloud run deploy fincore-webui-npe \
+     --image=europe-west2-docker.pkg.dev/project-07a61357-b791-4255-a9e/fincore-webui/app:npe \
+     --set-env-vars="API_BASE_URL=https://fincore-npe-api-994490239798.europe-west2.run.app/api"
+   ```
+6. Configure SumSub sandbox webhook:
+   - Webhook URL: `https://fincore-npe-api-994490239798.europe-west2.run.app/api/webhooks/sumsub`
+   - Test with SumSub sandbox applicants
+7. Run smoke tests
+8. Complete end-to-end KYC workflow testing
+9. Fix bugs and optimize
 
-**Production Deployment** (After UAT approval):
+**UAT Deployment** (After NPE Testing Complete - Week 6):
+1. Merge NPE to UAT branch: `git checkout uat && git merge npe`
+2. Run Flyway migrations on UAT database
+3. Deploy backend API to UAT Cloud Run
+4. Deploy frontend to UAT
+5. Configure SumSub production API keys (still use sandbox for testing)
+6. UAT acceptance testing with stakeholders
+7. Collect feedback and make final adjustments
+
+**Production Deployment** (After UAT Approval - Week 7+):
 1. Final testing in UAT
-2. Deploy to production
-3. Monitor logs
-4. Verify all integrations
+2. Merge UAT to main branch: `git checkout main && git merge uat`
+3. Run Flyway migrations on Production database
+4. Configure SumSub production API keys (live environment)
+5. Deploy to production Cloud Run instances
+6. Enable monitoring and alerts
+7. Gradual rollout (start with 10% of users)
+8. Monitor logs, metrics, and error rates
+9. Verify all integrations working
+10. Full rollout if metrics are healthy
 
 #### 6.2 Documentation
 
@@ -516,16 +598,19 @@ test('Complete KYC workflow', async ({ page }) => {
 - Deployment guide
 
 #### Tasks:
-1. ✅ Create deployment scripts
-2. ✅ Write technical docs
-3. ✅ Write user guides
-4. ✅ Update Swagger docs
-5. ✅ Create runbooks
-6. ✅ Deploy to UAT
-7. ✅ Deploy to Production
+1. ✅ Create NPE environment (Cloud SQL, Cloud Run)
+2. ✅ Create deployment scripts for NPE/UAT/Prod
+3. ✅ Write technical docs
+4. ✅ Write user guides
+5. ✅ Update Swagger docs
+6. ✅ Create runbooks
+7. ✅ Deploy to NPE (Week 4-5)
+8. ✅ Deploy to UAT (Week 6)
+9. ✅ Deploy to Production (Week 7+)
 
 **Deliverables**:
-- Deployment scripts
+- NPE environment setup
+- Deployment scripts (NPE/UAT/Prod)
 - Complete documentation
 - User guides
 
@@ -533,17 +618,42 @@ test('Complete KYC workflow', async ({ page }) => {
 
 ## 📊 Effort Estimation
 
-| Phase | Duration | Complexity |
-|-------|----------|------------|
-| Phase 1: Database Schema | 1-2 days | Low |
-| Phase 2: Provider Research | 2-3 days | Medium |
-| Phase 3: Backend API | 5-7 days | High |
-| Phase 4: Frontend UI | 7-10 days | High |
-| Phase 5: Testing | 5-7 days | High |
-| Phase 6: Deployment & Docs | 2-3 days | Medium |
-| **Total** | **22-32 days** | **High** |
+| Phase | Duration | Complexity | Environment |
+|-------|----------|------------|-------------|
+| Phase 1: Database Schema | 1-2 days | Low | Local + NPE |
+| Phase 2: Provider Research | 2-3 days | Medium | SumSub Sandbox |
+| Phase 3: Backend API | 5-7 days | High | Local + NPE |
+| Phase 4: Frontend UI | 7-10 days | High | Local + NPE |
+| Phase 5: Testing | 5-7 days | High | NPE |
+| Phase 6: NPE Deployment | 2-3 days | Medium | NPE |
+| Phase 7: UAT Deployment | 1-2 days | Low | UAT |
+| Phase 8: Production Deployment | 1-2 days | Medium | Production |
+| **Total** | **26-38 days** | **High** | All environments |
 
 **Team Requirement**: 2-3 developers (1 backend, 1 frontend, 1 QA)
+
+### Updated Timeline with NPE-First:
+
+**Weeks 1-3**: Development (Local + NPE)
+- Phase 1-4: Build features
+- Deploy incrementally to NPE for testing
+- Use SumSub sandbox
+
+**Week 4-5**: NPE Testing & Stabilization
+- Phase 5: Comprehensive testing in NPE
+- Bug fixes and optimizations
+- Performance tuning
+- Complete documentation
+
+**Week 6**: UAT Deployment
+- Deploy stable version to UAT
+- Stakeholder acceptance testing
+- Final adjustments
+
+**Week 7+**: Production Deployment
+- Gradual production rollout
+- Monitoring and support
+- Switch to SumSub production API
 
 ---
 
