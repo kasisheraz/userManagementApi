@@ -41,7 +41,7 @@ public class CustomerKycVerification {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "sumsub_applicant_id", unique = true, length = 100)
+    @Column(name = "sumsub_applicant_id", unique = true, length = 255)
     private String sumsubApplicantId;
 
     @Column(name = "verification_level", nullable = false, length = 50)
