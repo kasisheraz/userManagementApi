@@ -36,8 +36,6 @@ class UserUpdateDTOTest {
         dto.setMiddleName("Michael");
         dto.setLastName("Doe");
         dto.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        dto.setResidentialAddressIdentifier(1L);
-        dto.setPostalAddressIdentifier(2L);
         dto.setStatusDescription("ACTIVE");
         dto.setRole("USER");
 
@@ -56,8 +54,7 @@ class UserUpdateDTOTest {
         dto.setMiddleName(null);
         dto.setLastName(null);
         dto.setDateOfBirth(null);
-        dto.setResidentialAddressIdentifier(null);
-        dto.setPostalAddressIdentifier(null);
+
         dto.setStatusDescription(null);
         dto.setRole(null);
 

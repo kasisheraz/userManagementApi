@@ -83,7 +83,7 @@ class OrganisationServiceTest {
                 .legalName("Test Company Ltd")
                 .businessName("Test Business")
                 .organisationType("LTD")
-                .status("PENDING")
+                .statusDescription("PENDING")
                 .registrationNumber("12345678")
                 .companyNumber("CN12345")
                 .countryOfIncorporation("United Kingdom")
@@ -304,16 +304,16 @@ class OrganisationServiceTest {
         when(organisationMapper.toOrganisationDTO(any(Organisation.class))).thenReturn(organisationDTO);
         
         // Mock KYC document creation
-        KycDocument savedDoc = new KycDocument();
+        KycDocumentDTO savedDoc = new KycDocumentDTO();
         savedDoc.setId(1L);
-        when(kycDocumentService.createKycDocument(any(KycDocumentCreateDTO.class)))
+        when(kycDocumentService.createDocument(any(KycDocumentCreateDTO.class)))
                 .thenReturn(savedDoc);
 
         OrganisationDTO result = organisationService.createOrganisation(createDTOWithKyc);
 
         assertNotNull(result);
         assertEquals("Test Company Ltd", result.getLegalName());
-        verify(kycDocumentService, times(1)).createKycDocument(any(KycDocumentCreateDTO.class));
+        verify(kycDocumentService, times(1)).createDocument(any(KycDocumentCreateDTO.class));
         verify(organisationRepository).save(any(Organisation.class));
     }
 }

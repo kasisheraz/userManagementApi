@@ -76,7 +76,7 @@ class OrganisationMapperTest {
         assertThat(dto.getLegalName()).isEqualTo("Test Company Ltd");
         assertThat(dto.getBusinessName()).isEqualTo("Test Business");
         assertThat(dto.getOrganisationType()).isEqualTo("LTD");
-        assertThat(dto.getStatus()).isEqualTo("ACTIVE");
+        assertThat(dto.getStatusDescription()).isEqualTo("ACTIVE");
         assertThat(dto.getSicCode()).isEqualTo("12345");
         assertThat(dto.getCountryOfIncorporation()).isEqualTo("UK");
     }

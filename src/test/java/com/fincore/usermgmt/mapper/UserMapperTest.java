@@ -57,8 +57,8 @@ class UserMapperTest {
         assertThat(dto.getMiddleName()).isEqualTo("Michael");
         assertThat(dto.getLastName()).isEqualTo("Doe");
         assertThat(dto.getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 15));
-        assertThat(dto.getResidentialAddressIdentifier()).isEqualTo(100);
-        assertThat(dto.getPostalAddressIdentifier()).isEqualTo(200);
+        // Address now returned as nested object
+        // Address now returned as nested object
         assertThat(dto.getRole()).isEqualTo("ADMIN");
         assertThat(dto.getStatusDescription()).isEqualTo("ACTIVE");
     }
@@ -138,8 +138,8 @@ class UserMapperTest {
         dto.setMiddleName("Test");
         dto.setLastName("User");
         dto.setDateOfBirth(LocalDate.of(1995, 5, 20));
-        dto.setResidentialAddressIdentifier(300L);
-        dto.setPostalAddressIdentifier(400L);
+        // dto.setResidentialAddressIdentifier(...); // Removed - now using nested objects
+        // dto.setPostalAddressIdentifier(...); // Removed - now using nested objects
         dto.setRole("USER");
         dto.setStatusDescription("PENDING");
 

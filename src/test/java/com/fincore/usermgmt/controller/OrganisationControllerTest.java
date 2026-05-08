@@ -49,7 +49,7 @@ class OrganisationControllerTest {
                 .legalName("Test Company Ltd")
                 .businessName("Test Business")
                 .organisationType("LTD")
-                .status("PENDING")
+                .statusDescription("PENDING")
                 .registrationNumber("12345678")
                 .companyNumber("CN12345")
                 .countryOfIncorporation("United Kingdom")
