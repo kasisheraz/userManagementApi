@@ -37,7 +37,11 @@ public class KycVerificationService {
     private final AmlScreeningResultRepository amlRepository;
     private final SumSubService sumSubService;
 
-    @Value("${sumsub.level-name:basic-kyc-le (basic - without SumSub)
+    @Value("${sumsub.level-name:basic-kyc-level}")
+    private String sumsubLevelName;
+
+    /**
+     * Submit a new KYC verification request (basic - without SumSub)
      */
     public CustomerKycVerification submitVerification(User user, VerificationLevel level) {
         log.info("Submitting KYC verification for user: {}, level: {}", user.getId(), level);
