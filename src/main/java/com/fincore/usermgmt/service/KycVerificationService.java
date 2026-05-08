@@ -195,11 +195,7 @@ public class KycVerificationService {
 
         } catch (Exception e) {
             log.error("Failed to sync verification status for: {}", verificationId, e);
-        }d();
-
-        CustomerKycVerification saved = kycRepository.save(verification);
-        log.info("KYC verification submitted with ID: {}", saved.getVerificationId());
-        return saved;
+        }
     }
 
     /**
