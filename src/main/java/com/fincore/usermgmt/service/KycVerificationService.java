@@ -1,5 +1,7 @@
 package com.fincore.usermgmt.service;
 
+import com.fincore.usermgmt.dto.sumsub.SumSubApplicantResponse;
+import com.fincore.usermgmt.dto.sumsub.SumSubVerificationStatus;
 import com.fincore.usermgmt.entity.CustomerKycVerification;
 import com.fincore.usermgmt.entity.AmlScreeningResult;
 import com.fincore.usermgmt.entity.User;
@@ -8,8 +10,10 @@ import com.fincore.usermgmt.entity.enums.VerificationStatus;
 import com.fincore.usermgmt.entity.enums.RiskLevel;
 import com.fincore.usermgmt.repository.CustomerKycVerificationRepository;
 import com.fincore.usermgmt.repository.AmlScreeningResultRepository;
+import com.fincore.usermgmt.service.sumsub.SumSubService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,9 +35,9 @@ public class KycVerificationService {
 
     private final CustomerKycVerificationRepository kycRepository;
     private final AmlScreeningResultRepository amlRepository;
+    private final SumSubService sumSubService;
 
-    /**
-     * Submit a new KYC verification request
+    @Value("${sumsub.level-name:basic-kyc-le (basic - without SumSub)
      */
     public CustomerKycVerification submitVerification(User user, VerificationLevel level) {
         log.info("Submitting KYC verification for user: {}, level: {}", user.getId(), level);
@@ -52,6 +56,142 @@ public class KycVerificationService {
                 .riskLevel(RiskLevel.LOW)
                 .submittedAt(LocalDateTime.now())
                 .build();
+
+        CustomerKycVerification saved = kycRepository.save(verification);
+        log.info("KYC verification submitted with ID: {}", saved.getVerificationId());
+        return saved;
+    }
+
+    /**
+     * Submit KYC verification with SumSub integration
+     * Creates verification record and SumSub applicant
+     */
+    public CustomerKycVerification submitVerificationWithSumSub(User user, VerificationLevel level) {
+        log.info("Submitting KYC verification with SumSub for user: {}", user.getId());
+
+        // Create verification record first
+        CustomerKycVerification verification = submitVerification(user, level);
+
+        try {
+            // Create SumSub applicant
+            SumSubApplicantResponse applicant = sumSubService.createApplicant(
+                    user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getEmail(),
+                    user.getPhoneNumber()
+            );
+
+            // Store SumSub applicant ID
+            verification.setSumsubApplicantId(applicant.getApplicantId());
+            verification = kycRepository.save(verification);
+
+            log.info("SumSub applicant created: {} for verification: {}", 
+                    applicant.getApplicantId(), verification.getVerificationId());
+
+        } catch (Exception e) {
+            log.error("Failed to create SumSub applicant for verification: {}", 
+                    verification.getVerificationId(), e);
+            // Don't fail the verification, just log the error
+            // Admin can retry SumSub creation later
+        }
+
+        return verification;
+    }
+
+    /**
+     * Generate SumSub access token for frontend SDK
+     */
+    public String generateSumSubAccessToken(Long verificationId) {
+        log.info("Generating SumSub access token for verification: {}", verificationId);
+
+        CustomerKycVerification verification = getVerificationById(verificationId);
+        
+        if (verification.getSumsubApplicantId() == null) {
+            throw new IllegalStateException("Verification does not have SumSub applicant ID");
+        }
+
+        String token = sumSubService.generateAccessToken(
+                verification.getSumsubApplicantId(),
+                sumsubLevelName
+        );
+
+        log.info("Generated SumSub access token for verification: {}", verificationId);
+        return token;
+    }
+
+    /**
+     * Process SumSub webhook callback
+     * Updates verification status based on SumSub review result
+     */
+    public void processSumSubWebhook(String applicantId, String reviewStatus, String reviewResult) {
+        log.info("Processing SumSub webhook for applicant: {}, status: {}, result: {}", 
+                applicantId, reviewStatus, reviewResult);
+
+        Optional<CustomerKycVerification> verificationOpt = getVerificationBySumsubId(applicantId);
+        
+        if (verificationOpt.isEmpty()) {
+            log.warn("Verification not found for SumSub applicant: {}", applicantId);
+            return;
+        }
+
+        CustomerKycVerification verification = verificationOpt.get();
+
+        // Update status based on review result
+        if ("completed".equalsIgnoreCase(reviewStatus)) {
+            if ("GREEN".equalsIgnoreCase(reviewResult)) {
+                verification.setStatus(VerificationStatus.APPROVED);
+                verification.setApprovedAt(LocalDateTime.now());
+                verification.setExpiresAt(LocalDateTime.now().plusYears(1));
+                log.info("Verification {} approved via SumSub", verification.getVerificationId());
+            } else if ("RED".equalsIgnoreCase(reviewResult)) {
+                verification.setStatus(VerificationStatus.REJECTED);
+                verification.setRejectedAt(LocalDateTime.now());
+                verification.setReason("Failed SumSub verification");
+                log.info("Verification {} rejected via SumSub", verification.getVerificationId());
+            }
+            verification.setReviewedAt(LocalDateTime.now());
+        }
+
+        kycRepository.save(verification);
+    }
+
+    /**
+     * Sync verification status with SumSub
+     * Polls SumSub for current status and updates local record
+     */
+    public void syncVerificationStatus(Long verificationId) {
+        log.info("Syncing verification status with SumSub for: {}", verificationId);
+
+        CustomerKycVerification verification = getVerificationById(verificationId);
+        
+        if (verification.getSumsubApplicantId() == null) {
+            log.warn("Cannot sync - verification {} has no SumSub applicant ID", verificationId);
+            return;
+        }
+
+        try {
+            SumSubVerificationStatus status = sumSubService.getVerificationStatus(
+                    verification.getSumsubApplicantId()
+            );
+
+            // Update status if changed
+            if (status.isApproved() && verification.getStatus() != VerificationStatus.APPROVED) {
+                verification.setStatus(VerificationStatus.APPROVED);
+                verification.setApprovedAt(LocalDateTime.now());
+                verification.setExpiresAt(LocalDateTime.now().plusYears(1));
+                log.info("Verification {} synced to APPROVED", verificationId);
+            } else if (status.isRejected() && verification.getStatus() != VerificationStatus.REJECTED) {
+                verification.setStatus(VerificationStatus.REJECTED);
+                verification.setRejectedAt(LocalDateTime.now());
+                log.info("Verification {} synced to REJECTED", verificationId);
+            }
+
+            kycRepository.save(verification);
+
+        } catch (Exception e) {
+            log.error("Failed to sync verification status for: {}", verificationId, e);
+        }d();
 
         CustomerKycVerification saved = kycRepository.save(verification);
         log.info("KYC verification submitted with ID: {}", saved.getVerificationId());

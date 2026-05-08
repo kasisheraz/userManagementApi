@@ -87,3 +87,10 @@ logging:
     com.google.cloud.sql: DEBUG  # Enable for Cloud SQL connector debugging
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# SumSub Configuration (Mock Service)
+# NPE uses mock SumS ub service - no real API credentials needed
+# Mock service active when spring.profiles.active=npe
+sumsub:
+  mock: true  # Use MockSumSubService
+  level-name: basic-kyc-level  # Verification level name for SDK
