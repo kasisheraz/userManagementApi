@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verification Under Review</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+        }
+        .info-box {
+            background: #FEF3C7;
+            border-left: 4px solid #D97706;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #D97706;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .timeline {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        .timeline-item {
+            padding: 10px 0;
+            border-left: 2px solid #D97706;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="icon">⏳</div>
+        <h1>Verification Under Review</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Hello <span th:text="${firstName}">Customer</span>,</h2>
+        
+        <p>Your KYC verification is now under review by our compliance team. We're working diligently to complete your verification as quickly as possible.</p>
+        
+        <div class="info-box">
+            <strong>Verification ID:</strong> <span th:text="${verificationId}">123456</span><br>
+            <strong>Review Started:</strong> <span th:text="${reviewStartedAt}">May 9, 2026 14:30</span><br>
+            <strong>Estimated Processing Time:</strong> <span th:text="${estimatedTime}">24-48 hours</span>
+        </div>
+        
+        <h3>Review Process:</h3>
+        <div class="timeline">
+            <div class="timeline-item">
+                <strong>✓ Documents Received</strong><br>
+                Your documents have been successfully uploaded
+            </div>
+            <div class="timeline-item">
+                <strong>⏳ Under Review</strong><br>
+                Our team is verifying your information
+            </div>
+            <div class="timeline-item">
+                <strong>⏳ Compliance Check</strong><br>
+                Final compliance and AML screening
+            </div>
+            <div class="timeline-item">
+                <strong>⏳ Decision</strong><br>
+                You'll be notified once complete
+            </div>
+        </div>
+        
+        <center>
+            <a th:href="${statusUrl}" class="button">Track Verification Status</a>
+        </center>
+        
+        <h3>What to expect:</h3>
+        <ul>
+            <li>We'll email you once the review is complete</li>
+            <li>You can check your status anytime using the link above</li>
+            <li>We may contact you if additional information is needed</li>
+            <li>Most verifications are completed within 24-48 hours</li>
+        </ul>
+        
+        <p>Thank you for your patience. We're committed to providing secure and thorough verification.</p>
+    </div>
+    
+    <div class="footer">
+        <p>© 2026 FINCORE. All rights reserved.</p>
+        <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>

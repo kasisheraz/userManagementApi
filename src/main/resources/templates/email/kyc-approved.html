@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verification Approved</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+        }
+        .success-box {
+            background: #E6F7F1;
+            border-left: 4px solid #16A34A;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #16A34A;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="icon">🎉</div>
+        <h1>KYC Verification Approved!</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Congratulations <span th:text="${firstName}">Customer</span>!</h2>
+        
+        <p>We're pleased to inform you that your KYC verification has been <strong>approved</strong>. You now have full access to all FINCORE services.</p>
+        
+        <div class="success-box">
+            <strong>Verification Summary:</strong><br>
+            <strong>Verification ID:</strong> <span th:text="${verificationId}">123456</span><br>
+            <strong>Level:</strong> <span th:text="${verificationLevel}">ENHANCED</span><br>
+            <strong>Approved:</strong> <span th:text="${approvedAt}">May 10, 2026 09:15</span><br>
+            <strong>Risk Level:</strong> <span th:text="${riskLevel}">LOW</span>
+        </div>
+        
+        <h3>What you can do now:</h3>
+        <ul>
+            <li>Submit loan applications</li>
+            <li>Access higher transaction limits</li>
+            <li>Unlock premium features</li>
+            <li>Enjoy faster processing times</li>
+        </ul>
+        
+        <center>
+            <a th:href="${dashboardUrl}" class="button">Go to Dashboard</a>
+        </center>
+        
+        <p>Thank you for choosing FINCORE. We look forward to serving your financial needs.</p>
+    </div>
+    
+    <div class="footer">
+        <p>© 2026 FINCORE. All rights reserved.</p>
+        <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>

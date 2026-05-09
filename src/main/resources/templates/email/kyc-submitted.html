@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verification Submitted</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #003D2A 0%, #00563D 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+        }
+        .info-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #003D2A;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="icon">✓</div>
+        <h1>KYC Verification Submitted</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Hello <span th:text="${firstName}">Customer</span>,</h2>
+        
+        <p>Thank you for submitting your KYC verification documents. We have successfully received your application.</p>
+        
+        <div class="info-box">
+            <strong>Verification Details:</strong><br>
+            <strong>Verification ID:</strong> <span th:text="${verificationId}">123456</span><br>
+            <strong>Level:</strong> <span th:text="${verificationLevel}">ENHANCED</span><br>
+            <strong>Submitted:</strong> <span th:text="${submittedAt}">May 9, 2026 10:30</span>
+        </div>
+        
+        <h3>What happens next?</h3>
+        <ol>
+            <li>Our compliance team will review your documents</li>
+            <li>We may contact you if additional information is needed</li>
+            <li>You'll receive an email notification once the review is complete</li>
+        </ol>
+        
+        <p><strong>Typical processing time:</strong> 24-48 hours</p>
+        
+        <center>
+            <a th:href="${statusUrl}" class="button">Check Verification Status</a>
+        </center>
+        
+        <p>If you have any questions, please don't hesitate to contact our support team at <a th:href="'mailto:' + ${supportEmail}" th:text="${supportEmail}">support@fincore.com</a>.</p>
+    </div>
+    
+    <div class="footer">
+        <p>© 2026 FINCORE. All rights reserved.</p>
+        <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>

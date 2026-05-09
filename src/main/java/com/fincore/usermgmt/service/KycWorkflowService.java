@@ -40,6 +40,7 @@ public class KycWorkflowService {
     private final CustomerAnswerService customerAnswerService;
     private final AmlScreeningService amlScreeningService;
     private final SumSubService sumSubService;
+    private final KycEmailNotificationService emailNotificationService;
 
     // Workflow step constants
     public static final String STEP_USER_INFO = "USER_INFO";
@@ -178,9 +179,19 @@ public class KycWorkflowService {
 
         // Update status to remain PENDING for admin review
         // In production, might add a separate IN_REVIEW status
+        VerificationStatus oldStatus = verification.getStatus();
         verification.setStatus(VerificationStatus.PENDING);
         verification.setReviewedAt(LocalDateTime.now());
-        kycRepository.save(verification);
+        verification = kycRepository.save(verification);
+
+        // Send email notification
+        try {
+            emailNotificationService.sendKycSubmittedNotification(verification);
+            emailNotificationService.sendKycUnderReviewNotification(verification);
+        } catch (Exception e) {
+            log.error("Failed to send email notification for verification: {}", verificationId, e);
+            // Don't fail the workflow if email fails
+        }
 
         log.info("Step 4 (Review) completed. Verification {} is now UNDER_REVIEW", verificationId);
         return getWorkflowStatus(verificationId);
