@@ -56,13 +56,12 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assertThat(auth).isNotNull();
-        assertThat(auth.getPrincipal()).isEqualTo(TEST_PHONE);
+        assertThat(auth.getName()).isEqualTo(TEST_PHONE);
         assertThat(auth.getCredentials()).isNull();
         assertThat(auth.getAuthorities()).hasSize(1);
         assertThat(auth.getAuthorities().iterator().next().getAuthority()).isEqualTo("ROLE_USER");
@@ -75,7 +74,6 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
@@ -87,7 +85,6 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
@@ -249,27 +246,13 @@ class JwtAuthenticationFilterTest {
         verify(filterChain).doFilter(request, response);
     }
 
-    @Test
-    void doFilterInternal_whenGetUserIdThrowsException_shouldNotSetAuthentication() throws ServletException, IOException {
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
-        when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
-        when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenThrow(new RuntimeException("UserId extraction error"));
 
-        authenticationFilter.doFilterInternal(request, response, filterChain);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(auth).isNull();
-        
-        verify(filterChain).doFilter(request, response);
-    }
 
     @Test
     void doFilterInternal_whenFilterChainThrowsException_shouldPropagateException() throws ServletException, IOException {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
         doThrow(new ServletException("Filter chain error")).when(filterChain).doFilter(request, response);
 
         assertThatThrownBy(() -> authenticationFilter.doFilterInternal(request, response, filterChain))
@@ -297,7 +280,6 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + tokenWithExtra);
         when(tokenProvider.validateToken(tokenWithExtra)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(tokenWithExtra)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(tokenWithExtra)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
@@ -308,33 +290,29 @@ class JwtAuthenticationFilterTest {
     // Phone Number Edge Cases
 
     @Test
-    void doFilterInternal_withNullPhoneNumber_shouldStillSetAuthentication() throws ServletException, IOException {
+    void doFilterInternal_withNullPhoneNumber_shouldNotSetAuthentication() throws ServletException, IOException {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(null);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(auth).isNotNull();
-        assertThat(auth.getPrincipal()).isNull();
+        assertThat(auth).isNull();
         
         verify(filterChain).doFilter(request, response);
     }
 
     @Test
-    void doFilterInternal_withEmptyPhoneNumber_shouldSetAuthentication() throws ServletException, IOException {
+    void doFilterInternal_withEmptyPhoneNumber_shouldNotSetAuthentication() throws ServletException, IOException {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn("");
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(auth).isNotNull();
-        assertThat(auth.getPrincipal()).isEqualTo("");
+        assertThat(auth).isNull();
         
         verify(filterChain).doFilter(request, response);
     }
@@ -345,13 +323,12 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(specialPhone);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assertThat(auth).isNotNull();
-        assertThat(auth.getPrincipal()).isEqualTo(specialPhone);
+        assertThat(auth.getName()).isEqualTo(specialPhone);
         
         verify(filterChain).doFilter(request, response);
     }
@@ -388,13 +365,12 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assertThat(auth).isNotNull();
-        assertThat(auth.getPrincipal()).isEqualTo(TEST_PHONE);
+        assertThat(auth.getName()).isEqualTo(TEST_PHONE);
         
         verify(filterChain).doFilter(request, response);
     }
@@ -406,7 +382,6 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
@@ -425,7 +400,6 @@ class JwtAuthenticationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + VALID_TOKEN);
         when(tokenProvider.validateToken(VALID_TOKEN)).thenReturn(true);
         when(tokenProvider.getPhoneNumberFromToken(VALID_TOKEN)).thenReturn(TEST_PHONE);
-        when(tokenProvider.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
         Authentication firstAuth = SecurityContextHolder.getContext().getAuthentication();
