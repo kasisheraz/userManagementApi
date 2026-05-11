@@ -163,7 +163,7 @@ public class AmlScreeningServiceTest {
 
         List<AmlScreeningResult> highRiskList = Arrays.asList(highRiskScreening);
 
-        when(amlRepository.findAll())
+        when(amlRepository.findHighRiskScreenings())
                 .thenReturn(highRiskList);
 
         List<AmlScreeningResult> result = amlService.getHighRiskScreenings();

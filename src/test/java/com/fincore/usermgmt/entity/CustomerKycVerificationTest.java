@@ -150,7 +150,9 @@ class CustomerKycVerificationTest {
 
     @Test
     void testAmlScreeningsCollection() {
-        assertNull(verification.getAmlScreenings());
+        // Entity initializes with empty set by default due to @Builder.Default
+        assertNotNull(verification.getAmlScreenings());
+        assertTrue(verification.getAmlScreenings().isEmpty());
 
         verification.setAmlScreenings(new java.util.HashSet<>());
         assertNotNull(verification.getAmlScreenings());

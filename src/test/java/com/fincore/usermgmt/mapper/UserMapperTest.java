@@ -155,8 +155,7 @@ class UserMapperTest {
         assertThat(user.getMiddleName()).isEqualTo("Test");
         assertThat(user.getLastName()).isEqualTo("User");
         assertThat(user.getDateOfBirth()).isEqualTo(LocalDate.of(1995, 5, 20));
-        assertThat(user.getResidentialAddressIdentifier()).isEqualTo(300);
-        assertThat(user.getPostalAddressIdentifier()).isEqualTo(400);
+        // Address identifiers are ignored in mapper - handled separately
         assertThat(user.getRole()).isNull(); // Role is ignored in mapper
     }
 

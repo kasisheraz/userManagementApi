@@ -182,13 +182,13 @@ public class KycVerificationServiceTest {
                         .build()
         );
 
-        when(kycRepository.findByStatus(VerificationStatus.PENDING))
+        when(kycRepository.findExpiredVerifications())
                 .thenReturn(expiredList);
 
         List<CustomerKycVerification> result = kycService.findExpiredVerifications();
 
         assertNotNull(result);
-        verify(kycRepository, times(1)).findByStatus(VerificationStatus.PENDING);
+        verify(kycRepository, times(1)).findExpiredVerifications();
     }
 
     /**
