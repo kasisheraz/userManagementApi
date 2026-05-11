@@ -1,6 +1,7 @@
 package com.fincore.usermgmt.service;
 
 import com.fincore.usermgmt.dto.CustomerAnswerRequestDTO;
+import com.fincore.usermgmt.entity.CustomerAnswer;
 import com.fincore.usermgmt.entity.CustomerKycVerification;
 import com.fincore.usermgmt.entity.User;
 import com.fincore.usermgmt.entity.enums.VerificationLevel;
@@ -189,9 +190,15 @@ class KycWorkflowServiceTest {
         testVerification.setSumsubApplicantId("MOCK_ABC123");
         when(kycRepository.findById(100L)).thenReturn(Optional.of(testVerification));
         when(kycRepository.save(any(CustomerKycVerification.class))).thenReturn(testVerification);
-        when(customerAnswerService.getAnswersByUser(1L)).thenReturn(Arrays.asList(
-                // Mock answer
-        ));
+        
+        // Create mock answer to satisfy questionnaire completion requirement
+        CustomerAnswer mockAnswer = CustomerAnswer.builder()
+                .answerId(1L)
+                .user(testUser)
+                .answer("Test Answer")
+                .answeredAt(LocalDateTime.now())
+                .build();
+        when(customerAnswerService.getAnswersByUser(1L)).thenReturn(Arrays.asList(mockAnswer));
 
         // When
         Map<String, Object> status = kycWorkflowService.completeStep4Review(100L);
@@ -272,9 +279,11 @@ class KycWorkflowServiceTest {
         // Given
         testVerification.setSumsubApplicantId("MOCK_ABC123");
         when(kycRepository.findById(100L)).thenReturn(Optional.of(testVerification));
-        when(customerAnswerService.getAnswersByUser(1L)).thenReturn(Arrays.asList(
-                // Mock answer
-        ));
+        // Return a non-empty list to indicate questionnaire completed
+        CustomerAnswer mockAnswer = CustomerAnswer.builder()
+                .answerId(1L)
+                .build();
+        when(customerAnswerService.getAnswersByUser(1L)).thenReturn(Arrays.asList(mockAnswer));
 
         // When
         Map<String, Object> status = kycWorkflowService.getWorkflowStatus(100L);
