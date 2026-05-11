@@ -1,0 +1,1058 @@
+{
+	"info": {
+		"_postman_id": "sumsub-kyc-verification-collection",
+		"name": "FinCore - Sumsub KYC Verification Workflow",
+		"description": "Complete end-to-end testing for Sumsub KYC verification workflow using mock Sumsub service.\n\n**Test Scenarios:**\n1. User starts KYC workflow\n2. Complete Step 1: User Information\n3. Complete Step 2: Document Verification (Sumsub Mock)\n4. Admin simulates approval/rejection\n5. Complete Step 3: Questionnaire\n6. Complete Step 4: Review & Submit\n7. Check verification status\n\n**Prerequisites:**\n- Backend running with 'npe' or 'local' profile (mock Sumsub enabled)\n- Valid JWT tokens for Business User and Admin\n- Test user and admin accounts created\n\n**Collection Variables:**\n- `base_url`: API base URL (e.g., http://localhost:8080)\n- `jwt_token`: Business user JWT token\n- `admin_token`: Admin JWT token\n- `verification_id`: KYC verification ID (auto-set)\n- `sumsub_applicant_id`: Sumsub applicant ID (auto-set)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Request OTP - Business User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('OTP');",
+									"});",
+									"",
+									"console.log('✅ OTP requested for business user. Check backend logs for OTP code.');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"+447700900001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/request-otp",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "request-otp"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Business User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.not.be.empty;",
+									"    pm.collectionVariables.set('jwt_token', jsonData.token);",
+									"});",
+									"",
+									"console.log('✅ Business user logged in successfully');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"+447700900001\",\n  \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Replace OTP with actual value from backend logs"
+					},
+					"response": []
+				},
+				{
+					"name": "Request OTP - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log('✅ OTP requested for admin user. Check backend logs for OTP code.');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"+447700900999\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/request-otp",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "request-otp"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.not.be.empty;",
+									"    pm.collectionVariables.set('admin_token', jsonData.token);",
+									"});",
+									"",
+									"console.log('✅ Admin logged in successfully');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"+447700900999\",\n  \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Replace OTP with actual value from backend logs"
+					},
+					"response": []
+				}
+			],
+			"description": "Authenticate both Business User and Admin for testing"
+		},
+		{
+			"name": "2. Start KYC Workflow",
+			"item": [
+				{
+					"name": "Start FULL KYC Verification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Verification created with ID\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.verificationId).to.be.a('number');",
+									"    pm.expect(jsonData.sumsubApplicantId).to.include('MOCK_');",
+									"    pm.collectionVariables.set('verification_id', jsonData.verificationId);",
+									"    pm.collectionVariables.set('sumsub_applicant_id', jsonData.sumsubApplicantId);",
+									"});",
+									"",
+									"pm.test(\"Workflow status initialized\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.steps).to.exist;",
+									"    pm.expect(jsonData.steps.USER_INFORMATION).to.be.false;",
+									"    pm.expect(jsonData.steps.DOCUMENT_VERIFICATION).to.be.false;",
+									"});",
+									"",
+									"var verificationId = pm.response.json().verificationId;",
+									"var applicantId = pm.response.json().sumsubApplicantId;",
+									"console.log('✅ KYC workflow started successfully');",
+									"console.log('📋 Verification ID: ' + verificationId);",
+									"console.log('🎭 Mock Sumsub Applicant ID: ' + applicantId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/start?level=FULL",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "start"],
+							"query": [
+								{
+									"key": "level",
+									"value": "FULL"
+								}
+							]
+						},
+						"description": "Starts a FULL KYC verification workflow. This creates a mock Sumsub applicant automatically."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Workflow Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Workflow status returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.steps).to.exist;",
+									"    pm.expect(jsonData.currentStep).to.be.a('number');",
+									"});",
+									"",
+									"console.log('✅ Workflow status retrieved');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/{{verification_id}}/status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "{{verification_id}}", "status"]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Start new KYC verification workflow"
+		},
+		{
+			"name": "3. Complete Step 1 - User Information",
+			"item": [
+				{
+					"name": "Complete Step 1: User Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Step 1 completed\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.steps.USER_INFORMATION).to.be.true;",
+									"});",
+									"",
+									"console.log('✅ Step 1 (User Information) completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/{{verification_id}}/step1/user-info",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "{{verification_id}}", "step1", "user-info"]
+						},
+						"description": "Validates user information and completes Step 1"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Complete Step 2 - Document Verification (Sumsub)",
+			"item": [
+				{
+					"name": "Check Sumsub Status (Before Upload)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Applicant status is 'init'\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reviewStatus).to.eql('init');",
+									"    pm.expect(jsonData.mock).to.be.true;",
+									"});",
+									"",
+									"console.log('✅ Sumsub applicant status: init (waiting for documents)');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/mock/sumsub/applicants/{{sumsub_applicant_id}}/status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mock", "sumsub", "applicants", "{{sumsub_applicant_id}}", "status"]
+						},
+						"description": "Check Sumsub applicant status before document upload"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Step 2: Document Verification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Step 2 completed\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.steps.DOCUMENT_VERIFICATION).to.be.true;",
+									"});",
+									"",
+									"console.log('✅ Step 2 (Document Verification) completed with Sumsub');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sumsubApplicantId\": \"{{sumsub_applicant_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/{{verification_id}}/step2/sumsub",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "{{verification_id}}", "step2", "sumsub"]
+						},
+						"description": "Links Sumsub applicant ID and completes Step 2"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Admin - Simulate Sumsub Verification",
+			"item": [
+				{
+					"name": "Simulate Sumsub Approval",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Verification approved\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reviewStatus).to.eql('completed');",
+									"    pm.expect(jsonData.reviewResult).to.eql('GREEN');",
+									"    pm.expect(jsonData.mock).to.be.true;",
+									"});",
+									"",
+									"console.log('✅ Sumsub verification APPROVED (simulated)');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/mock/sumsub/applicants/{{sumsub_applicant_id}}/simulate-approval",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mock", "sumsub", "applicants", "{{sumsub_applicant_id}}", "simulate-approval"]
+						},
+						"description": "Admin simulates Sumsub document verification approval"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Sumsub Status (After Approval)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Status shows approval\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reviewStatus).to.eql('completed');",
+									"    pm.expect(jsonData.reviewResult).to.eql('GREEN');",
+									"});",
+									"",
+									"console.log('✅ Sumsub status confirmed: APPROVED');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/mock/sumsub/applicants/{{sumsub_applicant_id}}/status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mock", "sumsub", "applicants", "{{sumsub_applicant_id}}", "status"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Complete Step 3 - Questionnaire",
+			"item": [
+				{
+					"name": "Get Active Questions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Questions retrieved\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"});",
+									"",
+									"console.log('✅ Active questions retrieved');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/questionnaires/search?status=ACTIVE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "questionnaires", "search"],
+							"query": [
+								{
+									"key": "status",
+									"value": "ACTIVE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Step 3: Questionnaire",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Step 3 completed\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.steps.QUESTIONNAIRE).to.be.true;",
+									"});",
+									"",
+									"console.log('✅ Step 3 (Questionnaire) completed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"answers\": [\n    {\n      \"questionId\": 1,\n      \"answerText\": \"Employment income\"\n    },\n    {\n      \"questionId\": 2,\n      \"answerText\": \"No\"\n    },\n    {\n      \"questionId\": 3,\n      \"answerText\": \"Personal savings and investment\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/{{verification_id}}/step3/questionnaire",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "{{verification_id}}", "step3", "questionnaire"]
+						},
+						"description": "Submit answers to compliance questions"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Complete Step 4 - Review & Submit",
+			"item": [
+				{
+					"name": "Complete Step 4: Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Step 4 completed\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.steps.REVIEW).to.be.true;",
+									"});",
+									"",
+									"console.log('✅ Step 4 (Review) completed - Verification submitted!');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/{{verification_id}}/step4/review",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "{{verification_id}}", "step4", "review"]
+						},
+						"description": "Final review - submit verification for admin approval"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Check Final Status",
+			"item": [
+				{
+					"name": "Get Final Workflow Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"All steps completed\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.steps.USER_INFORMATION).to.be.true;",
+									"    pm.expect(jsonData.steps.DOCUMENT_VERIFICATION).to.be.true;",
+									"    pm.expect(jsonData.steps.QUESTIONNAIRE).to.be.true;",
+									"    pm.expect(jsonData.steps.REVIEW).to.be.true;",
+									"    pm.expect(jsonData.allStepsCompleted).to.be.true;",
+									"});",
+									"",
+									"console.log('✅ All workflow steps completed successfully!');",
+									"console.log('🎉 KYC verification submitted for admin review');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/{{verification_id}}/status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "{{verification_id}}", "status"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Verification Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Verification details returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.verificationId).to.exist;",
+									"    pm.expect(jsonData.sumsubApplicantId).to.exist;",
+									"    pm.expect(jsonData.verificationStatus).to.exist;",
+									"});",
+									"",
+									"var verification = pm.response.json();",
+									"console.log('📋 Verification ID: ' + verification.verificationId);",
+									"console.log('🎭 Sumsub Applicant ID: ' + verification.sumsubApplicantId);",
+									"console.log('📊 Status: ' + verification.verificationStatus);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kyc/verifications/{{verification_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "verifications", "{{verification_id}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "9. Negative Tests - Rejection Scenario",
+			"item": [
+				{
+					"name": "Start New Verification (For Rejection)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('rejection_verification_id', jsonData.verificationId);",
+									"pm.collectionVariables.set('rejection_sumsub_id', jsonData.sumsubApplicantId);",
+									"",
+									"console.log('✅ New verification started for rejection test');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/start?level=FULL",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "start"],
+							"query": [
+								{
+									"key": "level",
+									"value": "FULL"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Steps 1 & 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log('✅ Step 2 completed for rejection test');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// First complete step 1",
+									"const step1Request = {",
+									"  url: pm.collectionVariables.get('base_url') + '/api/kyc/workflow/' + pm.collectionVariables.get('rejection_verification_id') + '/step1/user-info',",
+									"  method: 'POST',",
+									"  header: {",
+									"    'Authorization': 'Bearer ' + pm.collectionVariables.get('jwt_token')",
+									"  }",
+									"};",
+									"",
+									"pm.sendRequest(step1Request, function (err, response) {",
+									"  console.log('Step 1 completed for rejection test');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sumsubApplicantId\": \"{{rejection_sumsub_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/kyc/workflow/{{rejection_verification_id}}/step2/sumsub",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kyc", "workflow", "{{rejection_verification_id}}", "step2", "sumsub"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Simulate Sumsub Rejection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Verification rejected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reviewStatus).to.eql('completed');",
+									"    pm.expect(jsonData.reviewResult).to.eql('RED');",
+									"    pm.expect(jsonData.rejectLabels).to.exist;",
+									"});",
+									"",
+									"console.log('✅ Sumsub verification REJECTED (simulated)');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/mock/sumsub/applicants/{{rejection_sumsub_id}}/simulate-rejection",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mock", "sumsub", "applicants", "{{rejection_sumsub_id}}", "simulate-rejection"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Rejection Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Status shows rejection\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reviewStatus).to.eql('completed');",
+									"    pm.expect(jsonData.reviewResult).to.eql('RED');",
+									"    pm.expect(jsonData.rejectLabels).to.include('DOCUMENT_MISMATCH');",
+									"});",
+									"",
+									"console.log('✅ Sumsub status confirmed: REJECTED');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/mock/sumsub/applicants/{{rejection_sumsub_id}}/status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mock", "sumsub", "applicants", "{{rejection_sumsub_id}}", "status"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "verification_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "sumsub_applicant_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "rejection_verification_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "rejection_sumsub_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
