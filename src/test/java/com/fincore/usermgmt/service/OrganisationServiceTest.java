@@ -7,6 +7,7 @@ import com.fincore.usermgmt.mapper.OrganisationMapper;
 import com.fincore.usermgmt.repository.AddressRepository;
 import com.fincore.usermgmt.repository.OrganisationRepository;
 import com.fincore.usermgmt.repository.UserRepository;
+import com.fincore.usermgmt.util.SecurityUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +48,9 @@ class OrganisationServiceTest {
 
     @Mock
     private KycDocumentService kycDocumentService;
+
+    @Mock
+    private SecurityUtil securityUtil;
 
     @InjectMocks
     private OrganisationService organisationService;
@@ -163,6 +167,7 @@ class OrganisationServiceTest {
         Page<Organisation> page = new PageImpl<>(Arrays.asList(organisation));
         when(organisationRepository.findAll(any(Pageable.class))).thenReturn(page);
         when(organisationMapper.toOrganisationDTO(organisation)).thenReturn(organisationDTO);
+        when(securityUtil.isBusinessUser()).thenReturn(false);
 
         PagedResponse<OrganisationDTO> result = organisationService.getAllOrganisations(0, 20, "legalName", "ASC");
 
@@ -268,6 +273,7 @@ class OrganisationServiceTest {
         when(organisationRepository.searchOrganisations(eq("Test"), any(), any(), any(Pageable.class)))
                 .thenReturn(page);
         when(organisationMapper.toOrganisationDTO(organisation)).thenReturn(organisationDTO);
+        when(securityUtil.isBusinessUser()).thenReturn(false);
 
         PagedResponse<OrganisationDTO> result = organisationService.searchOrganisations(searchDTO);
 

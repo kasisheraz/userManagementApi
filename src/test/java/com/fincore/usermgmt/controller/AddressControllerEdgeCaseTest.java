@@ -1,6 +1,7 @@
 package com.fincore.usermgmt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fincore.usermgmt.config.TestMailConfig;
 import com.fincore.usermgmt.dto.AddressCreateDTO;
 import com.fincore.usermgmt.dto.AddressDTO;
 import com.fincore.usermgmt.service.AddressService;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestMailConfig.class)
 class AddressControllerEdgeCaseTest {
 
     @Autowired

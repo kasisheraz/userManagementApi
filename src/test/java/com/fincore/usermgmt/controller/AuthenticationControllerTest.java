@@ -1,6 +1,7 @@
 package com.fincore.usermgmt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fincore.usermgmt.config.TestMailConfig;
 import com.fincore.usermgmt.dto.AuthenticationRequest;
 import com.fincore.usermgmt.dto.AuthenticationResponse;
 import com.fincore.usermgmt.dto.OtpResponse;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestMailConfig.class)
 class AuthenticationControllerTest {
 
     @Autowired

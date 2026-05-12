@@ -1,6 +1,7 @@
 package com.fincore.usermgmt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fincore.usermgmt.config.TestMailConfig;
 import com.fincore.usermgmt.dto.UserCreateDTO;
 import com.fincore.usermgmt.dto.UserDTO;
 import com.fincore.usermgmt.dto.UserUpdateDTO;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -33,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestMailConfig.class)
 class UserControllerEdgeCaseTest {
 
     @Autowired
@@ -229,16 +232,16 @@ class UserControllerEdgeCaseTest {
     @Test
     @WithMockUser(username = "testuser", roles = {"USER"})
     void deleteUser_withNonExistentId_shouldReturnNoContent() throws Exception {
-        // Note: deleteUser returns void, so even non-existent ID returns 204
+        // deleteUser returns 404 when user doesn't exist
         mockMvc.perform(delete("/api/users/999"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(username = "testuser", roles = {"USER"})
     void deleteUser_withZeroId_shouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/api/users/0"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNotFound());
     }
 
     // ===== Malformed Request Edge Cases =====

@@ -1,0 +1,1230 @@
+{
+  "info": {
+    "name": "FinCore Organization KYC Workflow - Complete",
+    "description": "Complete Postman collection for Organization KYC Document Upload and Approval Workflow (May 2026):\n\n**New Features:**\n- Organization creation with inline KYC document uploads\n- Submit for Review workflow (PENDING → UNDER_REVIEW)\n- Admin Approve workflow (UNDER_REVIEW → ACTIVE)\n- Admin Reject workflow with document-level feedback\n- KYC document upload, download, delete operations\n- Resubmission workflow after rejection\n- Role-based access testing (Admin vs Business User)\n\n**Workflow Stages:**\n1. User creates organization (status: PENDING)\n2. User uploads KYC documents (3 required minimum)\n3. User submits for review (status: UNDER_REVIEW)\n4. Admin reviews and approves/rejects\n5. If rejected, user fixes issues and resubmits\n6. Final approval (status: ACTIVE)\n\nVersion: 3.0.0\nLast Updated: May 11, 2026",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "org_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doc_id_1",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doc_id_2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doc_id_3",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Login endpoints for different user roles",
+      "item": [
+        {
+          "name": "Login as Business User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "    pm.collectionVariables.set('user_id', jsonData.userId);",
+                  "    console.log('Business User JWT Token saved');",
+                  "    pm.test('Login successful', () => {",
+                  "        pm.response.to.have.status(200);",
+                  "        pm.expect(jsonData.token).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+44-7700-900002\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as a Business User to test organization creation and submission"
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('admin_token', jsonData.token);",
+                  "    console.log('Admin JWT Token saved');",
+                  "    pm.test('Admin login successful', () => {",
+                  "        pm.response.to.have.status(200);",
+                  "        pm.expect(jsonData.token).to.exist;",
+                  "        pm.expect(jsonData.role).to.eql('SYSTEM_ADMINISTRATOR');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+44-7700-900001\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as Admin to test approval/rejection workflows"
+          }
+        },
+        {
+          "name": "Request OTP",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+44-7700-900002\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/request-otp",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "request-otp"]
+            },
+            "description": "Request OTP for phone number before login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Organization Creation",
+      "description": "Create organizations (status: PENDING)",
+      "item": [
+        {
+          "name": "Create Organization - Tech Innovations Ltd",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('org_id', jsonData.id);",
+                  "    console.log('Organization ID saved:', jsonData.id);",
+                  "    pm.test('Organization created', () => {",
+                  "        pm.response.to.have.status(201);",
+                  "        pm.expect(jsonData.id).to.exist;",
+                  "        pm.expect(jsonData.organisationStatus).to.eql('PENDING');",
+                  "        pm.expect(jsonData.legalName).to.eql('Tech Innovations Ltd');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legalName\": \"Tech Innovations Ltd\",\n  \"tradingName\": \"TechInn\",\n  \"organisationType\": \"LIMITED_COMPANY\",\n  \"registrationNumber\": \"12345678\",\n  \"taxId\": \"GB123456789\",\n  \"incorporationDate\": \"2020-01-15\",\n  \"businessAddress\": {\n    \"addressLine1\": \"123 Tech Street\",\n    \"addressLine2\": \"Innovation District\",\n    \"city\": \"London\",\n    \"county\": \"Greater London\",\n    \"postcode\": \"SW1A 1AA\",\n    \"country\": \"United Kingdom\"\n  },\n  \"primaryContact\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Smith\",\n    \"email\": \"john.smith@techinnovations.co.uk\",\n    \"phone\": \"+44-7700-900100\",\n    \"position\": \"Managing Director\"\n  },\n  \"industry\": \"TECHNOLOGY\",\n  \"companySize\": \"SMALL\",\n  \"annualRevenue\": \"£500,000\",\n  \"numberOfEmployees\": 25\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/organizations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations"]
+            },
+            "description": "Create organization for happy path testing"
+          }
+        },
+        {
+          "name": "Get Organization by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organization retrieved', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.legalName).to.exist;",
+                  "    console.log('Status:', jsonData.organisationStatus);",
+                  "    console.log('Rejection Reason:', jsonData.reasonDescription || 'None');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}"]
+            },
+            "description": "Retrieve organization details including status and rejection feedback"
+          }
+        },
+        {
+          "name": "Get All Organizations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations?page=0&size=20&sortBy=legalName&sortDirection=ASC",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "legalName"
+                },
+                {
+                  "key": "sortDirection",
+                  "value": "ASC"
+                }
+              ]
+            },
+            "description": "Get paginated list of all organizations"
+          }
+        },
+        {
+          "name": "Search Organizations by Status UNDER_REVIEW",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisationStatus\": \"UNDER_REVIEW\",\n  \"page\": 0,\n  \"size\": 20,\n  \"sortBy\": \"createdAt\",\n  \"sortDirection\": \"DESC\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/organizations/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "search"]
+            },
+            "description": "Admin searches for organizations pending review"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. KYC Document Upload",
+      "description": "Upload KYC documents (3 required)",
+      "item": [
+        {
+          "name": "Upload Certificate of Incorporation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doc_id_1', jsonData.id);",
+                  "    console.log('Document 1 ID saved:', jsonData.id);",
+                  "    pm.test('Document uploaded', () => {",
+                  "        pm.response.to.have.status(201);",
+                  "        pm.expect(jsonData.documentStatus).to.eql('PENDING');",
+                  "        pm.expect(jsonData.documentType).to.eql('CERTIFICATE_OF_INCORPORATION');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/certificate_of_incorporation.pdf"
+                },
+                {
+                  "key": "documentType",
+                  "value": "CERTIFICATE_OF_INCORPORATION",
+                  "type": "text"
+                },
+                {
+                  "key": "organisationId",
+                  "value": "{{org_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "upload"]
+            },
+            "description": "Upload Certificate of Incorporation (Required Document 1/3)"
+          }
+        },
+        {
+          "name": "Upload Proof of Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doc_id_2', jsonData.id);",
+                  "    console.log('Document 2 ID saved:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/proof_of_address.pdf"
+                },
+                {
+                  "key": "documentType",
+                  "value": "PROOF_OF_ADDRESS",
+                  "type": "text"
+                },
+                {
+                  "key": "organisationId",
+                  "value": "{{org_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "upload"]
+            },
+            "description": "Upload Proof of Address (Required Document 2/3)"
+          }
+        },
+        {
+          "name": "Upload Directors Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doc_id_3', jsonData.id);",
+                  "    console.log('Document 3 ID saved:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/directors_register.pdf"
+                },
+                {
+                  "key": "documentType",
+                  "value": "DIRECTORS_REGISTER",
+                  "type": "text"
+                },
+                {
+                  "key": "organisationId",
+                  "value": "{{org_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "upload"]
+            },
+            "description": "Upload Directors Register (Required Document 3/3)"
+          }
+        },
+        {
+          "name": "Get KYC Documents for Organization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Documents retrieved', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('Total documents:', jsonData.length || jsonData.content.length);",
+                  "    if (jsonData.content) {",
+                  "        jsonData.content.forEach(doc => {",
+                  "            console.log('Document:', doc.documentType, '| Status:', doc.documentStatus, '| Feedback:', doc.reasonDescription || 'None');",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/kyc-documents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "kyc-documents"]
+            },
+            "description": "Get all KYC documents for an organization"
+          }
+        },
+        {
+          "name": "Get Document by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/{{doc_id_1}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "{{doc_id_1}}"]
+            },
+            "description": "Get specific document details"
+          }
+        },
+        {
+          "name": "Download Document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/{{doc_id_1}}/download",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "{{doc_id_1}}", "download"]
+            },
+            "description": "Download document file (returns file blob)"
+          }
+        },
+        {
+          "name": "Delete Document (PENDING only)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/{{doc_id_1}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "{{doc_id_1}}"]
+            },
+            "description": "Delete a document (only works for PENDING or REJECTED documents)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Submit for Review",
+      "description": "User submits organization for admin review",
+      "item": [
+        {
+          "name": "Submit Organization for Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organization submitted', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.organisationStatus).to.eql('UNDER_REVIEW');",
+                  "    console.log('Organization is now UNDER_REVIEW');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "submit"]
+            },
+            "description": "Submit organization for admin review (changes status from PENDING to UNDER_REVIEW, all documents also set to UNDER_REVIEW)"
+          }
+        },
+        {
+          "name": "Verify Documents Status After Submit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('All documents are UNDER_REVIEW', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var docs = pm.response.json();",
+                  "    var content = docs.content || docs;",
+                  "    content.forEach(doc => {",
+                  "        pm.expect(doc.documentStatus).to.eql('UNDER_REVIEW');",
+                  "    });",
+                  "    console.log('All', content.length, 'documents are UNDER_REVIEW');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/kyc-documents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "kyc-documents"]
+            },
+            "description": "Verify all documents status changed to UNDER_REVIEW"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Admin Approval",
+      "description": "Admin approves organization (Happy Path)",
+      "item": [
+        {
+          "name": "Switch to Admin Token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Temporarily use admin token for this request",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + pm.collectionVariables.get('admin_token')",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Verify admin token is valid"
+          }
+        },
+        {
+          "name": "Approve Organization",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + pm.collectionVariables.get('admin_token')",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organization approved', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.organisationStatus).to.eql('ACTIVE');",
+                  "    pm.expect(jsonData.reasonDescription).to.be.oneOf([null, '']);",
+                  "    console.log('Organization approved and ACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "approve"]
+            },
+            "description": "Admin approves organization (status: UNDER_REVIEW → ACTIVE, all documents: VERIFIED)"
+          }
+        },
+        {
+          "name": "Verify Documents VERIFIED After Approval",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('All documents are VERIFIED', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var docs = pm.response.json();",
+                  "    var content = docs.content || docs;",
+                  "    content.forEach(doc => {",
+                  "        pm.expect(doc.documentStatus).to.eql('VERIFIED');",
+                  "        pm.expect(doc.reasonDescription).to.be.oneOf([null, '']);",
+                  "    });",
+                  "    console.log('All documents VERIFIED, no rejection feedback');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/kyc-documents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "kyc-documents"]
+            },
+            "description": "Verify all documents are VERIFIED after approval"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin Rejection (Document-Level)",
+      "description": "Admin rejects specific documents with feedback",
+      "item": [
+        {
+          "name": "Reject Organization with Document Feedback",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Use admin token",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + pm.collectionVariables.get('admin_token')",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organization rejected with feedback', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.organisationStatus).to.eql('REQUIRES_RESUBMISSION');",
+                  "    pm.expect(jsonData.reasonDescription).to.include('rejected');",
+                  "    console.log('Rejection summary:', jsonData.reasonDescription);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentRejections\": [\n    {\n      \"documentId\": {{doc_id_1}},\n      \"rejectionReason\": \"The document is blurry and unreadable. Please upload a clearer version showing company name and registration number.\"\n    },\n    {\n      \"documentId\": {{doc_id_2}},\n      \"rejectionReason\": \"This document is more than 3 months old. Please provide a recent utility bill or bank statement dated within the last 90 days.\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "reject"]
+            },
+            "description": "Admin rejects 2 documents with detailed feedback. Document 3 (Directors Register) is NOT in the rejection list, so it will be automatically verified."
+          }
+        },
+        {
+          "name": "Verify Document Statuses After Rejection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Correct document statuses after rejection', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var docs = pm.response.json();",
+                  "    var content = docs.content || docs;",
+                  "    ",
+                  "    content.forEach(doc => {",
+                  "        console.log('Doc:', doc.documentType, '| Status:', doc.documentStatus, '| Feedback:', doc.reasonDescription || 'None');",
+                  "        ",
+                  "        // Rejected documents should have feedback",
+                  "        if (doc.documentStatus === 'REJECTED') {",
+                  "            pm.expect(doc.reasonDescription).to.exist;",
+                  "            pm.expect(doc.reasonDescription.length).to.be.greaterThan(10);",
+                  "        }",
+                  "        ",
+                  "        // Verified document should have no feedback",
+                  "        if (doc.documentStatus === 'VERIFIED') {",
+                  "            pm.expect(doc.reasonDescription).to.be.oneOf([null, '']);",
+                  "        }",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/kyc-documents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "kyc-documents"]
+            },
+            "description": "Verify 2 documents are REJECTED with feedback, 1 document is VERIFIED"
+          }
+        },
+        {
+          "name": "Verify Organization Rejection Summary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organization has rejection summary', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.reasonDescription).to.exist;",
+                  "    pm.expect(jsonData.reasonDescription).to.match(/\\d+ of \\d+ documents rejected/);",
+                  "    console.log('Summary:', jsonData.reasonDescription);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}"]
+            },
+            "description": "Verify organization has rejection summary like '2 of 3 documents rejected'"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Resubmission After Rejection",
+      "description": "User fixes rejected documents and resubmits",
+      "item": [
+        {
+          "name": "Delete Rejected Document 1",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/{{doc_id_1}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "{{doc_id_1}}"]
+            },
+            "description": "Delete rejected Certificate of Incorporation"
+          }
+        },
+        {
+          "name": "Delete Rejected Document 2",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/{{doc_id_2}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "{{doc_id_2}}"]
+            },
+            "description": "Delete rejected Proof of Address"
+          }
+        },
+        {
+          "name": "Upload NEW Certificate (Fixed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doc_id_1', jsonData.id);",
+                  "    console.log('New Document 1 ID:', jsonData.id);",
+                  "    pm.test('New document status is PENDING', () => {",
+                  "        pm.expect(jsonData.documentStatus).to.eql('PENDING');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/certificate_of_incorporation_FIXED.pdf"
+                },
+                {
+                  "key": "documentType",
+                  "value": "CERTIFICATE_OF_INCORPORATION",
+                  "type": "text"
+                },
+                {
+                  "key": "organisationId",
+                  "value": "{{org_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "upload"]
+            },
+            "description": "Upload corrected Certificate (clearer, readable)"
+          }
+        },
+        {
+          "name": "Upload NEW Proof of Address (Fixed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doc_id_2', jsonData.id);",
+                  "    console.log('New Document 2 ID:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/proof_of_address_RECENT.pdf"
+                },
+                {
+                  "key": "documentType",
+                  "value": "PROOF_OF_ADDRESS",
+                  "type": "text"
+                },
+                {
+                  "key": "organisationId",
+                  "value": "{{org_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "upload"]
+            },
+            "description": "Upload recent Proof of Address (< 3 months old)"
+          }
+        },
+        {
+          "name": "Resubmit for Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Organization resubmitted', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.organisationStatus).to.eql('UNDER_REVIEW');",
+                  "    pm.expect(jsonData.reasonDescription).to.be.oneOf([null, '']);",
+                  "    console.log('Resubmitted - status now UNDER_REVIEW');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "submit"]
+            },
+            "description": "Resubmit organization after fixing rejected documents (status: REQUIRES_RESUBMISSION → UNDER_REVIEW)"
+          }
+        },
+        {
+          "name": "Admin Final Approval",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + pm.collectionVariables.get('admin_token')",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Final approval successful', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.organisationStatus).to.eql('ACTIVE');",
+                  "    console.log('Organization ACTIVE - workflow complete!');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "approve"]
+            },
+            "description": "Admin approves after resubmission - workflow complete!"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Negative Tests",
+      "description": "Error handling and validation tests",
+      "item": [
+        {
+          "name": "Submit Without Required Documents (Error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Submit fails without documents', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "    console.log('Error:', pm.response.json().message);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "submit"]
+            },
+            "description": "Try to submit organization without uploading required documents (should fail)"
+          }
+        },
+        {
+          "name": "Business User Tries to Approve (Error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Non-admin cannot approve', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([403, 401]);",
+                  "    console.log('Forbidden - admin role required');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "approve"]
+            },
+            "description": "Business user tries to approve - should be forbidden"
+          }
+        },
+        {
+          "name": "Reject Without Feedback (Error)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + pm.collectionVariables.get('admin_token')",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Rejection fails without reason', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "    console.log('Validation error:', pm.response.json().message);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentRejections\": [\n    {\n      \"documentId\": {{doc_id_1}},\n      \"rejectionReason\": \"\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/organizations/{{org_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations", "{{org_id}}", "reject"]
+            },
+            "description": "Try to reject without providing rejection reason (should fail validation)"
+          }
+        },
+        {
+          "name": "Delete VERIFIED Document (Error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Cannot delete verified document', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 403, 422]);",
+                  "    console.log('Error:', pm.response.json().message);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/{{doc_id_3}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "{{doc_id_3}}"]
+            },
+            "description": "Try to delete a VERIFIED document (should fail - only PENDING/REJECTED can be deleted)"
+          }
+        },
+        {
+          "name": "Create Second Organization (Error - One Org Rule)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('One organization per user rule enforced', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "    var error = pm.response.json();",
+                  "    pm.expect(error.message).to.match(/already has an organization/i);",
+                  "    console.log('Error:', error.message);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legalName\": \"Second Company Ltd\",\n  \"organisationType\": \"LIMITED_COMPANY\",\n  \"registrationNumber\": \"99999999\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/organizations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organizations"]
+            },
+            "description": "Try to create a second organization (should fail - one org per user rule)"
+          }
+        }
+      ]
+    }
+  ]
+}

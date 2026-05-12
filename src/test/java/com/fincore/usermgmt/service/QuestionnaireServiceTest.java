@@ -125,7 +125,7 @@ public class QuestionnaireServiceTest {
     void testGetActiveQuestions() {
         List<QuestionnaireQuestion> activeQuestions = Arrays.asList(testQuestion);
 
-        when(questionnaireRepository.findByStatus("ACTIVE"))
+        when(questionnaireRepository.findAllActiveQuestions())
                 .thenReturn(activeQuestions);
 
         List<QuestionnaireQuestion> result = questionnaireService.getActiveQuestions();
@@ -363,7 +363,7 @@ public class QuestionnaireServiceTest {
     void testGetQuestionsByCategoryAndStatus() {
         List<QuestionnaireQuestion> filtered = Arrays.asList(testQuestion);
 
-        when(questionnaireRepository.findAllActiveQuestionsByCategory(QuestionCategory.OCCUPATION))
+        when(questionnaireRepository.findByCategoryAndStatus(QuestionCategory.OCCUPATION, "ACTIVE"))
                 .thenReturn(filtered);
 
         List<QuestionnaireQuestion> result = questionnaireService

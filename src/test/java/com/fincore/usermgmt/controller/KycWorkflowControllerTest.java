@@ -1,6 +1,7 @@
 package com.fincore.usermgmt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fincore.usermgmt.config.TestMailConfig;
 import com.fincore.usermgmt.dto.CustomerAnswerRequestDTO;
 import com.fincore.usermgmt.entity.CustomerKycVerification;
 import com.fincore.usermgmt.entity.User;
@@ -14,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -28,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Import(TestMailConfig.class)
 class KycWorkflowControllerTest {
 
     @Autowired
@@ -84,7 +89,7 @@ class KycWorkflowControllerTest {
         mockMvc.perform(post("/api/kyc/workflow/start")
                         .param("level", "ENHANCED")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.verificationId").value(100))
                 .andExpect(jsonPath("$.userId").value(1))
                 .andExpect(jsonPath("$.level").value("ENHANCED"))
@@ -201,6 +206,8 @@ class KycWorkflowControllerTest {
     @WithMockUser(username = "+447700900000", roles = "USER")
     void getStatus_ShouldReturnDetailedStatus() throws Exception {
         // Given
+        when(userRepository.findByPhoneNumber("+447700900000")).thenReturn(Optional.of(testUser));
+        
         Map<String, Object> status = new HashMap<>();
         status.put("verificationId", 100L);
         status.put("userId", 1L);
@@ -224,6 +231,8 @@ class KycWorkflowControllerTest {
     @WithMockUser(username = "+447700900000", roles = "USER")
     void getProgress_ShouldReturnSimplifiedProgress() throws Exception {
         // Given
+        when(userRepository.findByPhoneNumber("+447700900000")).thenReturn(Optional.of(testUser));
+        
         Map<String, Object> progress = new HashMap<>();
         progress.put("verificationId", 100L);
         progress.put("progressPercentage", 40);
@@ -244,10 +253,11 @@ class KycWorkflowControllerTest {
     @Test
     void startWorkflow_WithoutAuthentication_ShouldReturnUnauthorized() throws Exception {
         // When/Then
+        // Spring Security returns 403 Forbidden when there's no authentication
         mockMvc.perform(post("/api/kyc/workflow/start")
                         .param("level", "ENHANCED")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test

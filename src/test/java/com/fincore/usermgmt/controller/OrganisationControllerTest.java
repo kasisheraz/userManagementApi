@@ -1,6 +1,7 @@
 package com.fincore.usermgmt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fincore.usermgmt.config.TestMailConfig;
 import com.fincore.usermgmt.dto.*;
 import com.fincore.usermgmt.service.OrganisationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestMailConfig.class)
 class OrganisationControllerTest {
 
     @Autowired
@@ -78,7 +81,7 @@ class OrganisationControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.legalName").value("Test Company Ltd"))
-                .andExpect(jsonPath("$.status").value("PENDING"));
+                .andExpect(jsonPath("$.statusDescription").value("PENDING"));
     }
 
     @Test
@@ -145,7 +148,7 @@ class OrganisationControllerTest {
 
         mockMvc.perform(get("/api/organisations/status/PENDING"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].status").value("PENDING"));
+                .andExpect(jsonPath("$[0].statusDescription").value("PENDING"));
     }
 
     @Test

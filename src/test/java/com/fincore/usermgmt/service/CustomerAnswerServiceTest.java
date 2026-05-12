@@ -29,6 +29,9 @@ public class CustomerAnswerServiceTest {
     @Mock
     private CustomerAnswerRepository answerRepository;
 
+    @Mock
+    private QuestionnaireService questionnaireService;
+
     @InjectMocks
     private CustomerAnswerService answerService;
 
@@ -62,6 +65,7 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testSaveAnswer_NewAnswer() {
+        when(questionnaireService.getQuestionById(1)).thenReturn(testQuestion);
         when(answerRepository.findByUser_IdAndQuestion_QuestionId(1L, 1))
                 .thenReturn(Optional.empty());
         when(answerRepository.save(any(CustomerAnswer.class)))
@@ -82,6 +86,7 @@ public class CustomerAnswerServiceTest {
         CustomerAnswer existingAnswer = testAnswer;
         existingAnswer.setAnswer("Updated answer");
 
+        when(questionnaireService.getQuestionById(1)).thenReturn(testQuestion);
         when(answerRepository.findByUser_IdAndQuestion_QuestionId(1L, 1))
                 .thenReturn(Optional.of(testAnswer));
         when(answerRepository.save(any()))
@@ -294,8 +299,15 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testGetAnswerCompletionRate() {
-        when(answerRepository.countByUserId(1L))
-                .thenReturn(5L);
+        List<CustomerAnswer> userAnswers = Arrays.asList(
+                testAnswer,
+                CustomerAnswer.builder().answerId(2L).answer("Answer 2").build(),
+                CustomerAnswer.builder().answerId(3L).answer("Answer 3").build(),
+                CustomerAnswer.builder().answerId(4L).answer("Answer 4").build(),
+                CustomerAnswer.builder().answerId(5L).answer("Answer 5").build()
+        );
+        when(answerRepository.findByUser_Id(1L))
+                .thenReturn(userAnswers);
 
         double rate = answerService.getAnswerCompletionRate(1L, 10);
 
@@ -307,8 +319,20 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testGetAnswerCompletionRate_Full() {
-        when(answerRepository.countByUserId(1L))
-                .thenReturn(10L);
+        List<CustomerAnswer> userAnswers = Arrays.asList(
+                testAnswer,
+                CustomerAnswer.builder().answerId(2L).answer("Answer 2").build(),
+                CustomerAnswer.builder().answerId(3L).answer("Answer 3").build(),
+                CustomerAnswer.builder().answerId(4L).answer("Answer 4").build(),
+                CustomerAnswer.builder().answerId(5L).answer("Answer 5").build(),
+                CustomerAnswer.builder().answerId(6L).answer("Answer 6").build(),
+                CustomerAnswer.builder().answerId(7L).answer("Answer 7").build(),
+                CustomerAnswer.builder().answerId(8L).answer("Answer 8").build(),
+                CustomerAnswer.builder().answerId(9L).answer("Answer 9").build(),
+                CustomerAnswer.builder().answerId(10L).answer("Answer 10").build()
+        );
+        when(answerRepository.findByUser_Id(1L))
+                .thenReturn(userAnswers);
 
         double rate = answerService.getAnswerCompletionRate(1L, 10);
 
@@ -320,8 +344,8 @@ public class CustomerAnswerServiceTest {
      */
     @Test
     void testGetAnswerCompletionRate_Zero() {
-        when(answerRepository.countByUserId(1L))
-                .thenReturn(0L);
+        when(answerRepository.findByUser_Id(1L))
+                .thenReturn(Arrays.asList());
 
         double rate = answerService.getAnswerCompletionRate(1L, 10);
 
@@ -338,6 +362,7 @@ public class CustomerAnswerServiceTest {
                 new java.util.AbstractMap.SimpleEntry<>(2, "Answer 2")
         );
 
+        when(questionnaireService.getQuestionById(anyInt())).thenReturn(testQuestion);
         when(answerRepository.save(any()))
                 .thenReturn(testAnswer);
 

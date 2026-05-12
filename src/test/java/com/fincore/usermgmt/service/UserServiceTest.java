@@ -144,6 +144,14 @@ public class UserServiceTest {
         postalDTO.setId(2L);
         postalDTO.setAddressLine1("456 Oak Avenue");
 
+        Address residentialEntity = new Address();
+        residentialEntity.setId(1L);
+        residentialEntity.setAddressLine1("123 Main Street");
+        
+        Address postalEntity = new Address();
+        postalEntity.setId(2L);
+        postalEntity.setAddressLine1("456 Oak Avenue");
+
         UserDTO userDTO = new UserDTO();
         userDTO.setId(1L);
         userDTO.setPhoneNumber("+1234567890");
@@ -159,10 +167,11 @@ public class UserServiceTest {
         when(userMapper.toUser(any(UserCreateDTO.class))).thenReturn(user);
         when(roleRepository.findByName("USER")).thenReturn(Optional.of(role));
         when(userRepository.save(any(User.class))).thenReturn(user);
-        // Address service now returns DTOs directly
-        // Address service now returns DTOs directly
-        // Using DTOs directly now
-        // Using DTOs directly now
+        when(userMapper.toUserDTO(any(User.class))).thenReturn(userDTO);
+        when(addressRepository.findById(1L)).thenReturn(Optional.of(residentialEntity));
+        when(addressRepository.findById(2L)).thenReturn(Optional.of(postalEntity));
+        when(addressMapper.toAddressDTO(residentialEntity)).thenReturn(residentialDTO);
+        when(addressMapper.toAddressDTO(postalEntity)).thenReturn(postalDTO);
 
         // Execute
         UserDTO result = userService.createUser(createDTO);
