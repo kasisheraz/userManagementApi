@@ -315,7 +315,8 @@ CREATE TABLE organisation (
 ```sql
 CREATE TABLE kyc_document (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    organisation_id BIGINT NOT NULL,
+    organisation_id BIGINT,
+    beneficiary_id BIGINT,  -- NEW: Support for beneficiary documents
     document_type VARCHAR(100) NOT NULL,
     document_number VARCHAR(100),
     file_name VARCHAR(255) NOT NULL,
@@ -332,12 +333,51 @@ CREATE TABLE kyc_document (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (organisation_id) REFERENCES organisation(id) ON DELETE CASCADE,
+    FOREIGN KEY (beneficiary_id) REFERENCES beneficiary(id) ON DELETE CASCADE,  -- NEW
     FOREIGN KEY (uploaded_by) REFERENCES users(id),
     FOREIGN KEY (verified_by) REFERENCES users(id),
     INDEX idx_org (organisation_id),
+    INDEX idx_beneficiary (beneficiary_id),  -- NEW
     INDEX idx_status (document_status),
     INDEX idx_type (document_type),
-    UNIQUE KEY unique_doc_type_per_org (organisation_id, document_type)
+    CONSTRAINT chk_reference CHECK (
+        (organisation_id IS NOT NULL AND beneficiary_id IS NULL) OR 
+        (organisation_id IS NULL AND beneficiary_id IS NOT NULL)
+    )  -- NEW: Ensure only one reference type
+);
+```
+
+#### beneficiary
+```sql
+CREATE TABLE beneficiary (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    beneficiary_identifier VARCHAR(50) UNIQUE NOT NULL,
+    beneficiary_name VARCHAR(255) NOT NULL,
+    nick_name VARCHAR(100),
+    business_name VARCHAR(255),
+    country VARCHAR(100) NOT NULL,
+    user_identifier BIGINT NOT NULL,
+    registered_address_identifier BIGINT NOT NULL,
+    is_counter_over_counter BOOLEAN DEFAULT FALSE,
+    collector_contact_number VARCHAR(20),
+    status_description VARCHAR(50) DEFAULT 'PENDING',
+    reason_description TEXT,  -- Rejection/suspension reason
+    created_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    last_modified_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_modified_by BIGINT,
+    FOREIGN KEY (user_identifier) REFERENCES users(id),
+    FOREIGN KEY (registered_address_identifier) REFERENCES address(id),
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    FOREIGN KEY (last_modified_by) REFERENCES users(id),
+    INDEX idx_user (user_identifier),
+    INDEX idx_status (status_description),
+    INDEX idx_country (country),
+    INDEX idx_c2c (is_counter_over_counter),
+    CONSTRAINT chk_c2c_phone CHECK (
+        (is_counter_over_counter = FALSE) OR 
+        (is_counter_over_counter = TRUE AND collector_contact_number IS NOT NULL)
+    )  -- C2C requires phone number
 );
 ```
 
@@ -358,29 +398,36 @@ CREATE TABLE otp_record (
 ### Entity Relationships
 
 ```
-┌─────────────┐
-│    users    │
-└──────┬──────┘
-       │ 1
-       │
-       │ owns
-       │
-       │ *
-┌──────┴──────────┐
-│  organisation   │
-└──────┬──────────┘
-       │ 1
-       │
-       │ has
-       │
-       │ *
-┌──────┴──────────┐
-│  kyc_document   │
-└─────────────────┘
+                  ┌─────────────┐
+                  │    users    │
+                  └──────┬──────┘
+                         │ 1
+              ┌──────────┼──────────┐
+              │          │          │
+         owns │     owns │          │ owns
+              │          │          │
+              │ *        │ *        │ *
+   ┌──────────┴─────┐    │    ┌────┴────────┐
+   │  organisation  │    │    │ beneficiary │
+   └──────┬─────────┘    │    └────┬────────┘
+          │ 1            │         │ 1
+          │              │         │
+          │ has          │         │ has
+          │              │         │
+          │ *            │ *       │ *
+   ┌──────┴──────────────┴─────────┴──────┐
+   │         kyc_document                  │
+   │  (organisation_id OR beneficiary_id)  │
+   └───────────────────────────────────────┘
 
 Legend:
 1 = one
 * = many
+
+Notes:
+- Each user can own 1 organisation and up to 20 beneficiaries
+- Each organisation/beneficiary can have multiple KYC documents
+- Each KYC document belongs to either an organisation OR a beneficiary (enforced by CHECK constraint)
 ```
 
 ---

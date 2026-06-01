@@ -1,0 +1,475 @@
+{
+  "info": {
+    "name": "FinCore - Beneficiary Management API",
+    "_postman_id": "beneficiary-mgmt-v1",
+    "description": "Complete Postman collection for Beneficiary Management API endpoints. Includes business user operations (create, update, delete, search, submit) and admin operations (approve, reject, suspend, statistics).\n\n**Version**: 2.2.0\n**Base URL**: {{base_url}}/api/beneficiaries\n**Auth**: JWT Bearer Token ({{jwt_token}})\n\n## Prerequisites\n1. Login via Authentication API to get JWT token\n2. Set {{jwt_token}} environment variable\n3. Set {{base_url}} to your API endpoint\n\n## User Types\n- **Business User**: Can manage own beneficiaries (max 20)\n- **Admin**: Can approve/reject/suspend any beneficiary\n\n## Workflow\n1. Business User creates beneficiary (status: PENDING)\n2. Business User uploads 3-4 KYC documents\n3. Business User submits for review (status: UNDER_REVIEW)\n4. Admin approves/rejects beneficiary\n5. If approved: status becomes ACTIVE\n6. Admin can suspend ACTIVE beneficiaries",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Business User Operations",
+      "item": [
+        {
+          "name": "1. Create Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"beneficiaryName\": \"Global Remittance Ltd\",\n  \"nickName\": \"GRL\",\n  \"businessName\": \"Global Remittance Limited\",\n  \"country\": \"United Kingdom\",\n  \"registeredAddressId\": 1,\n  \"isCounterOverCounter\": false,\n  \"collectorContactNumber\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries"]
+            },
+            "description": "Create a new beneficiary. Status will be PENDING.\n\n**Required Fields**:\n- beneficiaryName (2-255 chars)\n- country\n- registeredAddressId (must be valid address ID)\n\n**C2C Validation**:\n- If isCounterOverCounter = true, collectorContactNumber is required\n\n**Business Rule**: User can have maximum 20 beneficiaries"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Create C2C Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"beneficiaryName\": \"Cash Pickup Express\",\n  \"nickName\": \"CPE\",\n  \"businessName\": \"Cash Pickup Express Ltd\",\n  \"country\": \"Nigeria\",\n  \"registeredAddressId\": 2,\n  \"isCounterOverCounter\": true,\n  \"collectorContactNumber\": \"+234-805-123-4567\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries"]
+            },
+            "description": "Create a Counter Over Counter (C2C) beneficiary.\n\n**C2C Requirements**:\n- isCounterOverCounter must be true\n- collectorContactNumber is required\n- Additional KYC document required: COLLECTOR_IDENTIFICATION"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Beneficiary by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "1"]
+            },
+            "description": "Get a specific beneficiary by ID.\n\n**Access**: Business user can only access own beneficiaries\n\n**Response includes**:\n- All beneficiary fields\n- Registered address object\n- Computed flags: canBeEdited, canBeSubmitted, isActive\n- Audit information"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get All Beneficiaries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries"]
+            },
+            "description": "Get all beneficiaries for current user.\n\n**Access**: Business user sees only own beneficiaries\n\n**Optional Query Params**:\n- status: Filter by status (PENDING, UNDER_REVIEW, ACTIVE, REJECTED, SUSPENDED)"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Get Beneficiaries by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries?status=ACTIVE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "PENDING | UNDER_REVIEW | ACTIVE | REJECTED | SUSPENDED"
+                }
+              ]
+            },
+            "description": "Filter beneficiaries by status.\n\n**Available Statuses**:\n- PENDING\n- UNDER_REVIEW\n- ACTIVE\n- REJECTED\n- SUSPENDED"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Search Beneficiaries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/search?query=Global",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "Global",
+                  "description": "Search term (searches beneficiaryName, nickName, businessName)"
+                }
+              ]
+            },
+            "description": "Search beneficiaries by name.\n\n**Search Fields**:\n- Beneficiary Name\n- Nick Name\n- Business Name\n\n**Case-insensitive** partial matching"
+          },
+          "response": []
+        },
+        {
+          "name": "7. Get Beneficiaries by Country",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/by-country/United Kingdom",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "by-country", "United Kingdom"]
+            },
+            "description": "Filter beneficiaries by country.\n\n**Use Case**: Display beneficiaries for specific destination country"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Get C2C Beneficiaries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/c2c",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "c2c"]
+            },
+            "description": "Get all Counter Over Counter beneficiaries.\n\n**Use Case**: Display cash pickup locations for user"
+          },
+          "response": []
+        },
+        {
+          "name": "9. Update Beneficiary",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"beneficiaryName\": \"Global Remittance International Ltd\",\n  \"nickName\": \"GRI\",\n  \"businessName\": \"Global Remittance International Limited\",\n  \"country\": \"United Kingdom\",\n  \"registeredAddressId\": 1,\n  \"isCounterOverCounter\": false,\n  \"collectorContactNumber\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "1"]
+            },
+            "description": "Update a beneficiary.\n\n**Restriction**: Only PENDING beneficiaries can be updated\n\n**Business Rule**: Once submitted (UNDER_REVIEW), beneficiary cannot be edited until rejected"
+          },
+          "response": []
+        },
+        {
+          "name": "10. Delete Beneficiary",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "1"]
+            },
+            "description": "Delete a beneficiary.\n\n**Restriction**: Only PENDING beneficiaries can be deleted\n\n**Side Effect**: Deletes associated KYC documents from Google Cloud Storage"
+          },
+          "response": []
+        },
+        {
+          "name": "11. Submit for Review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/1/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "1", "submit"]
+            },
+            "description": "Submit beneficiary for admin review.\n\n**Prerequisites**:\n- Status must be PENDING\n- All required KYC documents must be uploaded:\n  * CLIENT_AUTHORISATION_LETTER\n  * BENEFICIARY_COMPANY_KYC\n  * BENEFICIARY_AGREEMENT\n  * COLLECTOR_IDENTIFICATION (if C2C)\n\n**Status Change**: PENDING → UNDER_REVIEW\n\n**Document Status Change**: All documents → UNDER_REVIEW"
+          },
+          "response": []
+        },
+        {
+          "name": "12. Get Beneficiary Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "count"]
+            },
+            "description": "Get beneficiary count and limit information.\n\n**Response**:\n```json\n{\n  \"count\": 5,\n  \"limit\": 20,\n  \"remaining\": 15,\n  \"canCreateMore\": true\n}\n```\n\n**Use Case**: Display remaining beneficiary slots in UI"
+          },
+          "response": []
+        }
+      ],
+      "description": "Business user operations for managing own beneficiaries."
+    },
+    {
+      "name": "Admin Operations",
+      "item": [
+        {
+          "name": "1. Get All Beneficiaries (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/admin/all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "admin", "all"]
+            },
+            "description": "Get all beneficiaries across all users.\n\n**Access**: SYSTEM_ADMINISTRATOR or COMPLIANCE_OFFICER only\n\n**Use Case**: Admin dashboard showing all beneficiaries in system"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get Pending Approvals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/admin/pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "admin", "pending"]
+            },
+            "description": "Get beneficiaries awaiting approval (UNDER_REVIEW status).\n\n**Access**: SYSTEM_ADMINISTRATOR or COMPLIANCE_OFFICER only\n\n**Use Case**: Approval queue for compliance team"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Approve Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/admin/1/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "admin", "1", "approve"]
+            },
+            "description": "Approve a beneficiary.\n\n**Access**: SYSTEM_ADMINISTRATOR or COMPLIANCE_OFFICER only\n\n**Prerequisites**: Status must be UNDER_REVIEW\n\n**Status Change**: UNDER_REVIEW → ACTIVE\n\n**Document Status Change**: All documents → VERIFIED\n\n**Side Effect**: Clears any previous rejection reasons"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Reject Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"The beneficiary documents do not meet our compliance requirements. The company KYC document appears to be outdated and the beneficiary agreement is missing required signatures. Please resubmit with updated documents.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/admin/1/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "admin", "1", "reject"]
+            },
+            "description": "Reject a beneficiary with reason.\n\n**Access**: SYSTEM_ADMINISTRATOR or COMPLIANCE_OFFICER only\n\n**Prerequisites**: Status must be UNDER_REVIEW\n\n**Required**: Reason (10-255 characters)\n\n**Status Change**: UNDER_REVIEW → REJECTED\n\n**Document Status Change**: All documents → REJECTED\n\n**Note**: Rejection is permanent. User must create new beneficiary."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Suspend Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Beneficiary has been temporarily suspended pending investigation into suspicious transaction patterns. User will be notified once investigation is complete.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/admin/1/suspend",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "admin", "1", "suspend"]
+            },
+            "description": "Suspend an active beneficiary with reason.\n\n**Access**: SYSTEM_ADMINISTRATOR or COMPLIANCE_OFFICER only\n\n**Prerequisites**: Status must be ACTIVE\n\n**Required**: Reason (10-255 characters)\n\n**Status Change**: ACTIVE → SUSPENDED\n\n**Use Case**: Temporary suspension for compliance investigation\n\n**Note**: Can be reactivated later"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Reactivate Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/admin/1/reactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "admin", "1", "reactivate"]
+            },
+            "description": "Reactivate a suspended beneficiary.\n\n**Access**: SYSTEM_ADMINISTRATOR or COMPLIANCE_OFFICER only\n\n**Prerequisites**: Status must be SUSPENDED\n\n**Status Change**: SUSPENDED → ACTIVE\n\n**Side Effect**: Clears suspension reason"
+          },
+          "response": []
+        },
+        {
+          "name": "7. Admin Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/admin/search?query=Global",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "admin", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "Global",
+                  "description": "Search term"
+                }
+              ]
+            },
+            "description": "Search beneficiaries across all users.\n\n**Access**: SYSTEM_ADMINISTRATOR or COMPLIANCE_OFFICER only\n\n**Search Fields**:\n- Beneficiary Name\n- Nick Name\n- Business Name\n\n**Returns**: All matching beneficiaries regardless of owner"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Get Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/beneficiaries/admin/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "beneficiaries", "admin", "statistics"]
+            },
+            "description": "Get beneficiary statistics for admin dashboard.\n\n**Access**: SYSTEM_ADMINISTRATOR or COMPLIANCE_OFFICER only\n\n**Response**:\n```json\n{\n  \"totalBeneficiaries\": 150,\n  \"pendingCount\": 25,\n  \"underReviewCount\": 10,\n  \"activeCount\": 100,\n  \"rejectedCount\": 10,\n  \"suspendedCount\": 5,\n  \"averageBeneficiariesPerUser\": 7.5,\n  \"c2cCount\": 30,\n  \"topCountries\": [\n    {\"country\": \"United Kingdom\", \"count\": 45},\n    {\"country\": \"Nigeria\", \"count\": 30},\n    {\"country\": \"India\", \"count\": 25}\n  ]\n}\n```\n\n**Use Case**: Admin analytics dashboard"
+          },
+          "response": []
+        }
+      ],
+      "description": "Admin operations for approving, rejecting, suspending beneficiaries and viewing statistics."
+    },
+    {
+      "name": "KYC Documents (Beneficiary)",
+      "item": [
+        {
+          "name": "1. Get Beneficiary Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents?beneficiaryId=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents"],
+              "query": [
+                {
+                  "key": "beneficiaryId",
+                  "value": "1",
+                  "description": "Beneficiary ID"
+                }
+              ]
+            },
+            "description": "Get all KYC documents for a beneficiary.\n\n**Returns**: Array of document metadata (not files)\n\n**Document Types for Beneficiaries**:\n- CLIENT_AUTHORISATION_LETTER (required)\n- BENEFICIARY_COMPANY_KYC (required)\n- BENEFICIARY_AGREEMENT (required)\n- COLLECTOR_IDENTIFICATION (required if C2C)\n- OPTIONAL_DOCUMENTATION (optional)"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Upload Beneficiary Document",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "beneficiaryId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "Beneficiary ID"
+                },
+                {
+                  "key": "documentType",
+                  "value": "CLIENT_AUTHORISATION_LETTER",
+                  "type": "text",
+                  "description": "Document type"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "File to upload (PDF, JPG, PNG - max 10MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "upload"]
+            },
+            "description": "Upload a KYC document for beneficiary.\n\n**Form Data**:\n- beneficiaryId (required)\n- documentType (required)\n- file (required, max 10MB)\n\n**Allowed File Types**: PDF, JPG, JPEG, PNG\n\n**Storage**: Google Cloud Storage (fincore-kyc-documents bucket)\n\n**Status**: Document status will be PENDING"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kyc-documents/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc-documents", "1"]
+            },
+            "description": "Delete a KYC document.\n\n**Restriction**: Only PENDING or REJECTED documents can be deleted\n\n**Side Effect**: Deletes file from Google Cloud Storage"
+          },
+          "response": []
+        }
+      ],
+      "description": "KYC document management for beneficiaries (extends existing KYC document endpoints)."
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://fincore-npe-api-994490239798.europe-west2.run.app",
+      "type": "string"
+    }
+  ]
+}

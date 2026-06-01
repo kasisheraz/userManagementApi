@@ -97,6 +97,60 @@ public interface KycDocumentRepository extends JpaRepository<KycDocument, Long> 
             @Param("organisationId") Long organisationId,
             @Param("status") DocumentStatus status);
 
+    // ========================================
+    // Beneficiary Document Queries (Added in v2.2.0)
+    // ========================================
+
+    /**
+     * Find documents by beneficiary.
+     * @param beneficiaryId the beneficiary ID
+     * @return list of documents for the beneficiary
+     */
+    @Query("SELECT d FROM KycDocument d WHERE d.beneficiary.id = :beneficiaryId")
+    List<KycDocument> findByBeneficiaryId(@Param("beneficiaryId") Long beneficiaryId);
+
+    /**
+     * Find documents by beneficiary with pagination.
+     * @param beneficiaryId the beneficiary ID
+     * @param pageable pagination information
+     * @return page of documents
+     */
+    @Query("SELECT d FROM KycDocument d WHERE d.beneficiary.id = :beneficiaryId")
+    Page<KycDocument> findByBeneficiaryId(@Param("beneficiaryId") Long beneficiaryId, Pageable pageable);
+
+    /**
+     * Find documents by beneficiary and type.
+     * @param beneficiaryId the beneficiary ID
+     * @param documentType the document type
+     * @return list of matching documents
+     */
+    @Query("SELECT d FROM KycDocument d WHERE d.beneficiary.id = :beneficiaryId AND d.documentType = :documentType")
+    List<KycDocument> findByBeneficiaryIdAndDocumentType(
+            @Param("beneficiaryId") Long beneficiaryId,
+            @Param("documentType") DocumentType documentType);
+
+    /**
+     * Find documents by beneficiary and status.
+     * @param beneficiaryId the beneficiary ID
+     * @param status the document status
+     * @return list of matching documents
+     */
+    @Query("SELECT d FROM KycDocument d WHERE d.beneficiary.id = :beneficiaryId AND d.status = :status")
+    List<KycDocument> findByBeneficiaryIdAndStatus(
+            @Param("beneficiaryId") Long beneficiaryId,
+            @Param("status") DocumentStatus status);
+
+    /**
+     * Count documents by beneficiary and status.
+     * @param beneficiaryId the beneficiary ID
+     * @param status the document status
+     * @return count of matching documents
+     */
+    @Query("SELECT COUNT(d) FROM KycDocument d WHERE d.beneficiary.id = :beneficiaryId AND d.status = :status")
+    long countByBeneficiaryIdAndStatus(
+            @Param("beneficiaryId") Long beneficiaryId,
+            @Param("status") DocumentStatus status);
+
     /**
      * Check if organisation has all required verified documents.
      * @param organisationId the organisation ID

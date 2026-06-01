@@ -22,6 +22,14 @@ public enum DocumentType {
     FINANCIAL_STATEMENT("Financial Statement"),
     SHAREHOLDER_REGISTER("Register of Shareholders"),
     DIRECTOR_RESOLUTION("Director Resolution"),
+    
+    // Beneficiary-specific document types (Phase 4 - Beneficiary Module)
+    CLIENT_AUTHORISATION_LETTER("Client Authorisation Letter"),
+    BENEFICIARY_COMPANY_KYC("Beneficiary Company KYC"),
+    BENEFICIARY_AGREEMENT("Beneficiary Agreement"),
+    COLLECTOR_IDENTIFICATION("Collector Identification"),
+    OPTIONAL_DOCUMENTATION("Optional Documentation"),
+    
     OTHER("Other Document");
 
     private final String description;
