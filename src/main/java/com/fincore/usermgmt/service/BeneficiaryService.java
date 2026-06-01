@@ -530,26 +530,41 @@ public class BeneficiaryService {
     private BeneficiaryResponseDTO mapToResponseDTO(Beneficiary beneficiary) {
         AddressDTO addressDTO = null;
         if (beneficiary.getRegisteredAddress() != null) {
-            addressDTO = addressMapper.toDto(beneficiary.getRegisteredAddress());
+            addressDTO = addressMapper.toAddressDTO(beneficiary.getRegisteredAddress());
         }
 
         // Get creator/modifier names
         String createdByName = beneficiary.getCreatedBy() != null 
                 ? userRepository.findById(beneficiary.getCreatedBy())
-                        .map(User::getFullName)
+                        .map(u -> (u.getFirstName() != null ? u.getFirstName() : "") + " " + 
+                                  (u.getLastName() != null ? u.getLastName() : ""))
+                        .map(String::trim)
+                        .filter(name -> !name.isEmpty())
                         .orElse("Unknown")
                 : "System";
 
         String lastModifiedByName = beneficiary.getLastModifiedBy() != null 
                 ? userRepository.findById(beneficiary.getLastModifiedBy())
-                        .map(User::getFullName)
+                        .map(u -> (u.getFirstName() != null ? u.getFirstName() : "") + " " + 
+                                  (u.getLastName() != null ? u.getLastName() : ""))
+                        .map(String::trim)
+                        .filter(name -> !name.isEmpty())
                         .orElse("Unknown")
                 : "System";
+
+        // Get owner name
+        String ownerName = beneficiary.getOwner() != null
+                ? ((beneficiary.getOwner().getFirstName() != null ? beneficiary.getOwner().getFirstName() : "") + " " +
+                   (beneficiary.getOwner().getLastName() != null ? beneficiary.getOwner().getLastName() : "")).trim()
+                : "Unknown";
+        if (ownerName.isEmpty()) {
+            ownerName = "Unknown";
+        }
 
         return BeneficiaryResponseDTO.builder()
                 .id(beneficiary.getId())
                 .ownerId(beneficiary.getOwner().getId())
-                .ownerName(beneficiary.getOwner().getFullName())
+                .ownerName(ownerName)
                 .beneficiaryName(beneficiary.getBeneficiaryName())
                 .nickName(beneficiary.getNickName())
                 .businessName(beneficiary.getBusinessName())

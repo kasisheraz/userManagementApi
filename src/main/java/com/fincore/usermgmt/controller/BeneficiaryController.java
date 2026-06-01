@@ -77,7 +77,7 @@ public class BeneficiaryController {
             @Parameter(description = "Beneficiary creation data", required = true)
             @Valid @RequestBody BeneficiaryRequestDTO request) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to create beneficiary by user {}: {}", userId, request.getBeneficiaryName());
         
         BeneficiaryResponseDTO created = beneficiaryService.createBeneficiary(userId, request);
@@ -108,7 +108,7 @@ public class BeneficiaryController {
             @Parameter(description = "Beneficiary update data", required = true)
             @Valid @RequestBody BeneficiaryRequestDTO request) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to update beneficiary {} by user {}", id, userId);
         
         BeneficiaryResponseDTO updated = beneficiaryService.updateBeneficiary(userId, id, request);
@@ -133,7 +133,7 @@ public class BeneficiaryController {
             @Parameter(description = "Beneficiary ID", required = true, example = "1")
             @PathVariable Long id) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to get beneficiary {} by user {}", id, userId);
         
         BeneficiaryResponseDTO beneficiary = beneficiaryService.getBeneficiaryById(userId, id);
@@ -156,7 +156,7 @@ public class BeneficiaryController {
             @Parameter(description = "Filter by status (optional)", example = "ACTIVE")
             @RequestParam(required = false) BeneficiaryStatus status) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to get all beneficiaries by user {} with status filter: {}", userId, status);
         
         List<BeneficiaryResponseDTO> beneficiaries;
@@ -185,7 +185,7 @@ public class BeneficiaryController {
             @Parameter(description = "Search term", required = true, example = "HSBC")
             @RequestParam String query) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to search beneficiaries by user {} with query: {}", userId, query);
         
         List<BeneficiaryResponseDTO> beneficiaries = beneficiaryService.searchBeneficiaries(userId, query);
@@ -208,7 +208,7 @@ public class BeneficiaryController {
             @Parameter(description = "Country code or name", required = true, example = "United Kingdom")
             @PathVariable String country) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to get beneficiaries in country {} by user {}", country, userId);
         
         List<BeneficiaryResponseDTO> beneficiaries = beneficiaryService.getBeneficiariesByCountry(userId, country);
@@ -229,7 +229,7 @@ public class BeneficiaryController {
     })
     public ResponseEntity<List<BeneficiaryResponseDTO>> getC2CBeneficiaries() {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to get C2C beneficiaries by user {}", userId);
         
         List<BeneficiaryResponseDTO> beneficiaries = beneficiaryService.getC2CBeneficiaries(userId);
@@ -257,7 +257,7 @@ public class BeneficiaryController {
             @Parameter(description = "Beneficiary ID", required = true, example = "1")
             @PathVariable Long id) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to submit beneficiary {} for review by user {}", id, userId);
         
         BeneficiaryResponseDTO submitted = beneficiaryService.submitForReview(userId, id);
@@ -284,7 +284,7 @@ public class BeneficiaryController {
             @Parameter(description = "Beneficiary ID", required = true, example = "1")
             @PathVariable Long id) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to delete beneficiary {} by user {}", id, userId);
         
         beneficiaryService.deleteBeneficiary(userId, id);
@@ -304,7 +304,7 @@ public class BeneficiaryController {
     })
     public ResponseEntity<Map<String, Object>> getBeneficiaryCount() {
         
-        Long userId = securityUtil.getCurrentUserId();
+        Long userId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request to get beneficiary count by user {}", userId);
         
         long count = beneficiaryService.getBeneficiaryCount(userId);
@@ -389,7 +389,7 @@ public class BeneficiaryController {
             @Parameter(description = "Beneficiary ID", required = true, example = "1")
             @PathVariable Long id) {
         
-        Long adminUserId = securityUtil.getCurrentUserId();
+        Long adminUserId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request by admin {} to approve beneficiary {}", adminUserId, id);
         
         BeneficiaryResponseDTO approved = beneficiaryService.approveBeneficiary(adminUserId, id);
@@ -421,7 +421,7 @@ public class BeneficiaryController {
             @Parameter(description = "Rejection details", required = true)
             @Valid @RequestBody BeneficiaryRejectionDTO rejectionDTO) {
         
-        Long adminUserId = securityUtil.getCurrentUserId();
+        Long adminUserId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request by admin {} to reject beneficiary {} with reason: {}", 
                  adminUserId, id, rejectionDTO.getReason());
         
@@ -455,7 +455,7 @@ public class BeneficiaryController {
             @Parameter(description = "Suspension details", required = true)
             @Valid @RequestBody BeneficiaryRejectionDTO suspensionDTO) {
         
-        Long adminUserId = securityUtil.getCurrentUserId();
+        Long adminUserId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request by admin {} to suspend beneficiary {} with reason: {}", 
                  adminUserId, id, suspensionDTO.getReason());
         
@@ -487,7 +487,7 @@ public class BeneficiaryController {
             @Parameter(description = "Beneficiary ID", required = true, example = "1")
             @PathVariable Long id) {
         
-        Long adminUserId = securityUtil.getCurrentUserId();
+        Long adminUserId = securityUtil.getCurrentUser().orElseThrow(() -> new RuntimeException("User not authenticated")).getId();
         log.info("REST request by admin {} to reactivate beneficiary {}", adminUserId, id);
         
         BeneficiaryResponseDTO reactivated = beneficiaryService.reactivateBeneficiary(adminUserId, id);
