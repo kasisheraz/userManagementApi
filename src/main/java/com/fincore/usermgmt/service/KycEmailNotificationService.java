@@ -6,6 +6,7 @@ import com.fincore.usermgmt.entity.enums.VerificationStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -20,10 +21,12 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Service for sending email notifications related to KYC workflow status changes
+ * Only enabled when mail server is configured (spring.mail.host property exists)
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "spring.mail.host")
 public class KycEmailNotificationService {
 
     private final JavaMailSender mailSender;

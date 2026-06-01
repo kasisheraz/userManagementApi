@@ -8,8 +8,8 @@ import com.fincore.usermgmt.entity.enums.VerificationStatus;
 import com.fincore.usermgmt.entity.enums.RiskLevel;
 import com.fincore.usermgmt.repository.CustomerKycVerificationRepository;
 import com.fincore.usermgmt.service.sumsub.SumSubService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +30,6 @@ import java.util.Map;
  * Each step must be completed before proceeding to the next step.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class KycWorkflowService {
@@ -41,6 +40,21 @@ public class KycWorkflowService {
     private final AmlScreeningService amlScreeningService;
     private final SumSubService sumSubService;
     private final KycEmailNotificationService emailNotificationService;
+
+    public KycWorkflowService(
+            CustomerKycVerificationRepository kycRepository,
+            KycVerificationService kycVerificationService,
+            CustomerAnswerService customerAnswerService,
+            AmlScreeningService amlScreeningService,
+            SumSubService sumSubService,
+            @Autowired(required = false) KycEmailNotificationService emailNotificationService) {
+        this.kycRepository = kycRepository;
+        this.kycVerificationService = kycVerificationService;
+        this.customerAnswerService = customerAnswerService;
+        this.amlScreeningService = amlScreeningService;
+        this.sumSubService = sumSubService;
+        this.emailNotificationService = emailNotificationService;
+    }
 
     // Workflow step constants
     public static final String STEP_USER_INFO = "USER_INFO";
@@ -184,13 +198,17 @@ public class KycWorkflowService {
         verification.setReviewedAt(LocalDateTime.now());
         verification = kycRepository.save(verification);
 
-        // Send email notification
-        try {
-            emailNotificationService.sendKycSubmittedNotification(verification);
-            emailNotificationService.sendKycUnderReviewNotification(verification);
-        } catch (Exception e) {
-            log.error("Failed to send email notification for verification: {}", verificationId, e);
-            // Don't fail the workflow if email fails
+        // Send email notification (if email service is configured)
+        if (emailNotificationService != null) {
+            try {
+                emailNotificationService.sendKycSubmittedNotification(verification);
+                emailNotificationService.sendKycUnderReviewNotification(verification);
+            } catch (Exception e) {
+                log.error("Failed to send email notification for verification: {}", verificationId, e);
+                // Don't fail the workflow if email fails
+            }
+        } else {
+            log.debug("Email notification service not configured - skipping email notifications");
         }
 
         log.info("Step 4 (Review) completed. Verification {} is now UNDER_REVIEW", verificationId);
